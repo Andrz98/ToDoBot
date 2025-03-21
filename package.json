@@ -12,7 +12,8 @@
     "lint": "eslint . --fix",
     "format": "prettier --write .",
     "logs": "cat logs.txt",
-    "test": "echo \"No hay pruebas definidas todavía\" && exit 0"
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "abort-controller": "^3.0.0",
@@ -117,6 +118,8 @@
     "eslint": "^9.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.3",
-    "globals": "^16.0.0"
+    "globals": "^16.0.0",
+    "supertest": "^7.1.0",
+    "vitest": "^3.0.9"
   }
 }

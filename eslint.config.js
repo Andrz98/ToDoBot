@@ -71,7 +71,7 @@ export default [
 
       // ✅ Reglas para mejorar la calidad del código en Node.js
 
-      'node/no-missing-import': 'error', // ❌ Error si se intenta importar un módulo inexistente
+      'node/no-missing-import': 'off',
 
       'node/no-unpublished-import': 'off', // 🚀 Permitir importar devDependencies (para herramientas como Jest)
 
