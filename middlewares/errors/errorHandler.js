@@ -1,4 +1,4 @@
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res) => {
   console.error(`[ERROR]: ${err.message || 'Error desconocido'}`)
 
   const statusCode = err.status || 500
@@ -8,8 +8,6 @@ const errorHandler = (err, req, res, next) => {
     error: true,
     message: errorMessage
   })
-
-  next()
 }
 
 export default errorHandler
