@@ -2,10 +2,13 @@ import mongoose from 'mongoose'
 
 const taskSchema = new mongoose.schema({
   userId: { type: Number, required: true }, // ID del usuario de telegram
+  name: { type: String, required: true }, // Nombre de la tarea
   description: { type: String, required: true }, // Descripción de la tarea
   completed: { type: Boolean, default: false }, // Estado de la tarea
   reminderAt: { type: Date }, // Fecha/hora del recordatorio
   createdAt: { type: Date, default: Date.now } // Fecha de creación
 })
 
+// Añado un índice compuesto: userId + name deben de ser únicos en combinación
+taskSchema.index({ userId: 1, name: 1 }, { unique: true })
 export const task = mongoose.model('task', taskSchema)

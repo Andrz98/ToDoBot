@@ -12,15 +12,23 @@ export const addTask = async (ctx) => {
     // Extraigo el comando del usuario que envío el comando
     const userId = ctx.from.id
 
-    // Obtengo la descrición desde el texto del mensaje
-    const taskDescription = ctx.message.text
-      .split(' ')
-      .slice(1)
-      .join(' ')
-      .trim()
+    // Obtengo el contenido del mensaje del usuario después del coamndo /add
+    const input = ctx.message.text.split(' ').slice(1).join(' ').trim()
+
+    // Verifico que el mensaje contenga un gúion medio para separar el nombre de la descripción
+    if (!input.includes('-')) {
+      return ctx.reply(
+        '🤯 Debes proporcionar una descripción de la tarea. Ejemplo:\n/add Comprar pan'
+      )
+    }
+
+    // Separo el nombre de la descripción por el primer guíon encontrado
+    const [nameRaw, ...descParts] = input.split('-')
+    const taskName = nameRaw.trim()
+    const taskDescription = descParts.join('-').trim()
 
     // Valido que haya contenido después del /add
-    if (!taskDescription) {
+    if (!taskName || !taskDescription) {
       return ctx.reply(
         '🤯 Debes proporcionar una descripción de la tarea. Ejemplo:\n/add Comprar pan'
       )
@@ -34,6 +42,7 @@ export const addTask = async (ctx) => {
     // Creo una nueva instancia del modelo task
     const newTask = new Task({
       userId,
+      name: taskName,
       description: taskDescription
     })
 
@@ -45,6 +54,11 @@ export const addTask = async (ctx) => {
       `🫡 La tarea se ha añadido correctamente: \n"${taskDescription}"`
     )
   } catch (error) {
+    if (error.code === 11000) {
+      return ctx.reply(
+        '🤯 Ya tienes una tarea con ese nombre. Por favor, elige otro nombre para la tarea.'
+      )
+    }
     console.error(`😵‍💫Ha sucedido un error al añadir tu tarea: ${error.message}`)
     ctx.reply('😵‍💫Ha sucedido un error al añadir tu tarea. Intentalo nuevamente')
   }
