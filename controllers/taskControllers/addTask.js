@@ -1,5 +1,5 @@
-import task from '../../models/task.js'
-import authorizedUser from '../../models/authorizedUser.js'
+import Task from '../../models/task.js'
+import { isUserAuthorized } from '../../helpers/userAuthorized.js'
 
 /**
  * Controlador para agregar una tarea /add
@@ -27,13 +27,12 @@ export const addTask = async (ctx) => {
     }
 
     //Verfico si el usuario está autoriado a usar el bot
-    const isAuthorized = await authorizedUser.exists({ telegramId: userId })
-    if (!isAuthorized) {
+    if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
     // Creo una nueva instancia del modelo task
-    const newTask = new task({
+    const newTask = new Task({
       userId,
       description: taskDescription
     })
