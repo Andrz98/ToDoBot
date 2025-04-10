@@ -1,15 +1,19 @@
-// Voy a importar todos los subcontroladores modulares que gestionan cada comando
+// Importo todos los subcontroladores validados que gestionan cada comando del bot
 
 import { addTask } from './addTask.js'
+import { listTasks } from './listTask.js'
+import { completeTask } from './completeTask.js'
 import { deleteTask } from './deleteTask.js'
-import { getTask } from './getTask.js'
-import { getTasks } from './getTasks.js'
-import { updateTask } from './updateTask.js'
+import { editTask } from './editTask.js'
+import { clearTask } from './clearTask.js'
+
+// Exporto los controladores organizados para ser utilizados desde app.js
 
 export default {
   addTask,
+  listTasks,
+  completeTask,
   deleteTask,
-  getTask,
-  getTasks,
-  updateTask
+  editTask,
+  clearTask
 }
