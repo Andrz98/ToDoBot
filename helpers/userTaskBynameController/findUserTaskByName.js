@@ -1,5 +1,5 @@
-import Task from '../../models/task.js'
-import { isUserAuthorized } from '../userAuthorizedTaskController/isUserAuthorized.js'
+import Task from '@/models/task.js'
+import { isUserAuthorized } from '@/helpers/userAuthorizedTaskController/isUserAuthorized.js'
 
 /**
  * Busca una tarea específica por nombre y userId del mensaje

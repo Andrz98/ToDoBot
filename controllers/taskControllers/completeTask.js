@@ -1,4 +1,4 @@
-import { findUserTaskByName } from '../../helpers/userTaskBynameController/findUserTaskByName.js'
+import { findUserTaskByName } from '@/helpers/userTaskBynameController/findUserTaskByName.js'
 
 /**
  * Controlador para marcar una tarea como completada /done

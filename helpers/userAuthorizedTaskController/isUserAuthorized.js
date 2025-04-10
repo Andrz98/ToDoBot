@@ -1,4 +1,4 @@
-import AuthorizedUser from '../../models/authorizedUser.js'
+import AuthorizedUser from '@/models/authorizedUser.js'
 
 /**
  * Verifica si el usuario que envía el mensaje está autorizado para usar mi bot

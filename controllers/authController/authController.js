@@ -1,4 +1,4 @@
-import { AuthorizedUser } from '../../models/authorizedUser.js'
+import { AuthorizedUser } from '@/models/authorizedUser.js'
 
 export const handleUserAuth = async (userId, username) => {
   try {

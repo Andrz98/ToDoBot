@@ -1,5 +1,5 @@
-import Task from '../../models/task.js'
-import { isUserAuthorized } from '../../helpers/userAuthorized.js'
+import Task from '@/models/task.js'
+import { isUserAuthorized } from '@/helpers/userAuthorized.js'
 
 /**
  * Controlador para agregar una tarea /add
