@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "author": "Andrz98",
   "type": "module",
-  "main": "app.js.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
@@ -14,6 +14,9 @@
     "logs": "cat logs.txt",
     "test": "vitest",
     "test:coverage": "vitest --coverage"
+  },
+  "_moduleAliases": {
+    "@": "toDoBot"
   },
   "dependencies": {
     "abort-controller": "^3.0.0",
@@ -67,6 +70,7 @@
     "mime": "^1.6.0",
     "mime-db": "^1.52.0",
     "mime-types": "^2.1.35",
+    "module-alias": "^2.2.3",
     "moment": "^2.30.1",
     "mongodb": "^6.14.2",
     "mongodb-connection-string-url": "^3.0.2",
