@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const taskSchema = new mongoose.schema({
+const taskSchema = new mongoose.Schema({
   userId: { type: Number, required: true }, // ID del usuario de telegram
   name: { type: String, required: true }, // Nombre de la tarea
   description: { type: String, required: true }, // Descripción de la tarea
