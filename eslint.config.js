@@ -113,18 +113,22 @@ export default [
 
       'arrow-parens': ['error', 'always'], // ✅ Siempre usar paréntesis en funciones flecha
 
-      'brace-style': ['error', '1tbs', { allowSingleLine: true }], // ✅ Estilo de llaves uniforme
-      {
-        files: ['**/*.test.js'],
-        languageOptions: {
-          globals: {
-            describe: true,
-            it: true,
-            expect: true,
-            vi: true,
-            beforeEach: true,
-            afterEach: true
-          }
+      'brace-style': ['error', '1tbs', { allowSingleLine: true }] // ✅ Estilo de llaves uniforme
+    }
+  },
+
+  // ✅ Configuración para test unitarios (.test.js)
+  {
+    files: ['**/*.test.js'],
+    languageOptions: {
+      globals: {
+        describe: true,
+        it: true,
+        expect: true,
+        vi: true,
+        beforeEach: true,
+        afterEach: true
+      }
     }
   }
 ]
