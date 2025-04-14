@@ -23,6 +23,6 @@ export const deleteTask = async (ctx) => {
     )
   } catch (error) {
     console.error(`😵‍💫 Error al eliminar la tarea: ${error.message}`)
-    ctx.reply('😵‍💫 Ocurrio un error al eliminar la tarea. Intenta mas tarde.')
+    ctx.reply('😵‍💫 Ocurrio un error al eliminar la tarea. Intenta más tarde.')
   }
 }
