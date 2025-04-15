@@ -11,4 +11,4 @@ const taskSchema = new mongoose.Schema({
 
 // Añado un índice compuesto: userId + name deben de ser únicos en combinación
 taskSchema.index({ userId: 1, name: 1 }, { unique: true })
-export const task = mongoose.model('task', taskSchema)
+export const Task = mongoose.model('Task', taskSchema)
