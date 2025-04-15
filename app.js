@@ -44,7 +44,6 @@ mongoose
     // =======================
     // 🔰 Middleware de errores
     // =======================
-    app.use(errorHandler)
 
     // =======================
     // 🔰 Levanto el servidor
