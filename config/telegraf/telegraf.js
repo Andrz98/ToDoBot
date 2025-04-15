@@ -3,6 +3,7 @@ import { Telegraf } from 'telegraf'
 
 import taskController from '@/controllers/taskControllers/taskController.js'
 import { isAuthorizedUser } from '@/middlewares/access/isAuthorizedUser.js'
+import { startCommand } from '../../controllers/startController/startController'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -16,11 +17,7 @@ export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 // 🔰 Comando /start
 // (este comando se desarrollará después)
 // ====================================
-bot.start(async (ctx) => {
-  return ctx.reply(
-    '😋¡Bienvenid@ a TuttoFatto!\nPara comenzar, asegúrate de que tu colega te haya autorizado para usar el bot.'
-  )
-})
+bot.start(startCommand)
 
 // ====================================
 // 🔰 Comandos protegidos por middleware
