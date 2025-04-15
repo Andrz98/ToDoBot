@@ -14,7 +14,7 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 }
 
 // Creo una instancia del bot con el Token
-export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 
 // ====================================
 // 🔰 Middlewares
@@ -40,10 +40,10 @@ bot.command('clear', isAuthorizedUser, taskController.clearTask)
 bot.command('confirmclear', isAuthorizedUser, taskController.clearTask)
 
 // ====================================
-// 🔰 Arranque del bot si no estamos testeando
+// 🔰 Exportación para app.js (webhook)
 // ====================================
-if (process.env.NODE_ENV !== 'test') {
-  bot.launch().then(() => {
-    console.log('🤖 Bot TuttoFatto está activo y escuchando comandos...')
-  })
-}
+const webhookCallback = bot.webhookCallback(
+  `/telegraf/${bot.secretPathComponent()}`
+)
+
+export { bot, webhookCallback }
