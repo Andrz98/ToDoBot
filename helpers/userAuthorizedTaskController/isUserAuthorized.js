@@ -12,6 +12,6 @@ export const isUserAuthorized = async (ctx) => {
     return false
   }
 
-  const exists = await AuthorizedUser.exists({ telegramId: userId })
+  const exists = await AuthorizedUser.exists({ userId })
   return Boolean(exists)
 }
