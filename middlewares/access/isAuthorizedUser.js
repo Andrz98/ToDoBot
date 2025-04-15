@@ -1,4 +1,4 @@
-import { isUserAuthorized } from '@/helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 
 export const isAuthorizedUser = async (ctx, next) => {
   try {

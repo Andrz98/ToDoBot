@@ -1,4 +1,4 @@
-import { isAuthorizedUser } from '@/middlewares/access/isAuthorizedUser'
+import { isAuthorizedUser } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 
 /**
  * Comando /start - Este es el punto de inicio del bot
