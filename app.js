@@ -3,7 +3,6 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 
 import { bot, webhookCallback } from './config/telegraf/telegraf.js'
-import { errorHandler } from './middlewares/errors/errorHandler.js'
 
 // ====================================
 // 🔰 Verifico .env
