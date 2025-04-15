@@ -3,7 +3,10 @@ import { Telegraf } from 'telegraf'
 
 import taskController from '@/controllers/taskControllers/taskController.js'
 import { isAuthorizedUser } from '@/middlewares/access/isAuthorizedUser.js'
-import { startCommand } from '../../controllers/startController/startController'
+import { startCommand } from '@/controllers/startController/startController.js'
+
+import { rateLimit } from '@/middlewares/secure/rateLimit'
+import { sanitizeInput } from '@/middlewares/secure/sanitizeInput.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -12,6 +15,12 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 
 // Creo una instancia del bot con el Token
 export const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
+
+// ====================================
+// 🔰 Middlewares
+// ====================================
+bot.use(rateLimit)
+bot.use(sanitizeInput)
 
 // ====================================
 // 🔰 Comando /start
