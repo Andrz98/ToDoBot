@@ -1,4 +1,4 @@
-import { isAuthorizedUser } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 
 /**
  * Comando /start - Este es el punto de inicio del bot
@@ -10,7 +10,7 @@ export const startCommand = async (ctx) => {
     const username = ctx.from.username || 'username'
 
     // Verifico si el usuario esta autorizado a usar el bot
-    const authorized = await isAuthorizedUser(ctx)
+    const authorized = await isUserAuthorized(ctx)
 
     if (authorized) {
       return ctx.reply(
