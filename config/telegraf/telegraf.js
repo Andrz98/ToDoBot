@@ -53,8 +53,6 @@ bot.catch((err, ctx) => {
 // ====================================
 // 🔰 Exportación para app.js (webhook)
 // ====================================
-const webhookCallback = bot.webhookCallback(
-  `/telegraf/${bot.secretPathComponent()}`
-)
+const webhookCallback = bot.webhookCallback('/telegraf/tuttobot-path-seguro')
 
 export { bot, webhookCallback }
