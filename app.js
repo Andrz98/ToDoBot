@@ -36,7 +36,7 @@ mongoose
     // 🔰 Webhook de Telegraf
     // =======================
     const path = `/telegraf/${bot.secretPathComponent()}`
-    app.use(path, webhookCallback) // ✅ CORRECTO
+    app.use(path, webhookCallback)
     bot.telegram.setWebhook(`${domain}${path}`)
     console.log(`🤖 Webhook activo en: ${domain}${path}`)
 
