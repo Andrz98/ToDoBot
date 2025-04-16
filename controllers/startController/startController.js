@@ -8,7 +8,11 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 export const startCommand = async (ctx) => {
   console.log('ctx.from:', ctx.from)
   try {
-    const username = ctx.from?.username || 'username'
+    const username =
+      ctx.from?.username ||
+      ctx.from?.first_name ||
+      ctx.from?.last_name ||
+      'Pat Oso 🐶 Pat Osa'
 
     // Verifico si el usuario esta autorizado a usar el bot
     const authorized = await isUserAuthorized(ctx)
