@@ -24,7 +24,6 @@ bot.use(sanitizeInput)
 
 // ====================================
 // 🔰 Comando /start
-// (este comando se desarrollará después)
 // ====================================
 bot.start(startCommand)
 
@@ -38,6 +37,18 @@ bot.command('delete', isAuthorizedUser, taskController.deleteTask)
 bot.command('edit', isAuthorizedUser, taskController.editTask)
 bot.command('clear', isAuthorizedUser, taskController.clearTask)
 bot.command('confirmclear', isAuthorizedUser, taskController.clearTask)
+
+// ====================================
+// 🔰 Manejo global de errores del bot
+// ====================================
+bot.catch((err, ctx) => {
+  console.error('😵‍💫 Error interno del bot:', err.message)
+  if (ctx?.reply) {
+    return ctx.reply(
+      '😵 Ocurrió un error inesperado. Intenta nuevamente más tarde.'
+    )
+  }
+})
 
 // ====================================
 // 🔰 Exportación para app.js (webhook)
