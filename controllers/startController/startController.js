@@ -6,6 +6,7 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
  * @param {object} ctx - Contexto del bot
  */
 export const startCommand = async (ctx) => {
+  console.log('ctx.from:', ctx.from)
   try {
     const username = ctx.from?.username || 'username'
 
