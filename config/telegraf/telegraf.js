@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { Telegraf } from 'telegraf'
 
+import { pingCommand } from '../../controllers/startController/pingController.js'
 import taskController from '../../controllers/taskControllers/taskController.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { startCommand } from '../../controllers/startController/startController.js'
@@ -23,6 +24,10 @@ bot.use(rateLimit)
 bot.use(sanitizeInput)
 
 // ====================================
+// 🔰 Comando /ping
+// ====================================
+bot.command('ping', pingCommand)
+
 // 🔰 Comando /start
 // ====================================
 bot.start(startCommand)
