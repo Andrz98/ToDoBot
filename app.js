@@ -36,7 +36,11 @@ mongoose
     // 🔰 Webhook de Telegraf
     // =======================
     const path = '/telegraf/tuttobot-path-seguro'
-    app.use(path, express.json(), webhookCallback)
+    app.post(path, express.json(), (req, res, next) => {
+      console.log('📩 Petición recibida en webhook') // Necesito forzar a render a mostrarme
+      webhookCallback(req, res, next)
+    })
+
     bot.telegram.setWebhook(`${domain}${path}`)
     console.log(`🤖 Webhook activo en: ${domain}${path}`)
 
