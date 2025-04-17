@@ -21,7 +21,7 @@ export const startCommand = async (ctx) => {
       return ctx.reply(
         `🫡 ¡Hola, ${username}!\n` +
           'TuttoFatto está listo para ayudarte.\n\n' +
-          'Estos son algunos comandos que puedes usar:\n' +
+          'Los comandos disponibles son:\n' +
           '/add - Añadir una nueva tarea\n' +
           '/list - Ver tus tareas activas\n' +
           '/done - Marcar una tarea como completada\n' +

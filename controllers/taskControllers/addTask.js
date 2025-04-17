@@ -4,6 +4,10 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 /**
  * Controlador para agregar una tarea /add
  *
+ * Formatos aceptados:
+ * /add Comprar pan 21/04/2025
+ * /add Reunión 2025-04-22
+ * /add Ir al dentista para el 30/04/2025
  * @param {object} ctx - Objeto de contexo proporcionado por telegraf
  */
 
@@ -13,24 +17,40 @@ export const addTask = async (ctx) => {
     const userId = ctx.from.id
 
     // Obtengo el contenido del mensaje del usuario después del coamndo /add
-    const input = ctx.message.text.split(' ').slice(1).join(' ').trim()
+    const input = ctx.message.text.replace(/^\/add\s*/, '').trim()
 
-    // Verifico que el mensaje contenga un gúion medio para separar el nombre de la descripción
-    if (!input.includes('-')) {
+    // Busca una fecha con formato dd/mm/aaaa o yyyy-mm-dd
+    const dateRegex = /(\d{2}\/\d{2}\/\d{4})|(\d{4}-\d{2}-\d{2})/
+    const dateMatch = input.match(dateRegex)
+
+    // Verifico si el mensaje contiene una fecha, sino lo hace muestro un error
+    if (!dateMatch) {
       return ctx.reply(
-        '🤯 Debes proporcionar una descripción de la tarea. Ejemplo:\n/add Comprar pan'
+        '🗓️ Para sacar el máximo rendimiento a tus tareas, por favor, inrtoduce una fecha válida en el mensaje. Ejemplo:\n/add Llamar médico 22/04/2025'
       )
     }
 
-    // Separo el nombre de la descripción por el primer guíon encontrado
-    const [nameRaw, ...descParts] = input.split('-')
-    const taskName = nameRaw.trim()
-    const taskDescription = descParts.join('-').trim()
+    const rawDate = dateMatch[0]
+    const parsedDate = new Date(
+      rawDate.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$2/$1/$3')
+    )
 
-    // Valido que haya contenido después del /add
-    if (!taskName || !taskDescription) {
+    if (isNaN(parsedDate.getTime())) {
       return ctx.reply(
-        '🤯 Debes proporcionar una descripción de la tarea. Ejemplo:\n/add Comprar pan'
+        '🗓️ La fecha no es válida. Usa el formato DD/MM/AAAA o AAAA-MM-DD.'
+      )
+    }
+
+    if (parsedDate < new Date()) {
+      return ctx.reply('⌚ La fecha debe ser posterior a la fecha actual.')
+    }
+
+    const taskName = input.replace(rawDate, '').trim()
+
+    // Verifico que el mensaje contenga el nombre de la tarea antes que la fecha
+    if (!taskName) {
+      return ctx.reply(
+        '🤯 Debes proporcionar el nombre de la tarea antes de la fecha.'
       )
     }
 
@@ -43,7 +63,7 @@ export const addTask = async (ctx) => {
     const newTask = new Task({
       userId,
       name: taskName,
-      description: taskDescription
+      reminderAt: parsedDate
     })
 
     // Guardo la tarea en la base de datos
@@ -51,7 +71,7 @@ export const addTask = async (ctx) => {
 
     // Envio un mensaje de confirmación al usuario
     return ctx.reply(
-      `🫡 La tarea se ha añadido correctamente: \n"${taskDescription}"`
+      `🫡 Tarea registrada: "${taskName}"\n📅 Recordatorio el: ${parsedDate.toLocaleDateString('es-ES')}`
     )
   } catch (error) {
     if (error.code === 11000) {
