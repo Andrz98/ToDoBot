@@ -44,6 +44,15 @@ mongoose
     bot.telegram.setWebhook(`${domain}${path}`)
     console.log(`🤖 Webhook activo en: ${domain}${path}`)
 
+    // =========================================
+    // 🔰 Ruta raíz para mantener render activo
+    // =========================================
+    app.get('/', (req, res) => {
+      res
+        .status(200)
+        .send('🤖 TuttoFatto está despierto y funcionando correctamente.')
+    })
+
     // =======================
     // 🔰 Levanto el servidor
     // =======================
