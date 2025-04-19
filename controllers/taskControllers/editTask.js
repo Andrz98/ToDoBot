@@ -33,11 +33,14 @@ export const editTask = async (ctx) => {
       )
     }
 
+    const maybeSecond = parts[1]?.trim()
+    const maybeThird = parts[2]?.trim()
+    // Detectamos si el segundo campo parece una fecha
+    const isSecondDate = maybeSecond?.match(/^\d{2}\/\d{2}\/\d{4}/)
     const oldName = parts[0].trim()
-    const newName = parts[1]?.trim()
-    const newDescription = parts.lenght >= 3 ? parts[2] : ''
-    const rawDateTime =
-      parts.lenght >= 4 ? parts[3] : parts.lenght === 3 ? parts[2] : ''
+    const newName = !isSecondDate ? maybeSecond : ''
+    const newDescription = !isSecondDate && parts.length >= 3 ? maybeThird : ''
+    const rawDateTime = isSecondDate ? maybeSecond : parts[3]?.trim() || ''
 
     // Busco la tarea por userId y nombre
     const task = await findUserTaskByName(userId, oldName)
