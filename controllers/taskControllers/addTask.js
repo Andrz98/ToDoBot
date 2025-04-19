@@ -33,31 +33,21 @@ export const addTask = async (ctx) => {
 
     const taskName = parts[0]
     const taskDescription = parts.length === 3 ? parts[1] : ''
-    let rawDateTime = parts.length === 3 ? parts[2] : parts[1]
+    const rawDateTime = parts.length === 3 ? parts[2] : parts[1]
 
     // Validar que el nombre no esté vacío
     if (!taskName) {
       return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
     }
 
-    // Acepta año corto y añade hora por defecto si no se especifica
-    if (/^\d{2}\/\d{2}\/\d{2}$/.test(rawDateTime)) {
-      rawDateTime += ' 09:00'
-    }
-
-    if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
-      rawDateTime = rawDateTime.replace(
-        /^(\d{2})\/(\d{2})\/(\d{2})/,
-        (match, d, m, y) => `${d}/${m}/20${y}`
-      )
-    }
-
-    const normalized = rawDateTime.replace(
-      /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/,
-      '$2/$1/$3 $4'
+    // Normalización completa y robusta de fechas
+    const parsedDate = new Date(
+      rawDateTime
+        .replace(/^(\d{2})\/(\d{2})\/(\d{2})$/, '$1/$2/20$3 09:00')
+        .replace(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}:\d{2})$/, '$1/$2/20$3 $4')
+        .replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, '$1/$2/$3 09:00')
+        .replace(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/, '$1/$2/$3 $4')
     )
-
-    const parsedDate = new Date(normalized)
 
     if (isNaN(parsedDate.getTime())) {
       return ctx.reply(
