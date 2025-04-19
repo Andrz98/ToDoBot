@@ -1,5 +1,5 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
-import { findUserTaskByName } from '../../helpers/userTaskBynameController/findUserTaskByName.js'
+import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
 
 /**
  * Controlador para editar una tarea /edit
@@ -48,7 +48,7 @@ export const editTask = async (ctx) => {
     const newDescription = !isSecondDate && parts.length >= 3 ? maybeThird : ''
 
     // Busco la tarea por userId y nombre
-    const task = await findUserTaskByName(userId, oldName)
+    const task = await findTaskForController(userId, oldName)
     if (!task) {
       return ctx.reply(`🤯 No se encontró ninguna tarea llamada "${oldName}"`)
     }
