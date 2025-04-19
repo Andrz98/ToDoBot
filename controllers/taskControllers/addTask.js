@@ -4,48 +4,54 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 /**
  * Controlador para agregar una tarea /add
  *
- * Formato aceptado:
- * /add Nombre de la tarea - Descripción (opcional) - Fecha
- * Ejemplo:
- * /add Llamar médico - Confirmar cita con la clínica - 22/04/2025 10:00
+ * Formato obligatorio:
+ * /add Nombre - [Descripción opcional] - Fecha
  *
- * @param {object} ctx - Objeto de contexto proporcionado por Telegraf
+ * Ejemplos válidos:
+ * /add Comprar pan - - 20/09/25
+ * /add Leer libro - Filosofía - 21/09/2025 08:00
+ *
+ * @param {object} ctx - Contexto del bot
  */
-
 export const addTask = async (ctx) => {
   try {
-    // Extraigo el ID del usuario que envió el comando
     const userId = ctx.from.id
 
-    // Obtengo el contenido del mensaje del usuario después del comando /add
+    // Verifico si el usuario esta autorizado a usar el bot
+    if (!(await isUserAuthorized(ctx))) {
+      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
+    }
+
     const input = ctx.message.text.replace(/^\/add\s*/, '').trim()
+    const parts = input.split(' - ').map((p) => p.trim())
 
-    const parts = input.split(' - ')
-
-    // Verifico que al menos se proporcionen nombre y fecha
     if (parts.length < 2) {
       return ctx.reply(
-        '🤯 Formato incorrecto. Usa:\n/add Nombre - [Descripción opcional] - DD/MM/AAAA HH:mm'
+        '🤯 Formato incorrecto. Usa:\n/add Nombre - [Descripción] - Fecha'
       )
     }
 
-    const taskName = parts[0]?.trim()
-    const taskDescription = parts.length === 3 ? parts[1].trim() : ''
-    const rawDateTime = parts.length === 3 ? parts[2].trim() : parts[1].trim()
+    const taskName = parts[0]
+    const taskDescription = parts.length === 3 ? parts[1] : ''
+    let rawDateTime = parts.length === 3 ? parts[2] : parts[1]
 
-    // Expresión regular para fecha + hora: DD/MM/YYYY HH:mm o YYYY-MM-DD HH:mm
-    const datetimeRegex =
-      /(\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2})|(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})/
-    const match = rawDateTime.match(datetimeRegex)
+    // Validar que el nombre no esté vacío
+    if (!taskName) {
+      return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
+    }
 
-    // Verifico si el mensaje contiene una fecha y hora válidas
-    if (!match) {
-      return ctx.reply(
-        '🗓️ Debes incluir una fecha válida. Ejemplo:\n/add Comprar pan - Recordatorio de compra - 22/04/2025 10:00'
+    // Acepta año corto y añade hora por defecto si no se especifica
+    if (/^\d{2}\/\d{2}\/\d{2}$/.test(rawDateTime)) {
+      rawDateTime += ' 09:00'
+    }
+
+    if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
+      rawDateTime = rawDateTime.replace(
+        /^(\d{2})\/(\d{2})\/(\d{2})/,
+        (match, d, m, y) => `${d}/${m}/20${y}`
       )
     }
 
-    // Normalizo el formato de fecha si viene como DD/MM/YYYY HH:mm → MM/DD/YYYY HH:mm
     const normalized = rawDateTime.replace(
       /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/,
       '$2/$1/$3 $4'
@@ -53,26 +59,17 @@ export const addTask = async (ctx) => {
 
     const parsedDate = new Date(normalized)
 
-    // Verifico que la fecha sea válida
     if (isNaN(parsedDate.getTime())) {
       return ctx.reply(
-        '🕒 La fecha y hora no son válidas. Usa DD/MM/AAAA HH:mm o YYYY-MM-DD HH:mm'
+        '📆 La fecha no es válida. Usa el formato DD/MM/AAAA [HH:mm]'
       )
     }
 
-    // Verifico que la fecha sea futura
     if (parsedDate < new Date()) {
-      return ctx.reply(
-        '⌚ La fecha y hora deben ser posteriores al momento actual.'
-      )
+      return ctx.reply('⌚ La fecha debe ser posterior a la actual.')
     }
 
-    // Verifico si el usuario está autorizado a usar el bot
-    if (!(await isUserAuthorized(ctx))) {
-      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
-    }
-
-    // Creo una nueva instancia del modelo Task
+    // Creo una nueva instancia del modelo task
     const newTask = new Task({
       userId,
       name: taskName,
@@ -83,26 +80,18 @@ export const addTask = async (ctx) => {
     // Guardo la tarea en la base de datos
     await newTask.save()
 
-    // Envío mensaje de confirmación al usuario
+    // Envío confirmación
     return ctx.reply(
       `<b>🫡 Tarea registrada:</b> "${taskName}"` +
         (taskDescription ? `\n<b>🔸 Descripción:</b> ${taskDescription}` : '') +
-        `\n<b>🔹 Recordatorio:</b> ${parsedDate.toLocaleString('es-ES', {
+        `\n<b>📅 Recordatorio:</b> ${parsedDate.toLocaleString('es-ES', {
           dateStyle: 'full',
           timeStyle: 'short'
         })}`,
       { parse_mode: 'HTML' }
     )
   } catch (error) {
-    if (error.code === 11000) {
-      return ctx.reply(
-        '🤯 Ya tienes una tarea con ese nombre. Por favor, elige otro nombre para la tarea.'
-      )
-    }
-
-    console.error(`😵‍💫 Error al añadir tarea: ${error.message}`)
-    return ctx.reply(
-      '😵‍💫 Ha ocurrido un error inesperado. Inténtalo nuevamente.'
-    )
+    console.error('😵‍💫 Error al añadir tarea:', error)
+    return ctx.reply('😵‍💫 Ocurrió un error al añadir la tarea.')
   }
 }
