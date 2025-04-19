@@ -27,17 +27,19 @@ export const listTasks = async (ctx) => {
       return ctx.reply('🤯 No tienes tareas activas.')
     }
 
-    //Construyo la lista formateada para mostraral al usuario
-    const formattedList = tasks.map(
-      (task, index) =>
-        `🫡 ${index + 1}. ${task.name} 📅(${task.reminderAt.toLocaleString(
-          'es-ES',
-          {
-            dateStyle: 'full',
-            timeStyle: 'short'
-          }
-        )})`
-    )
+    // Construyo la lista formateada para mostrar al usuario, con una línea por tarea
+    const formattedList = tasks
+      .map((task, index) => {
+        const descriptionText = task.description
+          ? `\n📝 ${task.description}`
+          : ''
+        const dateText = task.reminderAt.toLocaleString('es-ES', {
+          dateStyle: 'full',
+          timeStyle: 'short'
+        })
+        return `🫡 ${index + 1}. ${task.name}${descriptionText}\n📅 ${dateText}`
+      })
+      .join('\n')
 
     // Envío la lista al usuario
     return ctx.reply(`🗒️ Estas son tus tareas pendientes:\n\n${formattedList}`)
