@@ -4,22 +4,22 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 /**
  * Controlador para manejar /clear y /confirmclear
  *
- * @param {object} ctx - Objeto de contexo proporcionado por telegraf
+ * Separar lógica de /clear y /confirmclear para facilitar el mantenimiento (más adelante)
+ * @param {object} ctx - Objeto de contexto proporcionado por telegraf
  */
-
 export const clearTask = async (ctx) => {
   try {
-    // Extraigo el comando recibido y el ID del usuario
+    // Extraigo el ID del usuario y normalizo el comando recibido
     const userId = ctx.from.id
-    const command = ctx.message.text.trim()
+    const command = ctx.message.text.trim().toLowerCase()
 
-    // Verifico si el usuario esta autorizado a usar el bot
+    // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
     // /clear → Solicitud de confirmación
-    if (command === '/clear') {
+    if (command.startsWith('/clear')) {
       const taskCount = await Task.countDocuments({ userId })
 
       if (taskCount === 0) {
@@ -27,32 +27,25 @@ export const clearTask = async (ctx) => {
       }
 
       return ctx.reply(
-        '🤯 Estás a punto de eliminar TODAS tus tareas.\n' +
-          'Si estás completamente seguro, escribe el comando:\n/confirmclear'
+        `🤯 Estás a punto de eliminar <b>${taskCount}</b> tareas activas.\n` +
+          'Si estás completamente segur@, escribe el comando:\n/confirmclear',
+        { parse_mode: 'HTML' }
       )
     }
 
     // /confirmclear → Eliminación real de las tareas
-    if (command === '/confirmclear') {
-      const taskCount = await Task.countDocuments({ userId })
-
-      if (taskCount === 0) {
-        return ctx.reply('🤯 No tienes tareas activas que eliminar.')
-      }
-
-      await Task.deleteMany({ userId })
+    if (command.startsWith('/confirmclear')) {
+      const result = await Task.deleteMany({ userId })
 
       return ctx.reply(
-        `🫡 Se han eliminado tus ${taskCount} tareas. ¡Empezamos de cero!`
+        `${result.deletedCount} tarea(s) eliminadas correctamente.`
       )
     }
 
-    // Si el comando no es reconocido dentro de este handler
-    return ctx.reply('🤯 Comando no válido. Usa /clear para empezar.')
+    // Comando desconocido (fallback interno)
+    return ctx.reply('🤯 Comando no reconocido. Usa /clear o /confirmclear.')
   } catch (error) {
-    console.error(`😵‍💫 Error al gestionar comando clear: ${error.message}`)
-    ctx.reply(
-      '😵‍💫 Ocurrió un error al procesar tu solicitud. Intenta más tarde.'
-    )
+    console.error('😵‍💫 Error en clearTask:', error)
+    return ctx.reply('😵‍💫 Ocurrió un error al intentar eliminar tus tareas.')
   }
 }
