@@ -6,6 +6,7 @@ import { findTaskForController } from '../../helpers/userTaskBynameController/fi
  *
  * Formato aceptado:
  * /edit Antigua tarea - Nueva tarea - Nueva descripción - Nueva fecha
+ * /edit Antigua tarea 22/04/25 13:00
  *
  * Todos los campos excepto el nombre original son opcionales.
  *
@@ -29,23 +30,41 @@ export const editTask = async (ctx) => {
 
     // Extraigo el mensaje después del comando /edit
     const input = ctx.message.text.replace(/^\/edit\s*/, '').trim()
-    const parts = input.split(' - ').map((p) => p.trim())
+    let oldName = ''
+    let newName = ''
+    let newDescription = ''
+    let rawDateTime = ''
 
-    // Verifico si el mensaje contiene al menos el nombre original y un campo editable
-    if (parts.length < 2) {
-      return ctx.reply(
-        '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
-      )
+    if (input.includes(' - ')) {
+      // Formato con guiones (más estructurado)
+      const parts = input.split(' - ').map((p) => p.trim())
+
+      if (parts.length < 2) {
+        return ctx.reply(
+          '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
+        )
+      }
+
+      oldName = parts[0]
+      newName = parts[1] || ''
+      newDescription = parts[2] || ''
+      rawDateTime = parts[3] || ''
+    } else {
+      // Formato flexible sin guiones
+      const tokens = input.split(' ')
+      const possibleDate = tokens.slice(-2).join(' ')
+      const dateRegex =
+        /^\d{2}\/\d{2}\/\d{2,4}\s+\d{2}:\d{2}$|^\d{2}\/\d{2}\/\d{2,4}$/
+
+      if (dateRegex.test(possibleDate)) {
+        rawDateTime = possibleDate
+        oldName = tokens.slice(0, -2).join(' ')
+      } else {
+        return ctx.reply(
+          '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
+        )
+      }
     }
-
-    const maybeSecond = parts[1]?.trim()
-    const maybeThird = parts[2]?.trim()
-
-    // Detectamos si el segundo campo parece una fecha
-    const isSecondDate = maybeSecond?.match(/^\d{2}\/\d{2}\/\d{4}/)
-    const oldName = parts[0].trim()
-    const newName = !isSecondDate ? maybeSecond : ''
-    const newDescription = !isSecondDate && parts.length >= 3 ? maybeThird : ''
 
     // Busco la tarea por userId y nombre
     const task = await findTaskForController(userId, oldName)
@@ -80,14 +99,6 @@ export const editTask = async (ctx) => {
     }
 
     // === BLOQUE CORREGIDO PARA FECHAS ===
-    let rawDateTime = ''
-    if (isSecondDate) {
-      rawDateTime = maybeSecond
-    } else if (parts[3]) {
-      rawDateTime = parts[3].trim()
-    }
-
-    // Si el año viene en formato corto (DD/MM/YY HH:mm), lo ampliamos a YYYY
     if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
       rawDateTime = rawDateTime.replace(
         /^(\d{2})\/(\d{2})\/(\d{2})/,
