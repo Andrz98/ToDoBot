@@ -1,5 +1,6 @@
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { DateTime } from 'luxon'
 
 /**
  * Controlador para agregar una tarea /add
@@ -35,21 +36,32 @@ export const addTask = async (ctx) => {
     const taskDescription = parts.length === 3 ? parts[1] : ''
     const rawDateTime = parts.length === 3 ? parts[2] : parts[1]
 
-    // Validar que el nombre no esté vacío
     if (!taskName) {
       return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
     }
 
-    // Normalización completa y robusta de fechas
-    const parsedDate = new Date(
-      rawDateTime
-        .replace(/^(\d{2})\/(\d{2})\/(\d{2})$/, '$1/$2/20$3 09:00')
-        .replace(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}:\d{2})$/, '$1/$2/20$3 $4')
-        .replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, '$1/$2/$3 09:00')
-        .replace(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/, '$1/$2/$3 $4')
-    )
+    // ===============================
+    // Parseo de fecha con LUXON
+    // ===============================
+    const dateFormats = [
+      'dd/MM/yy HH:mm',
+      'dd/MM/yyyy HH:mm',
+      'dd/MM/yy',
+      'dd/MM/yyyy'
+    ]
+    let parsedDate
 
-    if (isNaN(parsedDate.getTime())) {
+    for (const format of dateFormats) {
+      const luxonDate = DateTime.fromFormat(rawDateTime, format, {
+        zone: 'Europe/Madrid'
+      })
+      if (luxonDate.isValid) {
+        parsedDate = luxonDate.toJSDate()
+        break
+      }
+    }
+
+    if (!parsedDate) {
       return ctx.reply(
         '📆 La fecha no es válida. Usa el formato DD/MM/AAAA [HH:mm]'
       )
@@ -67,7 +79,6 @@ export const addTask = async (ctx) => {
       reminderAt: parsedDate
     })
 
-    // Guardo la tarea en la base de datos
     await newTask.save()
 
     // Envío confirmación

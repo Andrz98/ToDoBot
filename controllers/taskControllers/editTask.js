@@ -1,10 +1,11 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
+import { DateTime } from 'luxon'
 
 /**
  * Controlador para editar una tarea /edit
  *
- * ✅ Formato obligatorio:
+ * Formato obligatorio:
  * /edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]
  *
  * Ejemplos válidos:
@@ -15,27 +16,21 @@ import { findTaskForController } from '../../helpers/userTaskBynameController/fi
  *
  * @param {object} ctx - Objeto de contexto proporcionado por telegraf
  */
-
 export const editTask = async (ctx) => {
   try {
-    // Validación del contexto
     if (!ctx.message || !ctx.message.text || !ctx.from || !ctx.from.id) {
       return ctx.reply('🤯 Error interno: El mensaje recibido no es válido.')
     }
 
-    // Extraigo el ID del usuario
     const userId = ctx.from.id
 
-    // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
-    // Extraigo el mensaje después del comando /edit
     const input = ctx.message.text.replace(/^\/edit\s*/, '').trim()
     const parts = input.split(' - ').map((p) => p.trim())
 
-    // Verifico si el mensaje contiene al menos el nombre original y un campo editable
     if (parts.length < 2) {
       return ctx.reply(
         '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
@@ -45,19 +40,16 @@ export const editTask = async (ctx) => {
     const oldName = parts[0]
     const newName = parts[1] || ''
     const newDescription = parts[2] || ''
-    let rawDateTime = parts[3] || ''
+    const rawDateTime = parts[3] || ''
 
-    // Busco la tarea por userId y nombre
     const task = await findTaskForController(userId, oldName)
     if (!task) {
       return ctx.reply(`🤯 No se encontró ninguna tarea llamada "${oldName}"`)
     }
 
-    // Verifico y aplico los cambios solicitados
     let updated = false
     const responseParts = []
 
-    // Actualizo el nombre si fue proporcionado
     if (
       newName &&
       newName !== task.name &&
@@ -68,7 +60,6 @@ export const editTask = async (ctx) => {
       responseParts.push(`🔺 Nuevo nombre: ${newName}`)
     }
 
-    // Actualizo la descripción si fue proporcionada
     if (
       newDescription &&
       newDescription !== task.description &&
@@ -79,30 +70,29 @@ export const editTask = async (ctx) => {
       responseParts.push(`🔸 Descripción: ${newDescription}`)
     }
 
-    // Si el año viene en formato corto (DD/MM/YY HH:mm), lo ampliamos a YYYY
-    if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
-      rawDateTime = rawDateTime.replace(
-        /^(\d{2})\/(\d{2})\/(\d{2})/,
-        (match, d, m, y) => `${d}/${m}/20${y}`
-      )
-    }
+    // Parseo con Luxon
+    let parsedDate
+    if (rawDateTime) {
+      const dateFormats = [
+        'dd/MM/yy HH:mm',
+        'dd/MM/yyyy HH:mm',
+        'dd/MM/yy',
+        'dd/MM/yyyy'
+      ]
 
-    // Validamos y actualizamos la fecha
-    if (
-      rawDateTime &&
-      rawDateTime.match(
-        /\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}|\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/
-      )
-    ) {
-      const normalized = rawDateTime.replace(
-        /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/,
-        '$2/$1/$3 $4'
-      )
-      const parsedDate = new Date(normalized)
+      for (const format of dateFormats) {
+        const luxonDate = DateTime.fromFormat(rawDateTime, format, {
+          zone: 'Europe/Madrid'
+        })
+        if (luxonDate.isValid) {
+          parsedDate = luxonDate.toJSDate()
+          break
+        }
+      }
 
-      if (isNaN(parsedDate.getTime())) {
+      if (!parsedDate) {
         return ctx.reply(
-          '📆 La fecha no es válida. Usa el formato DD/MM/AAAA HH:mm.'
+          '📆 La fecha no es válida. Usa el formato DD/MM/AAAA [HH:mm]'
         )
       }
 
@@ -120,15 +110,12 @@ export const editTask = async (ctx) => {
       )
     }
 
-    // Verifico si hubo algún cambio válido
     if (!updated) {
       return ctx.reply('🤯 No se encontraron cambios en la tarea.')
     }
 
-    // Guardo los cambios en la base de datos
     await task.save()
 
-    // Respondo al usuario con la confirmación de los cambios
     return ctx.reply(
       '<b>✏️ Tarea actualizada correctamente:</b>\n' + responseParts.join('\n'),
       { parse_mode: 'HTML' }
