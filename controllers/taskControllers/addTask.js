@@ -99,6 +99,11 @@ export const addTask = async (ctx) => {
       { parse_mode: 'HTML' }
     )
   } catch (error) {
+    if (error.code === 11000) {
+      return ctx.reply(
+        '🤯 Ya existe una tarea con ese nombre. Por favor elige otro nombre.'
+      )
+    }
     console.error('😵‍💫 Error al añadir tarea:', error)
     return ctx.reply('😵‍💫 Ocurrió un error al añadir la tarea.')
   }
