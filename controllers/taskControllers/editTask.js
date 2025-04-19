@@ -4,9 +4,12 @@ import { findTaskForController } from '../../helpers/userTaskBynameController/fi
 /**
  * Controlador para editar una tarea /edit
  *
- * Formato aceptado:
- * /edit Antigua tarea - Nueva tarea - Nueva descripción - Nueva fecha
- * /edit Antigua tarea 22/04/25 13:00
+ * ✅ Formato obligatorio:
+ * /edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]
+ *
+ * Ejemplos válidos:
+ * /edit Comprar pan - - - 22/04/25 19:00
+ * /edit Tarea vieja - Tarea nueva - - 23/04/2025 09:30
  *
  * Todos los campos excepto el nombre original son opcionales.
  *
@@ -30,41 +33,19 @@ export const editTask = async (ctx) => {
 
     // Extraigo el mensaje después del comando /edit
     const input = ctx.message.text.replace(/^\/edit\s*/, '').trim()
-    let oldName = ''
-    let newName = ''
-    let newDescription = ''
-    let rawDateTime = ''
+    const parts = input.split(' - ').map((p) => p.trim())
 
-    if (input.includes(' - ')) {
-      // Formato con guiones (más estructurado)
-      const parts = input.split(' - ').map((p) => p.trim())
-
-      if (parts.length < 2) {
-        return ctx.reply(
-          '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
-        )
-      }
-
-      oldName = parts[0]
-      newName = parts[1] || ''
-      newDescription = parts[2] || ''
-      rawDateTime = parts[3] || ''
-    } else {
-      // Formato flexible sin guiones
-      const tokens = input.split(' ')
-      const possibleDate = tokens.slice(-2).join(' ')
-      const dateRegex =
-        /^\d{2}\/\d{2}\/\d{2,4}\s+\d{2}:\d{2}$|^\d{2}\/\d{2}\/\d{2,4}$/
-
-      if (dateRegex.test(possibleDate)) {
-        rawDateTime = possibleDate
-        oldName = tokens.slice(0, -2).join(' ')
-      } else {
-        return ctx.reply(
-          '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
-        )
-      }
+    // Verifico si el mensaje contiene al menos el nombre original y un campo editable
+    if (parts.length < 2) {
+      return ctx.reply(
+        '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
+      )
     }
+
+    const oldName = parts[0]
+    const newName = parts[1] || ''
+    const newDescription = parts[2] || ''
+    let rawDateTime = parts[3] || ''
 
     // Busco la tarea por userId y nombre
     const task = await findTaskForController(userId, oldName)
@@ -80,25 +61,25 @@ export const editTask = async (ctx) => {
     if (
       newName &&
       newName !== task.name &&
-      !newName.match(/^\d{2}\/\d{2}\/\d{4}/)
+      !newName.match(/^\d{2}\/\d{2}\/\d{2,4}/)
     ) {
       task.name = newName
       updated = true
-      responseParts.push(`🆕 Nuevo nombre: ${newName}`)
+      responseParts.push(`🔺 Nuevo nombre: ${newName}`)
     }
 
     // Actualizo la descripción si fue proporcionada
     if (
       newDescription &&
       newDescription !== task.description &&
-      !newDescription.match(/^\d{2}\/\d{2}\/\d{4}/)
+      !newDescription.match(/^\d{2}\/\d{2}\/\d{2,4}/)
     ) {
       task.description = newDescription
       updated = true
-      responseParts.push(`📝 Descripción: ${newDescription}`)
+      responseParts.push(`🔸 Descripción: ${newDescription}`)
     }
 
-    // === BLOQUE CORREGIDO PARA FECHAS ===
+    // Si el año viene en formato corto (DD/MM/YY HH:mm), lo ampliamos a YYYY
     if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
       rawDateTime = rawDateTime.replace(
         /^(\d{2})\/(\d{2})\/(\d{2})/,
@@ -106,6 +87,7 @@ export const editTask = async (ctx) => {
       )
     }
 
+    // Validamos y actualizamos la fecha
     if (
       rawDateTime &&
       rawDateTime.match(
@@ -131,7 +113,7 @@ export const editTask = async (ctx) => {
       task.reminderAt = parsedDate
       updated = true
       responseParts.push(
-        `📅 Nueva fecha: ${parsedDate.toLocaleString('es-ES', {
+        `🔹 Nueva fecha: ${parsedDate.toLocaleString('es-ES', {
           dateStyle: 'full',
           timeStyle: 'short'
         })}`
