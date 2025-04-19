@@ -30,19 +30,26 @@ export const listTasks = async (ctx) => {
     // Construyo la lista formateada para mostrar al usuario, con una línea por tarea
     const formattedList = tasks
       .map((task, index) => {
+        const nameText = `<b>${index + 1}. ${task.name}</b>` // <-- Agrego negrita
         const descriptionText = task.description
-          ? `\n<b>📝 Descripción:</b> ${task.description}`
+          ? `\n<b>📄 Descripción:</b> ${task.description}`
           : ''
-        const dateText = task.reminderAt.toLocaleString('es-ES', {
-          dateStyle: 'full',
-          timeStyle: 'short'
-        })
-        return `<b>${index + 1}. ${task.name}</b>${descriptionText}\n<b>📅 Fecha:</b> ${dateText}\n`
+        const dateText = `<b>📅 Fecha:</b> ${task.reminderAt.toLocaleString(
+          'es-ES',
+          {
+            dateStyle: 'full',
+            timeStyle: 'short'
+          }
+        )}`
+        return `${nameText}${descriptionText}\n${dateText}`
       })
-      .join('\n')
+      .join('\n\n') // <-- Agrego espacio entre tareas
 
-    // Envío la lista al usuario
-    return ctx.reply(`🗒️ Estas son tus tareas pendientes:\n\n${formattedList}`)
+    // Envío la lista al usuario con formato HTML habilitado
+    return ctx.reply(
+      `🗒️ Estas son tus tareas pendientes:\n\n${formattedList}`,
+      { parse_mode: 'HTML' } // <-- Esto activa el renderizado en negrita
+    )
   } catch (error) {
     console.error(`😵‍💫 Error al listar tareas: ${error.message}`)
     ctx.reply('😵‍💫 Ocurrió un error al mostrar tus tareas. Intenta más tarde.')
