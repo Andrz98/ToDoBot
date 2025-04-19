@@ -6,13 +6,12 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
  *
  * @param {Object} ctx - Contexto proporcionado por Telegraf
  */
-
 export const listTasks = async (ctx) => {
   try {
-    // Extraigo el ID del usuario que envío el comando
+    // Extraigo el ID del usuario que envió el comando
     const userId = ctx.from.id
 
-    // Verifico si el usuario esta autorizado a usar el bot
+    // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
@@ -27,31 +26,29 @@ export const listTasks = async (ctx) => {
       return ctx.reply('🤯 No tienes tareas activas.')
     }
 
-    // Construyo la lista formateada para mostrar al usuario, con una línea por tarea
+    // Construyo la lista formateada para mostrar al usuario
     const formattedList = tasks
       .map((task, index) => {
-        const nameText = `<b>${index + 1}. ${task.name}</b>` // <-- Agrego negrita
+        const nameText = `<b>${index + 1}. ${task.name}</b>`
         const descriptionText = task.description
           ? `\n<b>🔸 Descripción:</b> ${task.description}`
           : ''
-        const dateText = `<b>🔹 Fecha:</b> ${task.reminderAt.toLocaleString(
+        const dateText = `\n<b>🔹 Fecha:</b> ${task.reminderAt.toLocaleString(
           'es-ES',
-          {
-            dateStyle: 'full',
-            timeStyle: 'short'
-          }
+          { dateStyle: 'full', timeStyle: 'short' }
         )}`
-        return `${nameText}${descriptionText}\n${dateText}`
-      })
-      .join('\n\n') // <-- Agrego espacio entre tareas
 
-    // Envío la lista al usuario con formato HTML habilitado
+        return `${nameText}${descriptionText}${dateText}`
+      })
+      .join('\n\n') // Espacio entre tareas
+
+    // Envío la lista al usuario
     return ctx.reply(
       `🗒️ Estas son tus tareas pendientes:\n\n${formattedList}`,
-      { parse_mode: 'HTML' } // <-- Esto activa el renderizado en negrita
+      { parse_mode: 'HTML' }
     )
   } catch (error) {
-    console.error(`😵‍💫 Error al listar tareas: ${error.message}`)
-    ctx.reply('😵‍💫 Ocurrió un error al mostrar tus tareas. Intenta más tarde.')
+    console.error('😵‍💫 Error al listar tareas:', error)
+    ctx.reply('😵‍💫 Ocurrió un error al mostrar tus tareas.')
   }
 }
