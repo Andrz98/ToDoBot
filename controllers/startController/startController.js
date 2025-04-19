@@ -1,4 +1,5 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
 
 /**
  * Comando /start - Este es el punto de inicio del bot
@@ -16,11 +17,23 @@ export const startCommand = async (ctx) => {
 
     // Verifico si el usuario esta autorizado a usar el bot
     const authorized = await isUserAuthorized(ctx)
+    const userTimezone = await getUserTimezone(ctx.from.id)
+    const tzMessage =
+      userTimezone === 'Europe/Madrid'
+        ? '🌐 Actualmente estás usando la zona horaria por defecto: Europe/Madrid.\n'
+        : `🌎 Tu zona horaria actual es: ${userTimezone}\n`
+
+    const suggestionMessage =
+      userTimezone === 'Europe/Madrid'
+        ? '🛫 Puedes cambiarla con:\n/settimezone America/Bogota\n\n'
+        : ''
 
     if (authorized) {
       return ctx.reply(
         `🫡 ¡Hola, ${username}!\n` +
           'TuttoFatto está listo para ayudarte.\n\n' +
+          tzMessage +
+          suggestionMessage +
           'Los comandos disponibles son:\n' +
           '/add - Añadir una nueva tarea\n' +
           '/list - Ver tus tareas activas\n' +
@@ -40,7 +53,7 @@ export const startCommand = async (ctx) => {
   } catch (error) {
     console.error(`😵‍💫 Error en /start: ${error.message}`)
     return ctx.reply(
-      '😵 Ocurrieron problems al procesar el comando. Intentalo más tarde.'
+      '😵 Ocurrieron problemas al procesar el comando. Intentalo más tarde.'
     )
   }
 }
