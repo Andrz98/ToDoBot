@@ -37,7 +37,7 @@ export const listTasks = async (ctx) => {
           dateStyle: 'full',
           timeStyle: 'short'
         })
-        return `🫡 ${index + 1}. ${task.name}${descriptionText}\n📅 ${dateText}`
+        return `${index + 1}. ${task.name}${descriptionText}\n📅 ${dateText}`
       })
       .join('\n')
 
