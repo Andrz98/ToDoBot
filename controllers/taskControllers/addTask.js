@@ -25,6 +25,7 @@ export const addTask = async (ctx) => {
 
     const input = ctx.message.text.replace(/^\/add\s*/, '').trim()
     const parts = input.split(/-\s*/).map((p) => p.trim())
+    console.log('📚 PARTES:', parts)
 
     if (parts.length < 2) {
       return ctx.reply(
