@@ -114,7 +114,8 @@ export const editTask = async (ctx) => {
 
     // Respondo al usuario con la confirmación de los cambios
     return ctx.reply(
-      '✏️ Tarea actualizada correctamente:\n' + responseParts.join('\n')
+      '<b>✏️ Tarea actualizada correctamente:</b>\n' + responseParts.join('\n'),
+      { parse_mode: 'HTML' }
     )
   } catch (error) {
     console.error(`😵‍💫 Error al editar tarea: ${error.message}`)
