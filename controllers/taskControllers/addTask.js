@@ -46,7 +46,6 @@ export const addTask = async (ctx) => {
     // ===============================
     // Parseo de fecha con LUXON
     // ===============================
-    console.log(`📩 rawDateTime recibido: [${rawDateTime}]`)
     const dateFormats = [
       'dd/MM/yy HH:mm',
       'dd/MM/yyyy HH:mm',
@@ -59,9 +58,6 @@ export const addTask = async (ctx) => {
       const luxonDate = DateTime.fromFormat(rawDateTime, format, {
         zone: 'Europe/Madrid'
       })
-      console.log(
-        `🧪 Probando formato: ${format} → ${luxonDate.isValid ? '✅ válido' : '❌ inválido'}`
-      )
       if (luxonDate.isValid) {
         parsedDate = luxonDate.toJSDate()
         break
@@ -92,10 +88,7 @@ export const addTask = async (ctx) => {
     return ctx.reply(
       `<b>🫡 Tarea registrada:</b> "${taskName}"` +
         (taskDescription ? `\n<b>🔸 Descripción:</b> ${taskDescription}` : '') +
-        `\n<b>📅 Recordatorio:</b> ${parsedDate.toLocaleString('es-ES', {
-          dateStyle: 'full',
-          timeStyle: 'short'
-        })}`,
+        `\n<b>📅 Recordatorio:</b> ${DateTime.fromJSDate(parsedDate, { zone: 'Europe/Madrid' }).toLocaleString(DateTime.DATETIME_FULL)}`,
       { parse_mode: 'HTML' }
     )
   } catch (error) {
