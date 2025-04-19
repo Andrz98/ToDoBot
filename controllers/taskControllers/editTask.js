@@ -35,12 +35,12 @@ export const editTask = async (ctx) => {
 
     const maybeSecond = parts[1]?.trim()
     const maybeThird = parts[2]?.trim()
+
     // Detectamos si el segundo campo parece una fecha
     const isSecondDate = maybeSecond?.match(/^\d{2}\/\d{2}\/\d{4}/)
     const oldName = parts[0].trim()
     const newName = !isSecondDate ? maybeSecond : ''
     const newDescription = !isSecondDate && parts.length >= 3 ? maybeThird : ''
-    let rawDateTime = isSecondDate ? maybeSecond : parts[3]?.trim() || ''
 
     // Busco la tarea por userId y nombre
     const task = await findUserTaskByName(userId, oldName)
@@ -74,7 +74,14 @@ export const editTask = async (ctx) => {
       responseParts.push(`📝 Descripción: ${newDescription}`)
     }
 
-    // Actualizo la fecha si fue proporcionada
+    // === BLOQUE CORREGIDO PARA FECHAS ===
+    let rawDateTime = ''
+    if (isSecondDate) {
+      rawDateTime = maybeSecond
+    } else if (parts[3]) {
+      rawDateTime = parts[3].trim()
+    }
+
     // Si el año viene en formato corto (DD/MM/YY HH:mm), lo ampliamos a YYYY
     if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
       rawDateTime = rawDateTime.replace(
@@ -82,7 +89,13 @@ export const editTask = async (ctx) => {
         (match, d, m, y) => `${d}/${m}/20${y}`
       )
     }
-    {
+
+    if (
+      rawDateTime &&
+      rawDateTime.match(
+        /\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}|\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/
+      )
+    ) {
       const normalized = rawDateTime.replace(
         /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/,
         '$2/$1/$3 $4'
