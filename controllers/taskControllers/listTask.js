@@ -32,9 +32,9 @@ export const listTasks = async (ctx) => {
       .map((task, index) => {
         const nameText = `<b>${index + 1}. ${task.name}</b>` // <-- Agrego negrita
         const descriptionText = task.description
-          ? `\n<b>📄 Descripción:</b> ${task.description}`
+          ? `\n<b>🔸 Descripción:</b> ${task.description}`
           : ''
-        const dateText = `<b>📅 Fecha:</b> ${task.reminderAt.toLocaleString(
+        const dateText = `<b>🔹 Fecha:</b> ${task.reminderAt.toLocaleString(
           'es-ES',
           {
             dateStyle: 'full',

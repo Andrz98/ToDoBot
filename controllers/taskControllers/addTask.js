@@ -85,8 +85,8 @@ export const addTask = async (ctx) => {
 
     // Envío mensaje de confirmación al usuario
     return ctx.reply(
-      `<b>🫡 Tarea registrada:</b> "${taskName}"\n<b>📅 Recordatorio:</b> ${parsedDate.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}` +
-        (taskDescription ? `\n<b>📝 Descripción:</b> ${taskDescription}` : ''),
+      `<b>🫡 Tarea registrada:</b> "${taskName}"\n<b>🔹 Recordatorio:</b> ${parsedDate.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' })}` +
+        (taskDescription ? `\n<b>🔸 Descripción:</b> ${taskDescription}` : ''),
       { parse_mode: 'HTML' }
     )
   } catch (error) {
