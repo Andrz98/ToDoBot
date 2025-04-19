@@ -31,13 +31,13 @@ export const listTasks = async (ctx) => {
     const formattedList = tasks
       .map((task, index) => {
         const descriptionText = task.description
-          ? `\n📝 ${task.description}`
+          ? `\n<b>📝 Descripción:</b> ${task.description}`
           : ''
         const dateText = task.reminderAt.toLocaleString('es-ES', {
           dateStyle: 'full',
           timeStyle: 'short'
         })
-        return `${index + 1}. ${task.name}${descriptionText}\n📅 ${dateText}`
+        return `<b>${index + 1}. ${task.name}</b>${descriptionText}\n<b>📅 Fecha:</b> ${dateText}\n`
       })
       .join('\n')
 
