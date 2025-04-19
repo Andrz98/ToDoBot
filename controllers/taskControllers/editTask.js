@@ -40,7 +40,7 @@ export const editTask = async (ctx) => {
     const oldName = parts[0].trim()
     const newName = !isSecondDate ? maybeSecond : ''
     const newDescription = !isSecondDate && parts.length >= 3 ? maybeThird : ''
-    const rawDateTime = isSecondDate ? maybeSecond : parts[3]?.trim() || ''
+    let rawDateTime = isSecondDate ? maybeSecond : parts[3]?.trim() || ''
 
     // Busco la tarea por userId y nombre
     const task = await findUserTaskByName(userId, oldName)
@@ -75,12 +75,14 @@ export const editTask = async (ctx) => {
     }
 
     // Actualizo la fecha si fue proporcionada
-    if (
-      rawDateTime &&
-      rawDateTime.match(
-        /\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}|\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/
+    // Si el año viene en formato corto (DD/MM/YY HH:mm), lo ampliamos a YYYY
+    if (/^\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}$/.test(rawDateTime)) {
+      rawDateTime = rawDateTime.replace(
+        /^(\d{2})\/(\d{2})\/(\d{2})/,
+        (match, d, m, y) => `${d}/${m}/20${y}`
       )
-    ) {
+    }
+    {
       const normalized = rawDateTime.replace(
         /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/,
         '$2/$1/$3 $4'
