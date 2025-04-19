@@ -141,7 +141,11 @@ export const editTask = async (ctx) => {
       { parse_mode: 'HTML' }
     )
   } catch (error) {
-    console.error(`😵‍💫 Error al editar tarea: ${error.message}`)
+    console.error('😵‍💫 Error al editar tarea:', error)
+    console.error(
+      '😵‍💫 Error completo:',
+      JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+    )
     return ctx.reply('😵‍💫 Ocurrió un error al intentar editar tu tarea.')
   }
 }
