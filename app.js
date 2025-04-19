@@ -3,6 +3,7 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 
 import { bot, webhookCallback } from './config/telegraf/telegraf.js'
+import { startReminderScheduler } from './services/schedulers/reminderScheduler.js'
 
 // ====================================
 // 🔰 Verifico .env
@@ -26,6 +27,11 @@ mongoose
   .connect(mongoURI)
   .then(() => {
     console.log('👾 Conectado a MongoDB correctamente')
+
+    // ======================
+    // 🔰 Inicializo Scheduler
+    // ======================
+    startReminderScheduler()
 
     // ======================
     // 🔰 Inicializo Express

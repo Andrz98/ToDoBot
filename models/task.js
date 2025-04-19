@@ -6,7 +6,8 @@ const taskSchema = new mongoose.Schema({
   description: { type: String, required: false }, // Descripción de la tarea
   completed: { type: Boolean, default: false }, // Estado de la tarea
   reminderAt: { type: Date }, // Fecha/hora del recordatorio
-  createdAt: { type: Date, default: Date.now } // Fecha de creación
+  createdAt: { type: Date, default: Date.now }, // Fecha de creación
+  alertsSent: { type: [String], default: [] } //  alertas ya enviadas
 })
 
 // Añado un índice compuesto: userId + name deben de ser únicos en combinación
