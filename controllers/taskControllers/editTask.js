@@ -24,7 +24,7 @@ export const editTask = async (ctx) => {
 
     // Extraigo el mensaje después del comando /edit
     const input = ctx.message.text.replace(/^\/edit\s*/, '').trim()
-    const parts = input.split(' - ')
+    const parts = input.split(' - ').map((p) => p.trim())
 
     // Verifico si el mensaje contiene al menos el nombre original y un campo editable
     if (parts.length < 2) {
@@ -35,8 +35,9 @@ export const editTask = async (ctx) => {
 
     const oldName = parts[0].trim()
     const newName = parts[1]?.trim()
-    const newDescription = parts[2]?.trim()
-    const rawDateTime = parts[3]?.trim()
+    const newDescription = parts.lenght >= 3 ? parts[2] : ''
+    const rawDateTime =
+      parts.lenght >= 4 ? parts[3] : parts.lenght === 3 ? parts[2] : ''
 
     // Busco la tarea por userId y nombre
     const task = await findUserTaskByName(userId, oldName)
@@ -49,21 +50,34 @@ export const editTask = async (ctx) => {
     const responseParts = []
 
     // Actualizo el nombre si fue proporcionado
-    if (newName) {
+    if (
+      newName &&
+      newName !== task.name &&
+      !newName.match(/^\d{2}\/\d{2}\/\d{4}/)
+    ) {
       task.name = newName
       updated = true
       responseParts.push(`🆕 Nuevo nombre: ${newName}`)
     }
 
     // Actualizo la descripción si fue proporcionada
-    if (newDescription) {
+    if (
+      newDescription &&
+      newDescription !== task.description &&
+      !newDescription.match(/^\d{2}\/\d{2}\/\d{4}/)
+    ) {
       task.description = newDescription
       updated = true
       responseParts.push(`📝 Descripción: ${newDescription}`)
     }
 
     // Actualizo la fecha si fue proporcionada
-    if (rawDateTime) {
+    if (
+      rawDateTime &&
+      rawDateTime.match(
+        /\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2}|\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/
+      )
+    ) {
       const normalized = rawDateTime.replace(
         /^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}:\d{2})$/,
         '$2/$1/$3 $4'
