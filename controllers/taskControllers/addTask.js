@@ -10,7 +10,7 @@ import { DateTime } from 'luxon'
  *
  * Ejemplos válidos:
  * /add Comprar pan - - 20/09/25
- * /add Leer libro - Filosofía - 21/09/2025 08:00
+ * /add Leer libro - Filosofía - 21/09/2025 08:
  *
  * @param {object} ctx - Contexto del bot
  */
@@ -45,6 +45,7 @@ export const addTask = async (ctx) => {
     // ===============================
     // Parseo de fecha con LUXON
     // ===============================
+    console.log(`📩 rawDateTime recibido: [${rawDateTime}]`)
     const dateFormats = [
       'dd/MM/yy HH:mm',
       'dd/MM/yyyy HH:mm',
@@ -57,6 +58,9 @@ export const addTask = async (ctx) => {
       const luxonDate = DateTime.fromFormat(rawDateTime, format, {
         zone: 'Europe/Madrid'
       })
+      console.log(
+        `🧪 Probando formato: ${format} → ${luxonDate.isValid ? '✅ válido' : '❌ inválido'}`
+      )
       if (luxonDate.isValid) {
         parsedDate = luxonDate.toJSDate()
         break
