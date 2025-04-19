@@ -34,7 +34,9 @@ export const addTask = async (ctx) => {
 
     const taskName = parts[0]
     const taskDescription = parts.length === 3 ? parts[1] : ''
-    const rawDateTime = parts.length === 3 ? parts[2] : parts[1]
+    const rawDateTime = (parts.length === 3 ? parts[2] : parts[1])
+      .replace(/\s+/g, ' ')
+      .trim()
 
     if (!taskName) {
       return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
