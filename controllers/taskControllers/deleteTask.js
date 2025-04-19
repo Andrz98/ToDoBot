@@ -1,4 +1,6 @@
 import { findUserTaskByName } from '../../helpers/userTaskBynameController/findUserTaskByName.js'
+// Debo importar { Task } para poder borrar la tarea en la base de datos
+
 /**
  * Controlador para eliminar una tarea específica /delete
  *
