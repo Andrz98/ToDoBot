@@ -14,6 +14,10 @@ import { findUserTaskByName } from '../../helpers/userTaskBynameController/findU
 
 export const editTask = async (ctx) => {
   try {
+    // Validación del contexto
+    if (!ctx.message || !ctx.from) {
+      return ctx.reply('🤯 Error interno: Contexto inválido.')
+    }
     // Extraigo el ID del usuario
     const userId = ctx.from.id
 
