@@ -1,4 +1,4 @@
-import { AuthorizedUser } from '../../models/authorizedUser'
+import { AuthorizedUser } from '../../models/authorizedUser.js'
 
 /**
  * Retorna la zona horaria del usuario
