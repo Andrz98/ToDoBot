@@ -11,8 +11,11 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
  */
 export const deleteTask = async (ctx) => {
   try {
+    console.log('📦 deleteTask - ctx.message:', ctx.message)
+    console.log('📦 deleteTask - ctx:', JSON.stringify(ctx, null, 2))
     // Validación del contexto
-    if (!ctx.message || !ctx.message.text || !ctx.from || !ctx.from.id) {
+    if (!ctx.message || typeof ctx.message.text !== 'string' || !ctx.from?.id) {
+      console.warn('⚠️ /delete recibido sin texto válido:', ctx.message)
       return ctx.reply('🤯 El mensaje recibido no es válido.')
     }
 
