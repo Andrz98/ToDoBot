@@ -93,7 +93,16 @@ export const editTask = async (ctx) => {
     } else {
       // ✅ Caso línea única (fecha inline)
       const inline = lines[0].trim()
-      const partes = inline.split(' - ')
+
+      // Manejo especial para cuando el nombre es solo un guión
+      let partes = []
+      if (inline.startsWith('- ')) {
+        // Si comienza con un guión, es un caso especial
+        partes = ['-'].concat(inline.substring(2).split(' - '))
+        console.log('🔎 Caso especial - nombre con guión:', partes)
+      } else {
+        partes = inline.split(' - ')
+      }
 
       // Intentar detectar si la última parte es una fecha válida
       const lastPart = partes[partes.length - 1].trim()
@@ -114,9 +123,10 @@ export const editTask = async (ctx) => {
         // Si es una fecha, quitamos esa parte y procesamos los campos restantes
         partes.pop() // Eliminamos la fecha del array
 
-        const oldName = partes[0] ? partes[0].trim() : ''
+        // Importante: para oldName respetamos si es un guión
+        const oldName = partes[0] !== undefined ? partes[0].trim() : ''
 
-        // Importante: verificar que los guiones solitarios no se consideren valores válidos
+        // Para newName y newDescription, los guiones solitarios se convierten a cadenas vacías
         const newName =
           partes.length > 1
             ? partes[1].trim() === '-'
