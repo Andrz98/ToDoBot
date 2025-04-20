@@ -14,13 +14,14 @@ export const deleteTask = async (ctx) => {
     console.log('📦 deleteTask - ctx.message:', ctx.message)
     console.log('📦 deleteTask - ctx:', JSON.stringify(ctx, null, 2))
     // Validación del contexto
-    if (!ctx.message || typeof ctx.message.text !== 'string' || !ctx.from?.id) {
+    const rawText = ctx.message.text
+    if (!rawText || !ctx.from?.id) {
       console.warn('⚠️ /delete recibido sin texto válido:', ctx.message)
       return ctx.reply('🤯 El mensaje recibido no es válido.')
     }
 
     const userId = ctx.from.id
-    const input = ctx.message.text.replace(/^\/delete\s*/, '').trim()
+    const input = rawText.replace(/^\/delete\s*/, '').trim()
 
     // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {

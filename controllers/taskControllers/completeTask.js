@@ -12,22 +12,27 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 export const completeTask = async (ctx) => {
   try {
     // Validación de contexto
-    if (!ctx.message || !ctx.message.text || !ctx.from || !ctx.from.id) {
-      return ctx.reply('🤯 El mensaje recibido no es válido.')
-    }
 
     const userId = ctx.from.id
-    const input = ctx.message.text.replace(/^\/done\s*/, '').trim()
 
-    // Verifico si el usuario está autorizado a usar el bot
-    if (!(await isUserAuthorized(ctx))) {
-      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
+    const rawText = ctx.text
+    if (!rawText) {
+      return ctx.reply(
+        '🤯 No se pudo procesar tu mensaje. Asegúrate de que sea texto plano.'
+      )
     }
+
+    const input = rawText.replace(/^\/done\s*/, '').trim()
 
     if (!input) {
       return ctx.reply(
         '🤯 Debes proporcionar el nombre exacto de la tarea. Ejemplo:\n/done Comprar pan'
       )
+    }
+
+    // Verifico si el usuario está autorizado a usar el bot
+    if (!(await isUserAuthorized(ctx))) {
+      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
     const taskName = input

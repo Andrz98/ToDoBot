@@ -18,7 +18,7 @@ import { DateTime } from 'luxon'
  */
 export const editTask = async (ctx) => {
   try {
-    if (!ctx.message || !ctx.message.text || !ctx.from || !ctx.from.id) {
+    if (!ctx.text || !ctx.from || !ctx.from.id) {
       return ctx.reply('🤯 Error interno: El mensaje recibido no es válido.')
     }
 
@@ -28,7 +28,7 @@ export const editTask = async (ctx) => {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
-    const input = ctx.message.text.replace(/^\/edit\s*/, '').trim()
+    const input = ctx.text.replace(/^\/edit\s*/, '').trim()
     const parts = input.split(' - ').map((p) => p.trim())
 
     if (parts.length < 2) {

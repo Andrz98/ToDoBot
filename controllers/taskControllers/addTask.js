@@ -10,7 +10,7 @@ import { DateTime } from 'luxon'
  *
  * Ejemplos válidos:
  * /add Comprar pan - - 20/09/25
- * /add Leer libro - Filosofía - 21/09/2025 08:
+ * /add Leer libro - Filosofía - 21/09/2025 08:00
  *
  * @param {object} ctx - Contexto del bot
  */
@@ -23,7 +23,15 @@ export const addTask = async (ctx) => {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
-    const input = ctx.message.text.replace(/^\/add\s*/, '').trim()
+    // Verifico si el mensaje contiene el formato correcto
+    const rawText = ctx.text
+    if (!rawText) {
+      return ctx.reply(
+        '🤯 No se pudo procesar tu mensaje. Asegúrate de que sea texto plano.'
+      )
+    }
+
+    const input = rawText.replace(/^\/add\s*/, '').trim()
     const parts = input.split(/-\s*/).map((p) => p.trim())
     console.log('📚 PARTES:', parts)
 
