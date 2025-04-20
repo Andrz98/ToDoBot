@@ -97,9 +97,10 @@ export const editTask = async (ctx) => {
 
       if (partes.length >= 3) {
         const rawDateTime = partes.pop().trim()
-        const [oldName = '', newName = '', newDescription = ''] = partes.map(
-          (p) => p.trim()
-        )
+        const camposPrevios = partes.map((p) => p.trim())
+        const oldName = camposPrevios[0] || ''
+        const newName = camposPrevios[1] || ''
+        const newDescription = camposPrevios[2] || ''
         campos = [oldName, newName, newDescription]
 
         for (const format of dateFormats) {
