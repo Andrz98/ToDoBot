@@ -28,19 +28,17 @@ export const editTask = async (ctx) => {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
-    const input = ctx.text.replace(/^\/edit\s*/, '').trim()
-    const parts = input.split(' - ').map((p) => p.trim())
+    const rawText = ctx.text.replace(/^\/edit\s*/, '').trim()
+    const splitIndex = rawText.lastIndexOf(' - ')
 
-    if (parts.length < 2) {
-      return ctx.reply(
-        '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
-      )
-    }
-
-    const oldName = parts[0]
-    const newName = parts[1] || ''
-    const newDescription = parts[2] || ''
-    const rawDateTime = parts[3] || ''
+    const rawDateTime = rawText.slice(splitIndex + 3).trim()
+    const fields = rawText
+      .slice(0, splitIndex)
+      .split(' - ')
+      .map((p) => p.trim())
+    const oldName = fields[0] || ''
+    const newName = fields[1] || ''
+    const newDescription = fields[2] || ''
 
     const task = await findTaskForController(userId, oldName)
     if (!task) {

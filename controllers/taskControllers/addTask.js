@@ -31,21 +31,27 @@ export const addTask = async (ctx) => {
       )
     }
 
-    const input = rawText.replace(/^\/add\s*/, '').trim()
-    const parts = input.split(/-\s*/).map((p) => p.trim())
-    console.log('📚 PARTES:', parts)
-
-    if (parts.length < 2) {
+    // Debo seprar la fecha desde el último ' - '
+    const splitIndex = rawText.lastIndexOf(' - ')
+    if (splitIndex === -1) {
       return ctx.reply(
         '🤯 Formato incorrecto. Usa:\n/add Nombre - [Descripción] - Fecha'
       )
     }
 
-    const taskName = parts[0]
-    const taskDescription = parts.length === 3 ? parts[1] : ''
-    const rawDateTime = (parts.length === 3 ? parts[2] : parts[1])
-      .replace(/\s+/g, ' ')
+    const taskNameAndDescription = rawText
+      .slice(0, splitIndex)
+      .replace(/^\/add\s*/, '')
       .trim()
+    const rawDateTime = rawText.slice(splitIndex + 3).trim()
+
+    const [taskName, taskDescription = ''] = taskNameAndDescription
+      .split(' - ')
+      .map((p) => p.trim())
+
+    if (!taskName) {
+      return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
+    }
 
     if (!taskName) {
       return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
