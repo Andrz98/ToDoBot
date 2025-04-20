@@ -18,27 +18,65 @@ import { DateTime } from 'luxon'
  */
 export const editTask = async (ctx) => {
   try {
+    // Validación del mensaje recibido
     if (!ctx.text || !ctx.from || !ctx.from.id) {
       return ctx.reply('🤯 Error interno: El mensaje recibido no es válido.')
     }
 
     const userId = ctx.from.id
 
+    // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
-    const rawText = ctx.text.replace(/^\/edit\s*/, '').trim()
-    const splitIndex = rawText.lastIndexOf(' - ')
+    // Elimino el comando /edit
+    const content = ctx.text.replace(/^\/edit\s*/i, '').trim()
 
-    const rawDateTime = rawText.slice(splitIndex + 3).trim()
-    const fields = rawText
-      .slice(0, splitIndex)
+    // Separo el mensaje por líneas y limpio vacíos
+    const lines = content
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line !== '')
+
+    // ===============================
+    // Parseo de fecha con LUXON
+    // ===============================
+    const dateFormats = [
+      'dd/MM/yy HH:mm',
+      'dd/MM/yyyy HH:mm',
+      'dd/MM/yy',
+      'dd/MM/yyyy'
+    ]
+    let parsedDate = null
+    let dateLineIndex = -1
+
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const candidate = lines[i]
+      for (const format of dateFormats) {
+        const luxonDate = DateTime.fromFormat(candidate, format, {
+          zone: 'Europe/Madrid'
+        })
+        if (luxonDate.isValid) {
+          parsedDate = luxonDate.toJSDate()
+          dateLineIndex = i
+          break
+        }
+      }
+      if (parsedDate) {
+        break
+      }
+    }
+
+    // Separo nombre antiguo, nuevo nombre, nueva descripción
+    const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
+    const [oldName, newName = '', newDescription = ''] = contentWithoutDate
       .split(' - ')
       .map((p) => p.trim())
-    const oldName = fields[0] || ''
-    const newName = fields[1] || ''
-    const newDescription = fields[2] || ''
+
+    if (!oldName) {
+      return ctx.reply('🤯 Debes proporcionar el nombre original de la tarea.')
+    }
 
     const task = await findTaskForController(userId, oldName)
     if (!task) {
@@ -68,32 +106,8 @@ export const editTask = async (ctx) => {
       responseParts.push(`🔸 Descripción: ${newDescription}`)
     }
 
-    // Parseo con Luxon
-    let parsedDate
-    if (rawDateTime) {
-      const dateFormats = [
-        'dd/MM/yy HH:mm',
-        'dd/MM/yyyy HH:mm',
-        'dd/MM/yy',
-        'dd/MM/yyyy'
-      ]
-
-      for (const format of dateFormats) {
-        const luxonDate = DateTime.fromFormat(rawDateTime, format, {
-          zone: 'Europe/Madrid'
-        })
-        if (luxonDate.isValid) {
-          parsedDate = luxonDate.toJSDate()
-          break
-        }
-      }
-
-      if (!parsedDate) {
-        return ctx.reply(
-          '📆 La fecha no es válida. Usa el formato DD/MM/AAAA [HH:mm]'
-        )
-      }
-
+    // Valido y actualizo fecha si se incluyó
+    if (parsedDate) {
       if (parsedDate < new Date()) {
         return ctx.reply('⌚ La nueva fecha debe ser futura.')
       }

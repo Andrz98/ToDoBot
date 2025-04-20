@@ -31,31 +31,14 @@ export const addTask = async (ctx) => {
       )
     }
 
-    // Debo seprar la fecha desde el último ' - '
-    const splitIndex = rawText.lastIndexOf(' - ')
-    if (splitIndex === -1) {
-      return ctx.reply(
-        '🤯 Formato incorrecto. Usa:\n/add Nombre - [Descripción] - Fecha'
-      )
-    }
+    // Elimino el comando /add del contenido
+    const content = rawText.replace(/^\/add\s*/i, '').trim()
 
-    const taskNameAndDescription = rawText
-      .slice(0, splitIndex)
-      .replace(/^\/add\s*/, '')
-      .trim()
-    const rawDateTime = rawText.slice(splitIndex + 3).trim()
-
-    const [taskName, taskDescription = ''] = taskNameAndDescription
-      .split(' - ')
-      .map((p) => p.trim())
-
-    if (!taskName) {
-      return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
-    }
-
-    if (!taskName) {
-      return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
-    }
+    // Separo el mensaje en líneas y filtro vacías
+    const lines = content
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line !== '')
 
     // ===============================
     // Parseo de fecha con LUXON
@@ -66,14 +49,22 @@ export const addTask = async (ctx) => {
       'dd/MM/yy',
       'dd/MM/yyyy'
     ]
-    let parsedDate
+    let parsedDate = null
+    let dateLineIndex = -1
 
-    for (const format of dateFormats) {
-      const luxonDate = DateTime.fromFormat(rawDateTime, format, {
-        zone: 'Europe/Madrid'
-      })
-      if (luxonDate.isValid) {
-        parsedDate = luxonDate.toJSDate()
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const candidate = lines[i]
+      for (const format of dateFormats) {
+        const luxonDate = DateTime.fromFormat(candidate, format, {
+          zone: 'Europe/Madrid'
+        })
+        if (luxonDate.isValid) {
+          parsedDate = luxonDate.toJSDate()
+          dateLineIndex = i
+          break
+        }
+      }
+      if (parsedDate) {
         break
       }
     }
@@ -88,10 +79,19 @@ export const addTask = async (ctx) => {
       return ctx.reply('⌚ La fecha debe ser posterior a la actual.')
     }
 
+    // Extraigo título y descripción
+    const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
+    const [taskName, ...descriptionLines] = contentWithoutDate.split(' - ')
+    const taskDescription = descriptionLines.join(' - ').trim()
+
+    if (!taskName || taskName.length < 2) {
+      return ctx.reply('🤯 Debes proporcionar el nombre de la tarea.')
+    }
+
     // Creo una nueva instancia del modelo task
     const newTask = new Task({
       userId,
-      name: taskName,
+      name: taskName.trim(),
       description: taskDescription,
       reminderAt: parsedDate
     })
@@ -100,9 +100,11 @@ export const addTask = async (ctx) => {
 
     // Envío confirmación
     return ctx.reply(
-      `<b>🫡 Tarea registrada:</b> "${taskName}"` +
+      `<b>🫡 Tarea registrada:</b> "${taskName.trim()}"` +
         (taskDescription ? `\n<b>🔸 Descripción:</b> ${taskDescription}` : '') +
-        `\n<b>📅 Recordatorio:</b> ${DateTime.fromJSDate(parsedDate, { zone: 'Europe/Madrid' }).toLocaleString(DateTime.DATETIME_FULL)}`,
+        `\n<b>📅 Recordatorio:</b> ${DateTime.fromJSDate(parsedDate, {
+          zone: 'Europe/Madrid'
+        }).toLocaleString(DateTime.DATETIME_FULL)}`,
       { parse_mode: 'HTML' }
     )
   } catch (error) {
