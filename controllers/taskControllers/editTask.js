@@ -52,9 +52,11 @@ export const editTask = async (ctx) => {
     let dateLineIndex = -1
 
     console.log('📋 LÍNEAS ENTRANTES:', lines)
+
     for (let i = lines.length - 1; i >= 0; i--) {
       const candidate = lines[i]
       console.log('🧪 Evaluando línea:', candidate)
+
       for (const format of dateFormats) {
         const luxonDate = DateTime.fromFormat(candidate, format, {
           zone: 'Europe/Madrid'
@@ -73,18 +75,48 @@ export const editTask = async (ctx) => {
           break
         }
       }
+
       if (parsedDate) {
         break
       }
     }
 
     console.log('📎 dateLineIndex:', dateLineIndex)
-    // Separo nombre antiguo, nuevo nombre, nueva descripción
-    const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
+
+    let contentWithoutDate = ''
+    let campos = []
+
+    if (dateLineIndex >= 0) {
+      // Caso multilineal (fecha en línea separada)
+      contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
+      campos = contentWithoutDate.split(' - ').map((p) => p.trim())
+    } else {
+      // Caso línea única con fecha inline
+      const inline = lines[0].trim()
+      const lastDashIndex = inline.lastIndexOf(' - ')
+      if (lastDashIndex === -1) {
+        return ctx.reply(
+          '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
+        )
+      }
+
+      const beforeDate = inline.slice(0, lastDashIndex).trim()
+      const rawDateTime = inline.slice(lastDashIndex + 3).trim()
+
+      campos = beforeDate.split(' - ').map((p) => p.trim())
+
+      for (const format of dateFormats) {
+        const luxonDate = DateTime.fromFormat(rawDateTime, format, {
+          zone: 'Europe/Madrid'
+        })
+        if (luxonDate.isValid) {
+          parsedDate = luxonDate.toJSDate()
+          break
+        }
+      }
+    }
+
     console.log('📂 contentWithoutDate:', contentWithoutDate)
-    // Fallback si no hay salto de línea y la fecha viene inline
-    const fallback = dateLineIndex === 0 ? lines[0] : contentWithoutDate
-    const campos = fallback.split(' - ').map((p) => p.trim())
     console.log('🧱 Campos detectados:', campos)
 
     if (!campos[0]) {
