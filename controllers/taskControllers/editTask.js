@@ -83,42 +83,44 @@ export const editTask = async (ctx) => {
 
     console.log('📎 dateLineIndex:', dateLineIndex)
 
-    let contentWithoutDate = ''
     let campos = []
 
     if (dateLineIndex >= 0) {
-      // Caso multilineal (fecha en línea separada)
-      contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
+      // ✅ Caso multilineal (fecha en línea separada)
+      const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
       campos = contentWithoutDate.split(' - ').map((p) => p.trim())
+      console.log('📂 contentWithoutDate:', contentWithoutDate)
     } else {
-      // Caso línea única con fecha inline
+      // ✅ Caso línea única (fecha inline)
       const inline = lines[0].trim()
-      const lastDashIndex = inline.lastIndexOf(' - ')
-      if (lastDashIndex === -1) {
+      const partes = inline.split(' - ')
+
+      if (partes.length >= 3) {
+        const rawDateTime = partes.pop().trim()
+        const [oldName = '', newName = '', newDescription = ''] = partes.map(
+          (p) => p.trim()
+        )
+        campos = [oldName, newName, newDescription]
+
+        for (const format of dateFormats) {
+          const luxonDate = DateTime.fromFormat(rawDateTime, format, {
+            zone: 'Europe/Madrid'
+          })
+          if (luxonDate.isValid) {
+            parsedDate = luxonDate.toJSDate()
+            break
+          }
+        }
+      } else {
         return ctx.reply(
           '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
         )
       }
-
-      const beforeDate = inline.slice(0, lastDashIndex).trim()
-      const rawDateTime = inline.slice(lastDashIndex + 3).trim()
-
-      campos = beforeDate.split(' - ').map((p) => p.trim())
-
-      for (const format of dateFormats) {
-        const luxonDate = DateTime.fromFormat(rawDateTime, format, {
-          zone: 'Europe/Madrid'
-        })
-        if (luxonDate.isValid) {
-          parsedDate = luxonDate.toJSDate()
-          break
-        }
-      }
     }
 
-    console.log('📂 contentWithoutDate:', contentWithoutDate)
     console.log('🧱 Campos detectados:', campos)
 
+    // Validación precisa del nombre obligatorio
     if (!campos[0]) {
       return ctx.reply(
         '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
