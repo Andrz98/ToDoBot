@@ -95,24 +95,29 @@ export const editTask = async (ctx) => {
       const inline = lines[0].trim()
       const partes = inline.split(' - ')
 
-      if (partes.length >= 3) {
-        const rawDateTime = partes.pop().trim()
-        const camposPrevios = partes.map((p) => p.trim())
-        const oldName = camposPrevios[0] || ''
-        const newName = camposPrevios[1] || ''
-        const newDescription = camposPrevios[2] || ''
-        campos = [oldName, newName, newDescription]
+      // Intentar detectar si la última parte es una fecha válida
+      const lastPart = partes[partes.length - 1].trim()
+      let esUnaFecha = false
 
-        for (const format of dateFormats) {
-          const luxonDate = DateTime.fromFormat(rawDateTime, format, {
-            zone: 'Europe/Madrid'
-          })
-          if (luxonDate.isValid) {
-            parsedDate = luxonDate.toJSDate()
-            break
-          }
+      for (const format of dateFormats) {
+        const luxonDate = DateTime.fromFormat(lastPart, format, {
+          zone: 'Europe/Madrid'
+        })
+        if (luxonDate.isValid) {
+          parsedDate = luxonDate.toJSDate()
+          esUnaFecha = true
+          break
         }
+      }
+
+      if (esUnaFecha) {
+        // Si es una fecha, quitamos esa parte y procesamos los campos restantes
+        const oldName = partes[0] || ''
+        const newName = partes[1] || ''
+        const newDescription = partes[2] || ''
+        campos = [oldName, newName, newDescription]
       } else {
+        // Si no hay fecha válida al final
         return ctx.reply(
           '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
         )
