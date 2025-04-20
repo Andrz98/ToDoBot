@@ -52,18 +52,25 @@ export const addTask = async (ctx) => {
     let parsedDate = null
     let dateLineIndex = -1
 
+    console.log('📋 TODAS LAS LÍNEAS:', lines)
     for (let i = lines.length - 1; i >= 0; i--) {
-      const candidate = lines[i]
+      const original = lines[i]
+      const candidate = original.replace(/^[-\s]+/, '') // <-- Sanear la línea de entrada
+      console.log('🧪 LINEA EVALUADA:', candidate)
+
       for (const format of dateFormats) {
         const luxonDate = DateTime.fromFormat(candidate, format, {
           zone: 'Europe/Madrid'
         })
+
         if (luxonDate.isValid) {
           parsedDate = luxonDate.toJSDate()
           dateLineIndex = i
+          console.log('✅ FECHA DETECTADA:', candidate)
           break
         }
       }
+
       if (parsedDate) {
         break
       }
