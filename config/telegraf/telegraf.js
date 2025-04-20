@@ -5,7 +5,7 @@ import { pingCommand } from '../../controllers/startController/pingController.js
 import taskController from '../../controllers/taskControllers/taskController.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { startCommand } from '../../controllers/startController/startController.js'
-import { setTimezone } from '../../controllers/startController/setTimezoneController.js'
+import { setTimezone } from '../../controllers/userTimezoneController/setTimezone.js'
 
 import { rateLimit } from '../../middlewares/secure/rateLimit.js'
 import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
