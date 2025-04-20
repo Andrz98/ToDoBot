@@ -11,8 +11,12 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
  */
 export const deleteTask = async (ctx) => {
   try {
-    console.log('📦 deleteTask - ctx.message:', ctx.message)
-    console.log('📦 deleteTask - ctx:', JSON.stringify(ctx, null, 2))
+    console.log('📦 deleteTask - preview:', {
+      message_id: ctx.message?.message_id,
+      text: ctx.message?.text,
+      from: ctx.from?.id
+    })
+
     // Validación del contexto
     const rawText = ctx.message.text
     if (!rawText || !ctx.from?.id) {
