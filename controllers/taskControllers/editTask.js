@@ -70,6 +70,12 @@ export const editTask = async (ctx) => {
 
     // Separo nombre antiguo, nuevo nombre, nueva descripción
     const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
+
+    if (!contentWithoutDate || !contentWithoutDate.includes(' - ')) {
+      return ctx.reply(
+        '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
+      )
+    }
     const [oldName, newName = '', newDescription = ''] = contentWithoutDate
       .split(' - ')
       .map((p) => p.trim())
