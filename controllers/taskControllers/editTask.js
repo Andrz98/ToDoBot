@@ -71,9 +71,10 @@ export const editTask = async (ctx) => {
     // Separo nombre antiguo, nuevo nombre, nueva descripción
     const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
 
-    const campos = contentWithoutDate.split(' - ').map((p) => p.trim())
+    // Fallback si no hay salto de línea y la fecha viene inline
+    const fallback = dateLineIndex === 0 ? lines[0] : contentWithoutDate
+    const campos = fallback.split(' - ').map((p) => p.trim())
 
-    // Validación precisa del nombre obligatorio
     if (!campos[0]) {
       return ctx.reply(
         '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
