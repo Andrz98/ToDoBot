@@ -51,8 +51,10 @@ export const editTask = async (ctx) => {
     let parsedDate = null
     let dateLineIndex = -1
 
+    console.log('📋 LÍNEAS ENTRANTES:', lines)
     for (let i = lines.length - 1; i >= 0; i--) {
       const candidate = lines[i]
+      console.log('🧪 Evaluando línea:', candidate)
       for (const format of dateFormats) {
         const luxonDate = DateTime.fromFormat(candidate, format, {
           zone: 'Europe/Madrid'
@@ -60,6 +62,14 @@ export const editTask = async (ctx) => {
         if (luxonDate.isValid) {
           parsedDate = luxonDate.toJSDate()
           dateLineIndex = i
+          console.log(
+            '✅ Fecha válida detectada:',
+            candidate,
+            '| Formato:',
+            format,
+            '| Index:',
+            i
+          )
           break
         }
       }
@@ -68,12 +78,14 @@ export const editTask = async (ctx) => {
       }
     }
 
+    console.log('📎 dateLineIndex:', dateLineIndex)
     // Separo nombre antiguo, nuevo nombre, nueva descripción
     const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
-
+    console.log('📂 contentWithoutDate:', contentWithoutDate)
     // Fallback si no hay salto de línea y la fecha viene inline
     const fallback = dateLineIndex === 0 ? lines[0] : contentWithoutDate
     const campos = fallback.split(' - ').map((p) => p.trim())
+    console.log('🧱 Campos detectados:', campos)
 
     if (!campos[0]) {
       return ctx.reply(
