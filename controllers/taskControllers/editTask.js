@@ -112,10 +112,22 @@ export const editTask = async (ctx) => {
 
       if (esUnaFecha) {
         // Si es una fecha, quitamos esa parte y procesamos los campos restantes
-        const oldName = partes[0] || ''
-        const newName = partes[1] || ''
-        const newDescription = partes[2] || ''
+        partes.pop() // Eliminamos la fecha del array
+
+        // Asegurarse de que campos vacíos se interpreten correctamente
+        const oldName = partes[0] ? partes[0].trim() : ''
+        const newName = partes.length > 1 && partes[1] ? partes[1].trim() : ''
+        const newDescription =
+          partes.length > 2 && partes[2] ? partes[2].trim() : ''
+
         campos = [oldName, newName, newDescription]
+
+        // Añadir log para debug
+        console.log('🔍 Campos después de procesar:', {
+          oldName,
+          newName,
+          newDescription
+        })
       } else {
         // Si no hay fecha válida al final
         return ctx.reply(
