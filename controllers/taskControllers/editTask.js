@@ -33,6 +33,14 @@ export const editTask = async (ctx) => {
     // Elimino el comando /edit
     const content = ctx.text.replace(/^\/edit\s*/i, '').trim()
 
+    // Validación específica para cuando el usuario solo envía el comando sin parámetros
+    if (!content || content === ':') {
+      return ctx.reply(
+        '🧾 <b>Formato correcto:</b>\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]\n\n<b>Ejemplos:</b>\n/edit Comprar pan - - - 22/04/25 19:00\n/edit Tarea vieja - Tarea nueva - - 23/04/2025 09:30',
+        { parse_mode: 'HTML' }
+      )
+    }
+
     // Separo el mensaje por líneas y limpio vacíos
     const lines = content
       .split('\n')
