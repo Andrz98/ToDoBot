@@ -19,13 +19,13 @@ export const startCommand = async (ctx) => {
     const authorized = await isUserAuthorized(ctx)
     const userTimezone = await getUserTimezone(ctx.from.id)
     const tzMessage =
-      userTimezone === '<b>Europe/Madrid</b>'
-        ? '🌐 Actualmente estás usando la zona horaria por defecto: <b>Europe/Madrid.\n</b>'
-        : `🌎 Tu zona horaria actual es: <b>${userTimezone}\n</b>`
+      userTimezone === 'Europe/Madrid'
+        ? '🌐 Actualmente estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.\n'
+        : `🌎 Tu zona horaria actual es: <b>${userTimezone}</b>\n`
 
     const suggestionMessage =
-      userTimezone === '<b>Europe/Madrid</b>'
-        ? '🛫 Puedes cambiarla con: <b>\n/settimezone America/Bogota\n\n </b>'
+      userTimezone === 'Europe/Madrid'
+        ? '🛫 Puedes cambiarla con:\n<b>/settimezone America/Bogota</b>\n\n'
         : ''
 
     if (authorized) {
