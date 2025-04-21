@@ -21,11 +21,11 @@ export const startCommand = async (ctx) => {
     const tzMessage =
       userTimezone === 'Europe/Madrid'
         ? '🌐 Actualmente estás usando la zona horaria por defecto: Europe/Madrid.\n'
-        : `🌎 Tu zona horaria actual es: ${userTimezone}\n`
+        : `🌎 Tu zona horaria actual es: <b>${userTimezone}\n </b>`
 
     const suggestionMessage =
       userTimezone === 'Europe/Madrid'
-        ? '🛫 Puedes cambiarla con:\n/settimezone America/Bogota\n\n'
+        ? '🛫 Puedes cambiarla con: <b>\n/settimezone America/Bogota\n\n </b>'
         : ''
 
     if (authorized) {
@@ -40,7 +40,8 @@ export const startCommand = async (ctx) => {
           '/done - Marcar una tarea como completada\n' +
           '/delete - Eliminar una tarea\n' +
           '/edit - Editar una tarea existente\n' +
-          '/clear - Eliminar todas tus tareas\n'
+          '/clear - Eliminar todas tus tareas\n',
+        { parse_mode: 'HTML' }
       )
     }
 
