@@ -35,6 +35,7 @@ export const startCommand = async (ctx) => {
           tzMessage +
           suggestionMessage +
           'Los comandos disponibles son:\n' +
+          '/settimezone - Cambiar tu zona horaria\n' +
           '/add - Añadir una nueva tarea\n' +
           '/list - Ver tus tareas activas\n' +
           '/done - Marcar una tarea como completada\n' +
