@@ -1,32 +1,21 @@
-import { DateTime } from 'luxon'
-
 /**
- * Formatea una fecha en formato español de Madrid
+ * Formatea una fecha en español.
  *
- * @param {Date} date - Fecha a formatear
- * @returns {string} - Fecha formateada en español (Madrid)
+ * @param {Date}   date      - Fecha a formatear
+ * @param {string} timeZone  - Zona IANA (por defecto Europe/Madrid)
+ * @returns {string}
  */
-export const formatDateEsMadrid = (date) => {
+export const formatDateEs = (date, timeZone = 'Europe/Madrid') => {
   if (!date) {
     return '(sin fecha)'
   }
-
-  try {
-    const dt = DateTime.fromJSDate(date).setZone('Europe/Madrid')
-
-    return dt.toLocaleString(
-      {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      },
-      { locale: 'es' }
-    )
-  } catch (error) {
-    console.error('Error formateando fecha:', error)
-    return date.toString()
-  }
+  return date.toLocaleString('es-ES', {
+    timeZone,
+    dateStyle: 'full', // jueves, 24 de abril de 2025
+    timeStyle: 'short' // 22:00
+  })
 }
+
+/* Atajos opcionales */
+export const formatDateEsMadrid = (d) => formatDateEs(d, 'Europe/Madrid')
+export const formatDateEsBogota = (d) => formatDateEs(d, 'America/Bogota')

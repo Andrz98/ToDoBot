@@ -43,6 +43,11 @@ export const editTask = async (ctx) => {
       return replyMessages.nameTooLong(ctx)
     }
 
+    // Validación para asegurar que el nombre no esté vacío si se proporciona
+    if (parsed.newName === '') {
+      return replyMessages.emptyName(ctx)
+    }
+
     // Búsqueda de la tarea existente
     const task = await findTaskForController(userId, parsed.oldName)
     if (!task) {
