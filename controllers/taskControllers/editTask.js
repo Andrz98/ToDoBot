@@ -1,239 +1,49 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
-import { DateTime } from 'luxon'
+import { parseEditCommand } from '../../helpers/edit/parseEditCommand.js'
+import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 
-/**
- * Controlador para editar una tarea /edit
- *
- * Formato obligatorio:
- * /edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]
- *
- * Ejemplos válidos:
- * /edit Comprar pan - - - 22/04/25 19:00
- * /edit Tarea vieja - Tarea nueva - - 23/04/2025 09:30
- *
- * Todos los campos excepto el nombre original son opcionales.
- *
- * @param {object} ctx - Objeto de contexto proporcionado por telegraf
- */
 export const editTask = async (ctx) => {
   try {
-    // Validación del mensaje recibido
-    if (!ctx.text || !ctx.from || !ctx.from.id) {
-      return ctx.reply('🤯 Error interno: El mensaje recibido no es válido.')
+    if (!ctx.text || !ctx.from?.id) {
+      return ctx.reply('🤯 El mensaje recibido no es válido.')
     }
 
     const userId = ctx.from.id
-
-    // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
-    // Elimino el comando /edit
-    const content = ctx.text.replace(/^\/edit\s*/i, '').trim()
-
-    // Validación específica para cuando el usuario solo envía el comando sin parámetros
-    if (!content || content === ':') {
+    const parsed = parseEditCommand(ctx.text)
+    if (!parsed.isValid) {
       return ctx.reply(
-        '🧾 <b>Formato correcto:</b>\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]\n\n<b>Ejemplos:</b>\n/edit Comprar pan - - - 22/04/25 19:00\n/edit Tarea vieja - Tarea nueva - - 23/04/2025 09:30',
+        '🧾 Formato correcto:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]',
         { parse_mode: 'HTML' }
       )
     }
 
-    // Separo el mensaje por líneas y limpio vacíos
-    const lines = content
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line !== '')
-
-    // ===============================
-    // Parseo de fecha con LUXON
-    // ===============================
-    const dateFormats = [
-      'dd/MM/yy HH:mm',
-      'dd/MM/yyyy HH:mm',
-      'dd/MM/yy',
-      'dd/MM/yyyy'
-    ]
-    let parsedDate = null
-    let dateLineIndex = -1
-
-    console.log('📋 LÍNEAS ENTRANTES:', lines)
-
-    for (let i = lines.length - 1; i >= 0; i--) {
-      const candidate = lines[i]
-      console.log('🧪 Evaluando línea:', candidate)
-
-      for (const format of dateFormats) {
-        const luxonDate = DateTime.fromFormat(candidate, format, {
-          zone: 'Europe/Madrid'
-        })
-        if (luxonDate.isValid) {
-          parsedDate = luxonDate.toJSDate()
-          dateLineIndex = i
-          console.log(
-            '✅ Fecha válida detectada:',
-            candidate,
-            '| Formato:',
-            format,
-            '| Index:',
-            i
-          )
-          break
-        }
-      }
-
-      if (parsedDate) {
-        break
-      }
-    }
-
-    console.log('📎 dateLineIndex:', dateLineIndex)
-
-    let campos = []
-
-    if (dateLineIndex >= 0) {
-      // ✅ Caso multilineal (fecha en línea separada)
-      const contentWithoutDate = lines.slice(0, dateLineIndex).join('\n').trim()
-      campos = contentWithoutDate.split(' - ').map((p) => p.trim())
-      console.log('📂 contentWithoutDate:', contentWithoutDate)
-    } else {
-      // ✅ Caso línea única (fecha inline)
-      const inline = lines[0].trim()
-
-      // Manejo especial para cuando el nombre es solo un guión
-      let partes = []
-      if (inline.startsWith('- ')) {
-        // Si comienza con un guión, es un caso especial
-        partes = ['-'].concat(inline.substring(2).split(' - '))
-        console.log('🔎 Caso especial - nombre con guión:', partes)
-      } else {
-        partes = inline.split(' - ')
-      }
-
-      // Intentar detectar si la última parte es una fecha válida
-      const lastPart = partes[partes.length - 1].trim()
-      let esUnaFecha = false
-
-      for (const format of dateFormats) {
-        const luxonDate = DateTime.fromFormat(lastPart, format, {
-          zone: 'Europe/Madrid'
-        })
-        if (luxonDate.isValid) {
-          parsedDate = luxonDate.toJSDate()
-          esUnaFecha = true
-          break
-        }
-      }
-
-      if (esUnaFecha) {
-        // Si es una fecha, quitamos esa parte y procesamos los campos restantes
-        partes.pop() // Eliminamos la fecha del array
-
-        // Importante: para oldName respetamos si es un guión
-        const oldName = partes[0] !== undefined ? partes[0].trim() : ''
-
-        // Para newName y newDescription, los guiones solitarios se convierten a cadenas vacías
-        const newName =
-          partes.length > 1
-            ? partes[1].trim() === '-'
-              ? ''
-              : partes[1].trim()
-            : ''
-        const newDescription =
-          partes.length > 2
-            ? partes[2].trim() === '-'
-              ? ''
-              : partes[2].trim()
-            : ''
-
-        campos = [oldName, newName, newDescription]
-
-        console.log('🔍 Campos después de procesar:', {
-          oldName,
-          newName,
-          newDescription
-        })
-      } else {
-        // Si no hay fecha válida al final
-        return ctx.reply(
-          '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
-        )
-      }
-    }
-
-    console.log('🧱 Campos detectados:', campos)
-
-    // Validación precisa del nombre obligatorio
-    if (!campos[0]) {
-      return ctx.reply(
-        '🤯 Formato incorrecto. Usa:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]'
-      )
-    }
-
-    const [oldName, newName = '', newDescription = ''] = campos
-
-    const task = await findTaskForController(userId, oldName)
+    const task = await findTaskForController(userId, parsed.oldName)
     if (!task) {
-      return ctx.reply(`🤯 No se encontró ninguna tarea llamada "${oldName}"`)
-    }
-
-    let updated = false
-    const responseParts = []
-
-    if (
-      newName &&
-      newName !== task.name &&
-      !newName.match(/^\d{2}\/\d{2}\/\d{2,4}/)
-    ) {
-      task.name = newName
-      updated = true
-      responseParts.push(`🔺 Nuevo nombre: ${newName}`)
-    }
-
-    if (
-      newDescription &&
-      newDescription !== task.description &&
-      !newDescription.match(/^\d{2}\/\d{2}\/\d{2,4}/)
-    ) {
-      task.description = newDescription
-      updated = true
-      responseParts.push(`🔸 Descripción: ${newDescription}`)
-    }
-
-    // Valido y actualizo fecha si se incluyó
-    if (parsedDate) {
-      if (parsedDate < new Date()) {
-        return ctx.reply('⌚ La nueva fecha debe ser futura.')
-      }
-
-      task.reminderAt = parsedDate
-      updated = true
-      responseParts.push(
-        `🔹 Nueva fecha: ${parsedDate.toLocaleString('es-ES', {
-          dateStyle: 'full',
-          timeStyle: 'short'
-        })}`
+      return ctx.reply(
+        `🤯 No se encontró ninguna tarea llamada "${parsed.oldName}"`
       )
     }
 
+    const { updated, changes } = updateTaskFields(task, parsed)
     if (!updated) {
       return ctx.reply('🤯 No se encontraron cambios en la tarea.')
     }
 
     await task.save()
 
-    return ctx.reply(
-      '<b>✏️ Tarea actualizada correctamente:</b>\n' + responseParts.join('\n'),
-      { parse_mode: 'HTML' }
-    )
-  } catch (error) {
-    console.error('😵‍💫 Error al editar tarea:', error)
-    console.error(
-      '😵‍💫 Error completo:',
-      JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
-    )
-    return ctx.reply('😵‍💫 Ocurrió un error al intentar editar tu tarea.')
+    return ctx.reply('<b>✏️ Tarea actualizada:</b>\n' + changes.join('\n'), {
+      parse_mode: 'HTML'
+    })
+  } catch (err) {
+    if (err.message === 'PAST_DATE') {
+      return ctx.reply('⌚ La nueva fecha debe ser futura.')
+    }
+    console.error('😵‍💫 Error al editar tarea:', err)
+    return ctx.reply('😵‍💫 Ocurrió un error al editar la tarea.')
   }
 }

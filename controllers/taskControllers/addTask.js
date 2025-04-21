@@ -1,6 +1,8 @@
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { DateTime } from 'luxon'
+import { parseHumanDate } from '../../helpers/date/parseHumanDate.js'
+import { formatDateEsMadrid } from '../../helpers/date/formatDateEs.js'
 
 /**
  * Controlador para agregar una tarea /add
@@ -90,7 +92,7 @@ export const addTask = async (ctx) => {
               date: luxonDate.toJSDate(),
               index: i
             }
-            console.log('✅ FECHA DETECTADA:', dateStr, 'con formato:', format)
+            console.log('🗓️ FECHA DETECTADA:', dateStr, 'con formato:', format)
             break
           }
         }
@@ -109,7 +111,7 @@ export const addTask = async (ctx) => {
 
       if (explicitMatch) {
         const dateText = explicitMatch[1].trim()
-        // Intentar convertir el formato de fecha humanizado a algo que Luxon pueda entender
+        // Utilizamos nuestro helper de parseo de fechas humanizadas
         const parsedDate = parseHumanDate(dateText)
         if (parsedDate) {
           dateMatch = {
@@ -117,7 +119,7 @@ export const addTask = async (ctx) => {
             date: parsedDate,
             index: content.indexOf(explicitMatch[0])
           }
-          console.log('✅ FECHA HUMANIZADA DETECTADA:', dateText)
+          console.log('🗓️ FECHA HUMANIZADA DETECTADA:', dateText)
         }
       }
     }
@@ -182,20 +184,14 @@ export const addTask = async (ctx) => {
 
     await newTask.save()
 
-    // Configuración para formato de 24 horas con ceros a la izquierda
-    const dateTimeOptions = {
-      ...DateTime.DATETIME_FULL,
-      hour12: false,
-      hourCycle: 'h23' // Asegura el formato 00-23 para las horas
-    }
+    // Utilizamos nuestro helper de formateo de fechas en español
+    const formattedDate = formatDateEsMadrid(dateMatch.date)
 
     // Envío confirmación
     return ctx.reply(
       `<b>🫡 Tarea registrada:</b> "${taskName}"` +
         (taskDescription ? `\n<b>🔸 Descripción:</b> ${taskDescription}` : '') +
-        `\n<b>📅 Recordatorio:</b> ${DateTime.fromJSDate(dateMatch.date, {
-          zone: 'Europe/Madrid'
-        }).toLocaleString(dateTimeOptions)}`,
+        `\n<b>📅 Recordatorio:</b> ${formattedDate}`,
       { parse_mode: 'HTML' }
     )
   } catch (error) {
@@ -206,56 +202,5 @@ export const addTask = async (ctx) => {
     }
     console.error('😵‍💫 Error al añadir tarea:', error)
     return ctx.reply('😵‍💫 Ocurrió un error al añadir la tarea.')
-  }
-}
-
-/**
- * Función auxiliar para convertir fechas en formato humanizado
- * a objetos Date de JavaScript
- *
- * @param {string} humanDate - Fecha en formato humanizado (ej: "jueves, 24 de abril de 2025, 22:00")
- * @returns {Date|null} - Objeto Date o null si no se pudo parsear
- */
-function parseHumanDate(humanDate) {
-  try {
-    // Mapeo de nombres de meses en español a números
-    const monthNames = {
-      enero: 1,
-      febrero: 2,
-      marzo: 3,
-      abril: 4,
-      mayo: 5,
-      junio: 6,
-      julio: 7,
-      agosto: 8,
-      septiembre: 9,
-      octubre: 10,
-      noviembre: 11,
-      diciembre: 12
-    }
-
-    // Expresión regular para extraer día, mes, año y hora (opcional)
-    const regex =
-      /(?:.*?,\s*)?(\d{1,2})\s+de\s+([^\d,]+)\s+de\s+(\d{4})(?:,\s*(\d{1,2}):(\d{1,2}))?/i
-    const match = humanDate.match(regex)
-
-    if (match) {
-      const day = parseInt(match[1], 10)
-      const monthName = match[2].toLowerCase()
-      const year = parseInt(match[3], 10)
-      const hour = match[4] ? parseInt(match[4], 10) : 0
-      const minute = match[5] ? parseInt(match[5], 10) : 0
-
-      if (monthNames[monthName]) {
-        const month = monthNames[monthName]
-        // Crear fecha (los meses en JavaScript van de 0-11)
-        return new Date(year, month - 1, day, hour, minute)
-      }
-    }
-
-    return null
-  } catch (error) {
-    console.error('Error parseando fecha humanizada:', error)
-    return null
   }
 }
