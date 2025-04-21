@@ -11,6 +11,15 @@ export const listTasks = async (ctx) => {
     // Extraigo el ID del usuario que envió el comando
     const userId = ctx.from.id
 
+    // Validación para comando con parámetros innecesarios
+    const command = ctx.message.text.trim().toLowerCase()
+    if (command !== '/list' && command.startsWith('/list')) {
+      return ctx.reply(
+        '🧾 <b>Formato correcto:</b>\n/list - Muestra la lista de todas tus tareas pendientes',
+        { parse_mode: 'HTML' }
+      )
+    }
+
     // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')

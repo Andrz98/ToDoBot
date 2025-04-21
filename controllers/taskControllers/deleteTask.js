@@ -27,15 +27,17 @@ export const deleteTask = async (ctx) => {
     const userId = ctx.from.id
     const input = rawText.replace(/^\/delete\s*/, '').trim()
 
+    // Validación específica para cuando el usuario solo envía el comando sin parámetros
+    if (!input || input === ':') {
+      return ctx.reply(
+        '🧾 <b>Formato correcto:</b>\n/delete NombreExactoDeLaTarea\n\n<b>Ejemplo:</b>\n/delete Comprar pan',
+        { parse_mode: 'HTML' }
+      )
+    }
+
     // Verifico si el usuario está autorizado a usar el bot
     if (!(await isUserAuthorized(ctx))) {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
-    }
-
-    if (!input) {
-      return ctx.reply(
-        '🤯 Debes escribir el nombre exacto de la tarea. Ejemplo:\n/delete Comprar pan'
-      )
     }
 
     const taskName = input

@@ -34,6 +34,14 @@ export const addTask = async (ctx) => {
     // Elimino el comando /add del contenido
     const content = rawText.replace(/^\/add\s*/i, '').trim()
 
+    // Validación específica para cuando el usuario solo envía el comando sin parámetros
+    if (!content || content === ':') {
+      return ctx.reply(
+        '🧾 <b>Formato correcto:</b>\n/add Nombre - [Descripción opcional] - Fecha\n\n<b>Ejemplos:</b>\n/add Comprar pan - - 20/09/25\n/add Leer libro - Filosofía - 21/09/2025 08:00',
+        { parse_mode: 'HTML' }
+      )
+    }
+
     // Separo el mensaje en líneas y filtro vacías
     const lines = content
       .split('\n')

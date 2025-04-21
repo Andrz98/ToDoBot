@@ -18,6 +18,20 @@ export const clearTask = async (ctx) => {
       return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
     }
 
+    // Validación específica para comando vacío
+    if (command === '/clear' || command === '/confirmclear') {
+      // No hay parámetros adicionales que validar, estos comandos funcionan sin argumentos
+      // Continuamos con el flujo normal
+    } else if (
+      command.startsWith('/clear :') ||
+      command.startsWith('/confirmclear :')
+    ) {
+      return ctx.reply(
+        '🧾 <b>Formato correcto:</b>\n/clear - Solicita confirmación para eliminar todas las tareas\n/confirmclear - Elimina todas las tareas',
+        { parse_mode: 'HTML' }
+      )
+    }
+
     // /clear → Solicitud de confirmación
     if (command.startsWith('/clear')) {
       const taskCount = await Task.countDocuments({ userId })

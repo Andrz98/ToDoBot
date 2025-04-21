@@ -24,9 +24,11 @@ export const completeTask = async (ctx) => {
 
     const input = rawText.replace(/^\/done\s*/, '').trim()
 
-    if (!input) {
+    // Validación específica para cuando el usuario solo envía el comando sin parámetros
+    if (!input || input === ':') {
       return ctx.reply(
-        '🤯 Debes proporcionar el nombre exacto de la tarea. Ejemplo:\n/done Comprar pan'
+        '🧾 <b>Formato correcto:</b>\n/done NombreExactoDeLaTarea\n\n<b>Ejemplo:</b>\n/done Comprar pan',
+        { parse_mode: 'HTML' }
       )
     }
 
