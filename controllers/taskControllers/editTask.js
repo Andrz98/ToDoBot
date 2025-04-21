@@ -1,7 +1,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
 import { parseEditCommand } from '../../helpers/edit/parseEditCommand.js'
-import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
+import { updateTaskFields } from '../../helpers/edit/updateTaskField.js'
 import { replyMessages } from '../../helpers/edit/replyMessages.js'
 
 /**
