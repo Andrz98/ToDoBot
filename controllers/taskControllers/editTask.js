@@ -2,48 +2,78 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
 import { parseEditCommand } from '../../helpers/edit/parseEditCommand.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
+import { replyMessages } from '../../helpers/edit/replyMessages.js'
 
+/**
+ * Controlador para editar una tarea /edit
+ *
+ * Formato obligatorio:
+ * /edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]
+ *
+ * Ejemplos válidos:
+ * /edit Comprar pan - - - 22/04/25 19:00
+ * /edit Tarea vieja - Tarea nueva - - 23/04/2025 09:30
+ *
+ * Todos los campos excepto el nombre original son opcionales.
+ *
+ * @param {object} ctx - Objeto de contexto proporcionado por telegraf
+ * @returns {Promise<object>} - Promesa con la respuesta enviada al usuario
+ */
 export const editTask = async (ctx) => {
   try {
+    // Validación básica del contexto
     if (!ctx.text || !ctx.from?.id) {
-      return ctx.reply('🤯 El mensaje recibido no es válido.')
+      return replyMessages.invalidInput(ctx)
     }
 
+    // Verificación de autorización
     const userId = ctx.from.id
     if (!(await isUserAuthorized(ctx))) {
-      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
+      return replyMessages.unauthorized(ctx)
     }
 
+    // Parseo del comando de edición
     const parsed = parseEditCommand(ctx.text)
     if (!parsed.isValid) {
-      return ctx.reply(
-        '🧾 Formato correcto:\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]',
-        { parse_mode: 'HTML' }
-      )
+      return replyMessages.formatHelp(ctx)
     }
 
+    // Validación de longitud del nombre
+    if (parsed.newName && parsed.newName.length > 100) {
+      return replyMessages.nameTooLong(ctx)
+    }
+
+    // Búsqueda de la tarea existente
     const task = await findTaskForController(userId, parsed.oldName)
     if (!task) {
-      return ctx.reply(
-        `🤯 No se encontró ninguna tarea llamada "${parsed.oldName}"`
-      )
+      return replyMessages.taskNotFound(ctx, parsed.oldName)
     }
 
+    // Actualización de los campos de la tarea
     const { updated, changes } = updateTaskFields(task, parsed)
     if (!updated) {
-      return ctx.reply('🤯 No se encontraron cambios en la tarea.')
+      return replyMessages.noChanges(ctx)
     }
 
+    // Guardado de la tarea actualizada
     await task.save()
 
-    return ctx.reply('<b>✏️ Tarea actualizada:</b>\n' + changes.join('\n'), {
-      parse_mode: 'HTML'
-    })
+    // Respuesta exitosa
+    return replyMessages.success(ctx, changes)
   } catch (err) {
+    // Manejo de errores específicos
     if (err.message === 'PAST_DATE') {
-      return ctx.reply('⌚ La nueva fecha debe ser futura.')
+      return replyMessages.pastDate(ctx)
     }
+    if (err.message === 'EMPTY_NAME') {
+      return replyMessages.emptyName(ctx)
+    }
+    if (err.message === 'INVALID_DATE_FORMAT') {
+      return replyMessages.invalidDateFormat(ctx)
+    }
+
+    // Log y respuesta para errores generales
     console.error('😵‍💫 Error al editar tarea:', err)
-    return ctx.reply('😵‍💫 Ocurrió un error al editar la tarea.')
+    return replyMessages.generalError(ctx)
   }
 }
