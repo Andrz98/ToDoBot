@@ -12,7 +12,7 @@ export const buildEditMenu = (task, timeZone) => {
   const name = task.name
   const rawDesc = task.description || '(sin descripción)'
   const descLines = rawDesc.split('\n')
-  const descriptionText = descLines.map((line) => `🔸 ${line}`).join('\n')
+  const descriptionText = descLines.map((line) => `- ${line}`).join('\n')
 
   const dateText = formatDateEs(task.reminderAt, timeZone)
 
