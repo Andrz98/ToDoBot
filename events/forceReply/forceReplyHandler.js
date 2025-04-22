@@ -18,10 +18,9 @@ export function registerForceReplyHandler(bot) {
     }
 
     try {
-      // Volvemos a cargar la tarea por su id
+      // Cargamos la tarea
       const task = await Task.findById(editing.id)
       if (!task) {
-        // Si la tarea ya no existe, cancelamos todo
         ctx.session.awaiting = null
         ctx.session.editing = null
         return replyMessages.taskNotFound(ctx, editing.oldName)
@@ -30,7 +29,7 @@ export function registerForceReplyHandler(bot) {
       const text = ctx.message.text.trim()
       const fields = {}
 
-      // Asignamos el campo correspondiente según awaiting
+      // Asignar el campo correspondiente
       if (awaiting === 'new_name') {
         fields.newName = text
       } else if (awaiting === 'new_desc') {
@@ -43,30 +42,36 @@ export function registerForceReplyHandler(bot) {
         fields.date = date
       }
 
-      // Actualizamos la tarea en memoria
+      // Aplicar cambios
       const tz = await getUserTimezone(ctx.from.id)
       const { updated, changes } = updateTaskFields(task, fields, tz)
       if (!updated) {
-        // Sin cambios, limpiamos awaiting y volvemos al menú
         ctx.session.awaiting = null
         await replyMessages.noChanges(ctx)
-        const { text: menuText, markup } = buildEditMenu(task, tz)
-        return ctx.reply(menuText, { parse_mode: 'HTML', ...markup })
+        // Solo reenvío el teclado, SIN volver a mostrar la tarea
+        const { markup } = buildEditMenu(task, tz)
+        return ctx.reply(
+          'No hubo cambios. Selecciona otro campo o pulsa ✖️ para cancelar.',
+          { parse_mode: 'HTML', ...markup }
+        )
       }
 
-      // Persistimos los cambios en BD
+      // Guardar y limpiar awaiting, conservar editing
       await task.save()
-
-      // Limpiamos solo awaiting, mantenemos editing
       ctx.session.awaiting = null
 
-      // Informamos del éxito y mostramos de nuevo el menú
+      // Informar éxito
       await replyMessages.success(ctx, changes)
-      const { text: menuText, markup } = buildEditMenu(task, tz)
-      return ctx.reply(menuText, { parse_mode: 'HTML', ...markup })
+
+      // Solo reenvío el teclado, sin repetir la descripción completa
+      const { markup } = buildEditMenu(task, tz)
+      return ctx.reply(
+        'Selecciona otro campo para editar o pulsa ✖️ para terminar.',
+        { parse_mode: 'HTML', ...markup }
+      )
     } catch (error) {
       console.error('😵‍💫 Error en forceReplyHandler:', error)
-      // Error grave: cancelamos todo el flujo
+      // Al fallar, cancelamos todo el flujo
       ctx.session.awaiting = null
       ctx.session.editing = null
       return replyMessages.generalError(ctx)
