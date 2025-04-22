@@ -28,7 +28,7 @@ export const buildEditMenu = (task, timeZone) => {
     [Markup.button.callback('✔️ Nombre', 'edit_name')],
     [Markup.button.callback('🔸 Descripción', 'edit_desc')],
     [Markup.button.callback('🔹 Fecha', 'edit_date')],
-    [Markup.button.callback('✖️ Cancelar', 'edit_cancel')]
+    [Markup.button.callback('✖️ Cancelar/terminar', 'edit_cancel')]
   ])
 
   // 6) Devolvemos el objeto listo para ctx.reply
