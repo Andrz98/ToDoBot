@@ -68,7 +68,7 @@ const webhookCallback = bot.webhookCallback('/telegraf/tuttobot-path-seguro')
 // ====================================
 // 🔰 Registro de handlers de edición interactiva
 // ====================================
-import '../../actions/editActionHandlers.js'
-import '../../events/forceReplyHandler.js'
+import '../../actions/editAction/editActionHanlders.js'
+import '../../events/forceReply/forceReplyHandler.js'
 
 export { bot, webhookCallback }
