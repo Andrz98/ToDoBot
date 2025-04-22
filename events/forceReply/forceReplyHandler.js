@@ -10,17 +10,18 @@ import { replyMessages } from '../../helpers/replyMessages/replyMessages.js'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx) => {
-    console.log('[forceReply] received message:', ctx.message?.text)
+    console.log('[forceReply] Mensaje recibido:', ctx.message?.text)
     console.log(
-      '[forceReply] awaiting:',
+      '[forceReply] session:',
+      'awaiting=',
       ctx.session.awaiting,
-      ' editing:',
+      'editing=',
       ctx.session.editing
     )
 
-    const awaiting = ctx.session.awaiting
-    const editing = ctx.session.editing
+    const { awaiting, editing } = ctx.session
     if (!awaiting || !editing) {
+      console.log('[forceReply] No hay flujo activo, saliendo')
       return
     }
 
@@ -36,10 +37,13 @@ export function registerForceReplyHandler(bot) {
       const fields = {}
 
       if (awaiting === 'new_name') {
+        console.log('[forceReply] Procesando new_name:', text)
         fields.newName = text
       } else if (awaiting === 'new_desc') {
+        console.log('[forceReply] Procesando new_desc:', text)
         fields.newDescription = text
       } else if (awaiting === 'new_date') {
+        console.log('[forceReply] Procesando new_date:', text)
         const { date } = detectAndParseDate([text])
         if (!date) {
           return replyMessages.invalidDateFormat(ctx)
@@ -57,6 +61,7 @@ export function registerForceReplyHandler(bot) {
       ctx.session.awaiting = null
       ctx.session.editing = null
 
+      console.log('[forceReply] Edición aplicada, cambios:', changes)
       return replyMessages.success(ctx, changes)
     } catch (error) {
       console.error('😵‍💫 Error en forceReplyHandler:', error)
