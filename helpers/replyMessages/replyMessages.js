@@ -24,10 +24,15 @@ export const replyMessages = {
    */
   formatHelp: (ctx) =>
     ctx.reply(
-      '🧾 <b>Formato correcto:</b>\n/edit NombreAntiguo - [NuevoNombre] - [NuevaDescripción] - [NuevaFecha]\n\n' +
-        '<b>Ejemplos:</b>\n' +
-        '/edit Comprar pan - - - 22/04/25 19:00\n' +
-        '/edit Tarea vieja - Tarea nueva - - 23/04/2025 09:30',
+      '🧾 <b>Cómo usar /edit</b>\n\n' +
+        '1️. Modo rápido con sintaxis key:value:\n' +
+        '   /edit old:NombreAntiguo name:"NuevoNombre" desc:"Nueva descripción" date:DD/MM/AAAA[ HH:mm]\n\n' +
+        '2️. Modo interactivo:\n' +
+        '   Envía /edit NombreAntiguo y presiona uno de los botones:\n' +
+        '   • ✔️ Nombre\n' +
+        '   • 🔸 Descripción\n' +
+        '   • 🔹 Fecha\n' +
+        '   • ✖️ Cancelar\n',
       { parse_mode: 'HTML' }
     ),
 
