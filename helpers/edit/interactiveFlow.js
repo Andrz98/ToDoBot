@@ -28,10 +28,10 @@ export const buildEditMenu = (task, timeZone) => {
 
   // Inline keyboard con los botones de edición
   const inline = Markup.inlineKeyboard([
-    [Markup.button.callback('✔️ Nombre', 'edit_name')],
-    [Markup.button.callback('🔸 Descripción', 'edit_desc')],
-    [Markup.button.callback('🔹 Fecha', 'edit_date')],
-    [Markup.button.callback('✖️ Cancelar', 'edit_cancel')]
+    [Markup.button.callback(' Nombre', 'edit_name')],
+    [Markup.button.callback('Descripción', 'edit_desc')],
+    [Markup.button.callback('Fecha', 'edit_date')],
+    [Markup.button.callback('Cancelar', 'edit_cancel')]
   ])
 
   return {
