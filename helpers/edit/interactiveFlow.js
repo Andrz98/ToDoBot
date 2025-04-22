@@ -25,10 +25,10 @@ export const buildEditMenu = (task, timeZone) => {
   const text = `<b>${name}</b>\n` + `${descriptionText}\n` + `🔹 ${dateText}`
 
   const inline = Markup.inlineKeyboard([
-    [Markup.button.callback('✔️ Nombre', 'edit_name')],
-    [Markup.button.callback('🔸 Descripción', 'edit_desc')],
-    [Markup.button.callback('🔹 Fecha', 'edit_date')],
-    [Markup.button.callback('✖️ Cancelar', 'edit_cancel')]
+    [Markup.button.callback(' Nombre', 'edit_name')],
+    [Markup.button.callback(' Descripción', 'edit_desc')],
+    [Markup.button.callback(' Fecha', 'edit_date')],
+    [Markup.button.callback(' Cancelar', 'edit_cancel')]
   ])
 
   // Debuging para el DUMP de reply_markup
