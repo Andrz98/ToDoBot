@@ -2,8 +2,8 @@
 import { bot } from '../../config/telegraf/telegraf.js'
 import { Task } from '../../models/task.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
-import { detectAndParseDate } from '../helpers/date/detectAndParseDate.js'
-import { replyMessages } from '../helpers/edit/replyMessages.js'
+import { detectAndParseDate } from '../../helpers/date/detectAndParseDate.js'
+import { replyMessages } from '../../helpers/replyMessages/replyMessages.js'
 
 /**
  * Maneja las respuestas forzadas tras pulsar un botón de edición.
