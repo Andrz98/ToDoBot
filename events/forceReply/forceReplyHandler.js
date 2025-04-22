@@ -1,5 +1,5 @@
 // events/forceReplyHandler.js
-import { bot } from '../config/telegraf/telegraf.js'
+import { bot } from '../../config/telegraf/telegraf.js'
 import Task from '../models/task.js'
 import { updateTaskFields } from '../helpers/edit/updateTaskFields.js'
 import { detectAndParseDate } from '../helpers/date/detectAndParseDate.js'
