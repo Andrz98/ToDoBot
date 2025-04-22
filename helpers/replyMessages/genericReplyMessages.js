@@ -22,19 +22,6 @@ export const replyMessages = {
    * @param {object} ctx - Contexto de Telegraf
    * @returns {Promise<object>} - Promesa con la respuesta
    */
-  formatHelp: (ctx) =>
-    ctx.reply(
-      '🧾 <b>Cómo usar /edit</b>\n\n' +
-        '1️. Modo rápido con sintaxis key:value:\n' +
-        '   /edit old:NombreAntiguo name:"NuevoNombre" desc:"Nueva descripción" date:DD/MM/AAAA[ HH:mm]\n\n' +
-        '2️. Modo interactivo:\n' +
-        '   Envía /edit NombreAntiguo y presiona uno de los botones:\n' +
-        '   • ✔️ Nombre\n' +
-        '   • 🔸 Descripción\n' +
-        '   • 🔹 Fecha\n' +
-        '   • ✖️ Cancelar\n',
-      { parse_mode: 'HTML' }
-    ),
 
   /**
    * Responde cuando no se encuentra la tarea
@@ -51,18 +38,6 @@ export const replyMessages = {
    * @returns {Promise<object>} - Promesa con la respuesta
    */
   noChanges: (ctx) => ctx.reply('🤯 No se encontraron cambios en la tarea.'),
-
-  /**
-   * Responde cuando la actualización fue exitosa
-   * @param {object} ctx - Contexto de Telegraf
-   * @param {string[]} changes - Lista de cambios realizados
-   * @returns {Promise<object>} - Promesa con la respuesta
-   */
-  success: (ctx, changes) =>
-    ctx.reply(
-      '<b>✏️ Tarea actualizada correctamente:</b>\n' + changes.join('\n'),
-      { parse_mode: 'HTML' }
-    ),
 
   /**
    * Responde cuando se intenta usar una fecha pasada

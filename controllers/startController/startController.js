@@ -21,10 +21,10 @@ export const startCommand = async (ctx) => {
     const tzMessage =
       userTimezone === 'Europe/Madrid'
         ? '🌐 Actualmente estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.\n'
-        : `🌎 Tu zona horaria actual es: <b>${userTimezone}</b>\n`
+        : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>\n`
 
     const suggestionMessage =
-      userTimezone === 'Europe/Madrid'
+      userTimezone === 'Europe/Madrid, America/Bogota'
         ? '🛫 Puedes cambiarla con:\n<b>/settimezone America/Bogota</b>\n\n'
         : ''
 
