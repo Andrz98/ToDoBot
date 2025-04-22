@@ -1,19 +1,22 @@
+// helpers/edit/interactiveFlow.js
 import { Markup } from 'telegraf'
 import { formatDateEs } from '../date/formatDateEs.js'
 
 /**
  * Construye el texto y el teclado inline para el flujo interactivo de /edit
- * @param {object} task     - Instancia de Task de Mongoose
- * @param {string} timeZone - Zona horaria IANA del usuario
+ * @param {object}  task     - Instancia de Task de Mongoose
+ * @param {string}  timeZone - Zona horaria IANA del usuario
  * @returns {{ text: string, markup: object }} Para usar en ctx.reply
  */
-
 export const buildEditMenu = (task, timeZone) => {
-  const description = task.description || '(sin descripción)'
+  const name = task.name
+  const rawDesc = task.description || '(sin descripción)'
+  const descLines = rawDesc.split('\n')
+  const descriptionText = descLines.map((line) => `🔸 ${line}`).join('\n')
+
   const dateText = formatDateEs(task.reminderAt, timeZone)
 
-  const text =
-    `<b>${task.name}</b>\n` + `🔸 ${description}\n` + `🔹 ${dateText}`
+  const text = `<b>${name}</b>\n` + `${descriptionText}\n` + `🔹 ${dateText}`
 
   const markup = Markup.inlineKeyboard([
     [Markup.button.callback('✔️ Nombre', 'edit_name')],
