@@ -5,7 +5,7 @@ import { keyValueParser } from '../../helpers/edit/keyValueParser.js'
 import { buildEditMenu } from '../../helpers/edit/interactiveFlow.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
-import { replyMessages } from '../../helpers/replyMesseges/replyMessages.js'
+import { replyMessages } from '../../helpers/replyMessages/replyMessages.js'
 
 /**
  * Controlador para editar una tarea (/edit).
