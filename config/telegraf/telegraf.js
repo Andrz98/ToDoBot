@@ -1,3 +1,4 @@
+// config/telegraf/telegraf.js
 import 'dotenv/config'
 import { Telegraf } from 'telegraf'
 
@@ -63,5 +64,11 @@ bot.catch((err, ctx) => {
 // 🔰 Exportación para app.js (webhook)
 // ====================================
 const webhookCallback = bot.webhookCallback('/telegraf/tuttobot-path-seguro')
+
+// ====================================
+// 🔰 Registro de handlers de edición interactiva
+// ====================================
+import '../../actions/editActionHandlers.js'
+import '../../events/forceReplyHandler.js'
 
 export { bot, webhookCallback }
