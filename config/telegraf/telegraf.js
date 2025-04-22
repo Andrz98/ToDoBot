@@ -3,12 +3,13 @@ import { Telegraf } from 'telegraf'
 
 import { pingCommand } from '../../controllers/startController/pingController.js'
 import taskController from '../../controllers/taskControllers/taskController.js'
-import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { startCommand } from '../../controllers/startController/startController.js'
 import { setTimezone } from '../../controllers/timeZoneController/setTimezone.js'
 
 import { rateLimit } from '../../middlewares/secure/rateLimit.js'
 import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
+import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
+import { localSessionMiddleware } from '../../middlewares/session/localSession.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -23,6 +24,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
 // ====================================
 bot.use(rateLimit)
 bot.use(sanitizeInput)
+bot.use(localSessionMiddleware)
 
 // ====================================
 // 🔰 Comando /ping /settimezone
