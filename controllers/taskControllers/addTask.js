@@ -31,7 +31,7 @@ export const addTask = async (ctx) => {
     }
 
     // Verifico si el mensaje contiene el formato correcto
-    const rawText = ctx.text
+    const rawText = ctx.message?.text
     if (!rawText) {
       return ctx.reply(
         '🤯 No se pudo procesar tu mensaje. Asegúrate de que sea texto plano.'
@@ -142,7 +142,7 @@ export const addTask = async (ctx) => {
 
     // Si encontramos una fecha en formato DD/MM/YYYY
     if (dateRegex.test(dateMatch.originalText)) {
-      // Reemplazar la última aparición de la fecha
+      // Reemplazar la última apariencia de la fecha
       const dateIndex = content.lastIndexOf(dateMatch.originalText)
       if (dateIndex !== -1) {
         contentWithoutDate = content.substring(0, dateIndex).trim()

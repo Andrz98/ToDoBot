@@ -15,14 +15,14 @@ export const completeTask = async (ctx) => {
 
     const userId = ctx.from.id
 
-    const rawText = ctx.text
+    const rawText = ctx.message?.text
     if (!rawText) {
       return ctx.reply(
         '🤯 No se pudo procesar tu mensaje. Asegúrate de que sea texto plano.'
       )
     }
 
-    const input = rawText.replace(/^\/done\s*/, '').trim()
+    const input = rawText.replace(/^\/done\s*/i, '').trim()
 
     // Validación específica para cuando el usuario solo envía el comando sin parámetros
     if (!input || input === ':') {

@@ -1,4 +1,3 @@
-// controllers/taskControllers/editTask.js
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
 import { keyValueParser } from '../../helpers/edit/keyValueParser.js'
@@ -19,7 +18,7 @@ import { replyMessages } from '../../helpers/replyMessages/replyMessages.js'
  */
 export const editTask = async (ctx) => {
   // 0) Validación básica del contexto
-  const text = ctx.text
+  const text = ctx.message?.text
   const userId = ctx.from?.id
   if (!text || !userId) {
     return replyMessages.invalidInput(ctx)
