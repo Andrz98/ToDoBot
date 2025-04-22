@@ -3,13 +3,15 @@
  */
 
 export const sanitizeInput = async (ctx, next) => {
-  if (ctx.message.text) {
+  // Solo sanitizamos si viene un mensaje con texto
+  const incomingText = ctx.message?.text
+  if (typeof incomingText === 'string') {
     // Rechazo mensajes vacíos o peligrosos
-    const text = ctx.message.text.trim()
+    const text = incomingText.trim()
 
     if (text.length === 0 || text.includes('<scrip>')) {
       return ctx.reply(
-        '🫸🏽 Entrada inválidad. Intentalo de nuevo con texto válido.'
+        '🫸🏽 Entrada inválida. Inténtalo de nuevo con texto válido.'
       )
     }
 
