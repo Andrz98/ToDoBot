@@ -10,6 +10,14 @@ import { replyMessages } from '../../helpers/replyMessages/replyMessages.js'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx) => {
+    console.log('[forceReply] received message:', ctx.message?.text)
+    console.log(
+      '[forceReply] awaiting:',
+      ctx.session.awaiting,
+      ' editing:',
+      ctx.session.editing
+    )
+
     const awaiting = ctx.session.awaiting
     const editing = ctx.session.editing
     if (!awaiting || !editing) {
