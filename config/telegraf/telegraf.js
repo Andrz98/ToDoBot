@@ -62,8 +62,8 @@ bot.catch((err, ctx) => {
 // ====================================
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
-import { registerEditActions } from '../../actions/editActionHandler.js'
-import { registerForceReplyHandler } from '../../events/forceReplyHandler.js'
+import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
+import { registerForceReplyHandler } from '../../events/forceReply/forceReplyHandler.js'
 
 registerEditActions(bot)
 registerForceReplyHandler(bot)
