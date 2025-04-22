@@ -8,34 +8,34 @@ import { formatDateEs } from '../date/formatDateEs.js'
  * @returns {{ text: string, markup: { reply_markup: object } }} Para usar en ctx.reply
  */
 export const buildEditMenu = (task, timeZone) => {
-  // 1) Cabecera con nombre de la tarea
-  const header = `<b>1. ${task.name}</b>`
+  // Nombre de la tarea (en negrita)
+  const name = task.name
 
-  // 2) Formateo de la descripción como bloque preformateado
+  // Descripción: limpiamos posibles guiones existentes y añadimos uno único
   const rawDesc = task.description || '(sin descripción)'
-  const descLines = rawDesc.split('\n').map((line) => `- ${line}`)
-  const descriptionBlock = `<b>🔸 Descripción:</b>\n<pre>${descLines.join('\n')}</pre>`
+  const descriptionText = rawDesc
+    .split('\n')
+    .map((line) => line.replace(/^\s*-\s*/, '').trim())
+    .map((line) => `- ${line}`)
+    .join('\n')
 
-  // 3) Formateo de la fecha
+  // Fecha formateada en español según la zona horaria
   const dateText = formatDateEs(task.reminderAt, timeZone)
-  const dateBlock = `<b>🔹 Fecha:</b>\n${dateText}`
 
-  // 4) Construcción del texto final, con líneas en blanco entre secciones
-  const text = [header, '', descriptionBlock, '', dateBlock].join('\n')
+  // Montaje del texto completo con saltos en blanco para legibilidad
+  const text =
+    `<b>${name}</b>\n\n` + `${descriptionText}\n\n` + `🔹 ${dateText}`
 
-  // 5) Inline keyboard (botones)
+  // Inline keyboard con los botones de edición
   const inline = Markup.inlineKeyboard([
     [Markup.button.callback('✔️ Nombre', 'edit_name')],
     [Markup.button.callback('🔸 Descripción', 'edit_desc')],
     [Markup.button.callback('🔹 Fecha', 'edit_date')],
-    [Markup.button.callback('✖️ Cancelar/terminar', 'edit_cancel')]
+    [Markup.button.callback('✖️ Cancelar', 'edit_cancel')]
   ])
 
-  // 6) Devolvemos el objeto listo para ctx.reply
   return {
     text,
-    markup: {
-      reply_markup: inline.reply_markup
-    }
+    markup: { reply_markup: inline.reply_markup }
   }
 }

@@ -18,11 +18,6 @@ import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.
  * @returns {Promise<object>}
  */
 export const editTask = async (ctx) => {
-  // Debug logs
-  console.log('[editTask] update:', ctx.update)
-  console.log('[editTask] message:', ctx.message)
-  console.log('[editTask] callbackQuery:', ctx.callbackQuery)
-
   // 0) Validación básica del contexto
   const text = ctx.message?.text
   const userId = ctx.from?.id
@@ -70,7 +65,7 @@ export const editTask = async (ctx) => {
 
       // 2.4) Guardar y responder éxito
       await task.save()
-      const list = changes.map((c) => `✏️ ${c}`).join('\n')
+      const list = changes.map((c) => ` ${c}`).join('\n')
       return ctx.reply(` Tarea actualizada correctamente:\n${list}`, {
         parse_mode: 'HTML'
       })
