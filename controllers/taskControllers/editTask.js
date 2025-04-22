@@ -17,6 +17,10 @@ import { replyMessages } from '../../helpers/replyMessages/replyMessages.js'
  * @returns {Promise<object>}
  */
 export const editTask = async (ctx) => {
+  // Debug logs
+  console.log('[editTask] update:', ctx.update)
+  console.log('[editTask] message:', ctx.message)
+  console.log('[editTask] callbackQuery:', ctx.callbackQuery)
   // 0) Validación básica del contexto
   const text = ctx.message?.text
   const userId = ctx.from?.id
