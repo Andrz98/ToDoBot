@@ -1,4 +1,4 @@
-import { findTaskForController } from '../userTaskBynameController/findTaskForController'
+import { findTaskForController } from '../userTaskBynameController/findTaskForController.js'
 
 /**
  * Registra un handler para cualquier callback del tipo `${prefix}_{taskId}`
