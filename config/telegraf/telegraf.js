@@ -2,7 +2,7 @@
 import 'dotenv/config'
 import { Telegraf } from 'telegraf'
 
-import { pingCommand } from '../../controllers/startController/pingController.js'
+import { pingCommand } from '../../controllers/adminControllers/pingController.js'
 import taskController from '../../controllers/taskControllers/taskController.js'
 import { startCommand } from '../../controllers/startController/startController.js'
 import { setTimezone } from '../../controllers/timeZoneController/setTimezone.js'
