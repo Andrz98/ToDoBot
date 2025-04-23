@@ -1,4 +1,3 @@
-// config/telegraf/telegraf.js
 import 'dotenv/config'
 import { Telegraf } from 'telegraf'
 
