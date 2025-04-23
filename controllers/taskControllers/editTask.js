@@ -2,7 +2,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findTaskForController } from '../../helpers/userTaskBynameController/findTaskForController.js'
 import { keyValueParser } from '../../helpers/edit/keyValueParser.js'
-import { buildEditMenu } from '../../helpers/edit/interactiveFlow.js'
+import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'

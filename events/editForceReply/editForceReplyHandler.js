@@ -3,7 +3,7 @@ import { Task } from '../../models/task.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 import { detectAndParseDate } from '../../helpers/date/detectAndParseDate.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildEditMenu } from '../../helpers/edit/interactiveFlow.js'
+import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
 
 /**
  * Maneja las respuestas forzadas tras pulsar un botón de edición.
