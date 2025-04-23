@@ -1,5 +1,5 @@
 import { Task } from '../../models/task.js'
-import { formatDateEs } from '../helpers/date/formatDateEs.js'
+import { formatDateEs } from '../../helpers/date/formatDateEs.js'
 
 /**
  * Registra los callbacks para los botones de /list
