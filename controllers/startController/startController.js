@@ -27,7 +27,7 @@ export const startCommand = async (ctx) => {
     let suggestionMessage
     if (userTimezone === 'Europe/Madrid') {
       suggestionMessage =
-        '🛫 Si quieres otro uso horario, usa:\n<b>/settimezone America/Bogota</b>\n\n'
+        '🛫 Si quieres otro uso horario, usa:\n<b>/settimezone y pulsa la zona que te convenga'
     } else {
       suggestionMessage =
         '🛫 Si prefieres la zona por defecto, usa:\n<b>/settimezone Europe/Madrid</b>\n\n'

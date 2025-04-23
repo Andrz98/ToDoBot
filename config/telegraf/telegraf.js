@@ -16,8 +16,6 @@ import { registerEditActions } from '../../actions/editAction/editActionHandlers
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
 
-console.log('[telegraf] Empezando configuración del bot')
-
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('🪧 TELEGRAM_BOT_TOKEN no está definido en el archivo .env')
@@ -103,6 +101,7 @@ registerForceReplyHandler(bot)
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
 registerTimezoneActions(bot)
+console.log('[telegraf] Handler con problemas registrados')
 
 // ====================================
 // 🔰 Exportación para app.js (webhook)
