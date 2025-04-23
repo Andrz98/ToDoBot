@@ -12,6 +12,10 @@ import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { localSessionMiddleware } from '../../middlewares/session/localSession.js'
 
+import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
+import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
+import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
+
 console.log('[telegraf] Empezando configuración del bot')
 
 // Me aseguro que el token exista
@@ -26,13 +30,8 @@ console.log('[telegraf] Instancia de Telegraf creada')
 // ====================================
 // 🔰 Middlewares
 // ====================================
-console.log('[telegraf] Registrando middleware rateLimit')
 bot.use(rateLimit)
-
-console.log('[telegraf] Registrando middleware sanitizeInput')
 bot.use(sanitizeInput)
-
-console.log('[telegraf] Registrando middleware localSessionMiddleware')
 bot.use(localSessionMiddleware)
 
 // Opcional: loguear **todas** las actualizaciones que pasan por Telegraf
@@ -48,15 +47,12 @@ bot.on('update', (ctx) => {
 // ====================================
 // 🔰 Comando /ping /settimezone
 // ====================================
-console.log('[telegraf] Registrando comando /ping')
 bot.command('ping', pingCommand)
-
-console.log('[telegraf] Registrando comando /settimezone')
 bot.command('settimezone', setTimezone)
 
+// ====================================
 // 🔰 Comando /start
 // ====================================
-console.log('[telegraf] Registrando comando /start')
 bot.start(startCommand)
 
 // ====================================
@@ -99,23 +95,18 @@ bot.catch((err, ctx) => {
 // ====================================
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
-import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
-import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
 
-console.log('[telegraf] Registrando editActionHandlers')
 registerEditActions(bot)
-console.log('[telegraf] editActionHandlers registrados')
-
-console.log('[telegraf] Registrando forceReplyHandler')
 registerForceReplyHandler(bot)
-console.log('[telegraf] forceReplyHandler registrado')
+
+// ====================================
+// 🔰 Registrar handlers de edición interactiva
+// ====================================
+registerTimezoneActions(bot)
 
 // ====================================
 // 🔰 Exportación para app.js (webhook)
 // ====================================
 const webhookCallback = bot.webhookCallback('/telegraf/tuttobot-path-seguro')
-console.log(
-  '[telegraf] Configuración completa, exportando bot y webhookCallback'
-)
 
 export { bot, webhookCallback }

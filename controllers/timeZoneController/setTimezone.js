@@ -1,3 +1,4 @@
+import { buildTimezoneMenu } from '../../helpers/timezone/interactiveflowTimezone.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 
 /**
@@ -14,13 +15,18 @@ export const setTimezone = async (ctx) => {
 
     const allowedTimezones = ['Europe/Madrid', 'America/Bogota']
 
+    // Sino proporciona argumentos, mostramos el menu de opciones
+    if (!input) {
+      const { text, markup } = buildTimezoneMenu()
+      return ctx.reply(text, { parse_mode: 'HTML', ...markup })
+    }
+
+    // Valido la zona horaria
     if (!allowedTimezones.includes(input)) {
       return ctx.reply(
-        '🌐 Zona horaria no válida.\n' +
-          'Solo puedes elegir entre:\n' +
+        '🌐 Zona horaria no válida. Solo puedes elegir entre:\n' +
           '- <b>Europe/Madrid</b>\n' +
-          '- <b>America/Bogota</b>\n\n' +
-          'Ejemplo:\n/settimezone America/Bogota',
+          '- <b>America/Bogota</b>\n\n',
         { parse_mode: 'HTML' }
       )
     }
