@@ -100,7 +100,7 @@ bot.catch((err, ctx) => {
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
 import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
-import { registerForceReplyHandler } from '../../events/forceReply/forceReplyHandler.js'
+import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
 
 console.log('[telegraf] Registrando editActionHandlers')
 registerEditActions(bot)
