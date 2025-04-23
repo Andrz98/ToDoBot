@@ -93,7 +93,7 @@ export const editTask = async (ctx) => {
         '• 🔺 Nombre\n' +
         '• 🔸 Descripción\n' +
         '• 🔹 Fecha\n' +
-        '• ✖️ Cancelar/terminar\n',
+        '• ✖️ Terminar\n',
       { parse_mode: 'HTML' }
     )
   }

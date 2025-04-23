@@ -31,7 +31,7 @@ export const buildEditMenu = (task, timeZone) => {
     [Markup.button.callback(' Nombre', 'edit_name')],
     [Markup.button.callback('Descripción', 'edit_desc')],
     [Markup.button.callback('Fecha', 'edit_date')],
-    [Markup.button.callback('Cancelar', 'edit_cancel')]
+    [Markup.button.callback('Terminar', 'edit_cancel')]
   ])
 
   return {
