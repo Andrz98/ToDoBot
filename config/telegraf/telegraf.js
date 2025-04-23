@@ -15,6 +15,7 @@ import { localSessionMiddleware } from '../../middlewares/session/localSession.j
 import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
+import { registerListActions } from '../../actions/listAction/listActionHandlers.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -98,9 +99,14 @@ registerEditActions(bot)
 registerForceReplyHandler(bot)
 
 // ====================================
-// 🔰 Registrar handlers de edición interactiva
+// 🔰 Registrar handlers de Timezone
 // ====================================
 registerTimezoneActions(bot)
+
+// ====================================
+// 🔰 Registrar handlers de list
+// ====================================
+registerListActions(bot)
 
 // ====================================
 // 🔰 Exportación para app.js (webhook)
