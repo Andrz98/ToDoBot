@@ -10,9 +10,19 @@ import { Task } from '../../models/task.js'
  * @param {string} taskName - Nombre exacto de la tarea
  * @returns {Promise<Task|null>} - Retorna la tarea si la encuentra, o null si no existe
  */
-export const findTaskForController = async (userId, taskName) => {
+export const findTaskForController = async (
+  userId,
+  taskName = null,
+  taskId = null
+) => {
   try {
-    const task = await Task.findOne({ userId, name: taskName })
+    const query = { userId }
+    if (taskId) {
+      query._id = taskId
+    } else {
+      query.name = taskName
+    }
+    const task = await Task.findOne(query)
     return task || null
   } catch (error) {
     console.error('🦽 Error en findTaskForController:', error)

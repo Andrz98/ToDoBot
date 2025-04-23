@@ -1,4 +1,7 @@
 import { Markup } from 'telegraf'
+import { registerTaskSelector } from '../../helpers/interactive/taskSelector.js'
+import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
+import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
 
 /**
  * Registra los callbacks para los botones inline de /edit
@@ -51,5 +54,23 @@ export function registerEditActions(bot) {
     ctx.session.awaiting = null
     ctx.session.editing = null
     return ctx.reply('✖️ Edición cancelada.')
+  })
+
+  // • Seleccionar tarea para editar (modular)
+  registerTaskSelector(bot, 'select_edit', async (ctx, task) => {
+    await ctx.answerCbQuery()
+    console.log('[editAction] select_edit invocado', {
+      callbackData: ctx.callbackQuery.data,
+      sessionBefore: ctx.session
+    })
+
+    // iniciar flujo interactivo con la tarea seleccionada
+    ctx.session.editing = { id: task._id, oldName: task.name }
+    ctx.session.awaiting = null
+
+    // mostrar menú inline de edición
+    const tz = await getUserTimezone(ctx.from.id)
+    const { text, markup } = buildEditMenu(task, tz)
+    return ctx.reply(text, { parse_mode: 'HTML', ...markup })
   })
 }
