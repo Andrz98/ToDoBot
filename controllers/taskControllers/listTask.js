@@ -40,7 +40,7 @@ export const listTasks = async (ctx) => {
       .map((task, index) => {
         const nameText = `<b>${index + 1}. ${task.name}</b>`
         const descriptionText = task.description
-          ? `\n<b>🔸 Descripción:</b> ${task.description}`
+          ? `\n<b>🔸 Descripción:</b>\n ${task.description}`
           : ''
         const dateText = `\n<b>🔹 Fecha:</b> ${task.reminderAt.toLocaleString(
           'es-ES',
