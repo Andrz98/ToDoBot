@@ -4,6 +4,7 @@ import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 import { detectAndParseDate } from '../../helpers/date/detectAndParseDate.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
+import { DateTime } from 'luxon'
 
 /**
  * Maneja las respuestas forzadas tras pulsar un botón de edición.
@@ -28,6 +29,7 @@ export function registerForceReplyHandler(bot) {
 
       const text = ctx.message.text.trim()
       const fields = {}
+      let newDate
 
       // Asignar el campo correspondiente
       if (awaiting === 'new_name') {
@@ -35,13 +37,25 @@ export function registerForceReplyHandler(bot) {
       } else if (awaiting === 'new_desc') {
         fields.newDescription = text
       } else if (awaiting === 'new_date') {
-        const { date } = detectAndParseDate([text])
-        if (!date) {
+        // 1) Intento parsear fecha completa
+        const parsed = detectAndParseDate([text])
+        newDate = parsed.date
+
+        // 2) Si envía solo HH:mm, lo combino con la fecha original
+        if (!newDate && /^\d{1,2}:\d{2}$/.test(text)) {
+          const tz = await getUserTimezone(ctx.from.id)
+          const origDT = DateTime.fromJSDate(task.reminderAt, { zone: tz })
+          const [h, m] = text.split(':').map((n) => parseInt(n, 10))
+          newDate = origDT.set({ hour: h, minute: m }).toJSDate()
+        }
+
+        // 3) Si aún no hay fecha válida, mantengo el estado para reintento
+        if (!newDate) {
           return replyMessages.invalidDateFormat(ctx)
         }
-        fields.date = date
-      }
 
+        fields.date = newDate
+      }
       // Aplicar cambios
       const tz = await getUserTimezone(ctx.from.id)
       const { updated, changes } = updateTaskFields(task, fields, tz)

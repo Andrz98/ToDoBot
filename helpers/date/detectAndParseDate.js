@@ -1,103 +1,86 @@
 import { DateTime } from 'luxon'
 import { parseHumanDate } from './parseHumanDate.js'
 
-// Formatos de fecha estándar soportados
 const formats = ['dd/MM/yy HH:mm', 'dd/MM/yyyy HH:mm', 'dd/MM/yy', 'dd/MM/yyyy']
+const explicitPattern =
+  /(?:🔹\s*)?(?:Fecha|fecha):\s*([^,]+,\s*\d{1,2}\s+de\s+[^\d,]+\s+de\s+\d{4}(?:,\s*\d{1,2}:\d{1,2})?)/i
 
 /**
- * Recorre las lineas del mensaje e intenta parsear formatos estándar DD/MM/AAAA [HH:mm].
- * Si no encuentra, entonces llama internamente a parseHumanDate para probar formatos más humanos
- * que haya podido generar el usuario.
- *
- * @param {string[]} lines - Array de líneas del mensaje a parsear
- * @returns {object} - Objeto con la fecha parseada (o null) y el índice de la línea donde se encontró
- * @property {Date|null} date - La fecha parseada o null si no se encontró
- * @property {number} index - Índice de la línea donde se encontró la fecha (-1 si no se encontró)
+ * Detecta y parsea la fecha dentro de un array de líneas.
+ * @param {string[]} lines
+ * @param {string}     timeZone  – Zona horaria IANA
+ * @returns {{ date: Date|null, index: number }}
  */
-export const detectAndParseDate = (lines) => {
-  // Iterar desde la última línea hacia arriba (es más probable que la fecha esté al final)
+export const detectAndParseDate = (lines, timeZone = 'Europe/Madrid') => {
+  const tryFormats = (text) => {
+    for (const fmt of formats) {
+      const dt = DateTime.fromFormat(text, fmt, { zone: timeZone })
+      if (dt.isValid) {
+        return dt.toJSDate()
+      }
+    }
+    return null
+  }
+
   for (let i = lines.length - 1; i >= 0; i--) {
-    // Limpiar la línea de guiones iniciales y espacios
     const candidate = lines[i].replace(/^[-\s]+/, '')
+    // 1. Formatos estándar
+    const std = tryFormats(candidate)
+    if (std) {
+      return { date: std, index: i }
+    }
 
-    // Intentar con formatos estándar primero
-    for (const format of formats) {
-      const dateTime = DateTime.fromFormat(candidate, format, {
-        zone: 'Europe/Madrid'
-      })
-      if (dateTime.isValid) {
-        return { date: dateTime.toJSDate(), index: i }
+    // 2. Explicit “Fecha: …”
+    const m = candidate.match(explicitPattern)
+    if (m) {
+      const human = parseHumanDate(m[1].trim())
+      if (human) {
+        return { date: human, index: i }
       }
     }
 
-    // Buscar patrones de fecha explícita en español
-    const explicitPattern =
-      /(?:🔹\s*)?(?:Fecha|fecha):\s*([^,]+,\s*\d{1,2}\s+de\s+[^\d,]+\s+de\s+\d{4}(?:,\s*\d{1,2}:\d{1,2})?)/i
-    const match = candidate.match(explicitPattern)
-    if (match) {
-      const humanDate = parseHumanDate(match[1].trim())
-      if (humanDate) {
-        return { date: humanDate, index: i }
-      }
-    }
-
-    // Buscar formatos de fecha relativos (hoy, mañana, etc.)
-    const relativeDate = parseRelativeDate(candidate)
-    if (relativeDate) {
-      return { date: relativeDate, index: i }
+    // 3. Relativos (“hoy”, “mañana”, “próximo lunes”)
+    const rel = parseRelativeDate(candidate, timeZone)
+    if (rel) {
+      return { date: rel, index: i }
     }
   }
 
-  // No se encontró ninguna fecha
   return { date: null, index: -1 }
 }
 
-/**
- * Parsea fechas relativas como "hoy", "mañana", "próximo lunes", etc.
- *
- * @param {string} text - Texto a parsear
- * @returns {Date|null} - Fecha parseada o null si no se reconoce
- */
-const parseRelativeDate = (text) => {
-  const lowerText = text.toLowerCase().trim()
+/** @private */
+const parseRelativeDate = (text, timeZone) => {
+  const t = text.toLowerCase().trim()
+  const now = DateTime.now().setZone(timeZone)
 
-  if (lowerText === 'hoy') {
-    return DateTime.now().setZone('Europe/Madrid').startOf('day').toJSDate()
+  if (t === 'hoy') {
+    return now.startOf('day').toJSDate()
+  }
+  if (t === 'mañana' || t === 'manana') {
+    return now.plus({ days: 1 }).startOf('day').toJSDate()
   }
 
-  if (lowerText === 'mañana' || lowerText === 'manana') {
-    return DateTime.now()
-      .setZone('Europe/Madrid')
-      .plus({ days: 1 })
-      .startOf('day')
-      .toJSDate()
-  }
-
-  // Patrones para "próximo [día de la semana]"
-  const weekdayMatch = lowerText.match(
+  const wdMatch = t.match(
     /pr[oó]ximo\s+(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)/i
   )
-  if (weekdayMatch) {
-    const weekdays = {
+  if (wdMatch) {
+    const map = {
       lunes: 1,
       martes: 2,
-      miércoles: 3,
       miercoles: 3,
+      miércoles: 3,
       jueves: 4,
       viernes: 5,
-      sábado: 6,
       sabado: 6,
+      sábado: 6,
       domingo: 7
     }
-
-    const targetWeekday = weekdays[weekdayMatch[1].toLowerCase()]
-    let dt = DateTime.now().setZone('Europe/Madrid')
-
-    // Avanzar hasta encontrar el próximo día de la semana indicado
-    while (dt.weekday !== targetWeekday) {
+    const target = map[wdMatch[1].toLowerCase()]
+    let dt = now
+    while (dt.weekday !== target) {
       dt = dt.plus({ days: 1 })
     }
-
     return dt.startOf('day').toJSDate()
   }
 
