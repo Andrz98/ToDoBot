@@ -38,11 +38,11 @@ export const listTasks = async (ctx) => {
     // Construyo la lista formateada para mostrar al usuario
     const formattedList = tasks
       .map((task, index) => {
-        const nameText = `<b>${index + 1}. ${task.name}</b>`
+        const nameText = `<b>${index + 1}. ${task.name}</b>\n`
         const descriptionText = task.description
           ? `\n<b>🔸 Descripción:</b>\n ${task.description}`
           : ''
-        const dateText = `\n<b>🔹 Fecha:</b> ${task.reminderAt.toLocaleString(
+        const dateText = `\n<b>🔹 Fecha:</b>\n ${task.reminderAt.toLocaleString(
           'es-ES',
           { dateStyle: 'full', timeStyle: 'short' }
         )}`
