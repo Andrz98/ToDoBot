@@ -13,7 +13,7 @@ export const startCommand = async (ctx) => {
       ctx.from?.username ||
       ctx.from?.first_name ||
       ctx.from?.last_name ||
-      'Pat Oso 🐶 Pat Osa'
+      'El/la Sin nombre'
 
     // Verifico si el usuario esta autorizado a usar el bot
     const authorized = await isUserAuthorized(ctx)
@@ -35,7 +35,7 @@ export const startCommand = async (ctx) => {
 
     if (authorized) {
       return ctx.reply(
-        `🐵 ¡Hola, ${username}!\n` +
+        `🛡️ ¡Hola, ${username}!\n` +
           'TuttoFatto está listo para ayudarte.\n\n' +
           tzMessage +
           suggestionMessage +
