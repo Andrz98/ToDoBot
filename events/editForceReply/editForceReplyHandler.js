@@ -65,7 +65,7 @@ export function registerForceReplyHandler(bot) {
         // Solo reenvío el teclado, SIN volver a mostrar la tarea
         const { markup } = buildEditMenu(task, tz)
         return ctx.reply(
-          'No hubo cambios. Selecciona otro campo o pulsa ✖️ para cancelar.',
+          'No hubo cambios. Selecciona otro campo o pulsa el botón "Terminar" para terminar.',
           { parse_mode: 'HTML', ...markup }
         )
       }
@@ -80,7 +80,7 @@ export function registerForceReplyHandler(bot) {
       // Solo reenvío el teclado, sin repetir la descripción completa
       const { markup } = buildEditMenu(task, tz)
       return ctx.reply(
-        'Selecciona otro campo para editar o pulsa ✖️ para terminar.',
+        'Selecciona otro campo para editar o pulsa el botón "Terminar" para terminar..',
         { parse_mode: 'HTML', ...markup }
       )
     } catch (error) {

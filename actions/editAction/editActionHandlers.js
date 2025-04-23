@@ -5,43 +5,38 @@ import { Markup } from 'telegraf'
  * @param {import('telegraf').Telegraf} bot
  */
 export function registerEditActions(bot) {
-  console.log('[editAction] registerEditActions() llamado')
-
-  // ✔️ Acción “Nombre”
+  // ✔️ Nombre
   bot.action('edit_name', async (ctx) => {
-    console.log('[editAction] edit_name invocado', {
-      callbackData: ctx.callbackQuery?.data,
-      sessionBefore: ctx.session
-    })
+    await ctx.answerCbQuery() // 1) Acknowledge
+    console.log('[editAction] edit_name invocado', ctx.session)
     ctx.session.awaiting = 'new_name'
+    // await ctx.editMessageReplyMarkup()   // opcional: quita el inline keyboard
     return ctx.reply('✔️ Escribe el <b>nuevo nombre</b> de la tarea:', {
       parse_mode: 'HTML',
       reply_markup: Markup.forceReply().reply_markup
     })
   })
 
-  // 🔸 Acción “Descripción”
+  // 🔸 Descripción
   bot.action('edit_desc', async (ctx) => {
-    console.log('[editAction] edit_desc invocado', {
-      callbackData: ctx.callbackQuery?.data,
-      sessionBefore: ctx.session
-    })
+    await ctx.answerCbQuery()
+    console.log('[editAction] edit_desc invocado', ctx.session)
     ctx.session.awaiting = 'new_desc'
+    // await ctx.editMessageReplyMarkup()
     return ctx.reply('🔸 Escribe la <b>nueva descripción</b> de la tarea:', {
       parse_mode: 'HTML',
       reply_markup: Markup.forceReply().reply_markup
     })
   })
 
-  // 🔹 Acción “Fecha”
+  // 🔹 Fecha
   bot.action('edit_date', async (ctx) => {
-    console.log('[editAction] edit_date invocado', {
-      callbackData: ctx.callbackQuery?.data,
-      sessionBefore: ctx.session
-    })
+    await ctx.answerCbQuery()
+    console.log('[editAction] edit_date invocado', ctx.session)
     ctx.session.awaiting = 'new_date'
+    // await ctx.editMessageReplyMarkup()
     return ctx.reply(
-      '🔹 Escribe la <b>nueva fecha</b> de la tarea (DD/MM/AAAA [HH:mm] o humanizado):',
+      '🔹 Escribe la <b>nueva fecha</b> de la tarea (DD/MM/AAAA [HH:mm]):', // 2) Paréntesis corregido
       {
         parse_mode: 'HTML',
         reply_markup: Markup.forceReply().reply_markup
@@ -49,12 +44,10 @@ export function registerEditActions(bot) {
     )
   })
 
-  // ✖️ Acción “Cancelar”
+  // ✖️ Cancelar
   bot.action('edit_cancel', async (ctx) => {
-    console.log('[editAction] edit_cancel invocado', {
-      callbackData: ctx.callbackQuery?.data,
-      sessionBefore: ctx.session
-    })
+    await ctx.answerCbQuery()
+    console.log('[editAction] edit_cancel invocado', ctx.session)
     ctx.session.awaiting = null
     ctx.session.editing = null
     return ctx.reply('✖️ Edición cancelada.')
