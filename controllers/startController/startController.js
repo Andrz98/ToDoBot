@@ -23,14 +23,19 @@ export const startCommand = async (ctx) => {
         ? '🌐 Actualmente estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.\n'
         : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>\n`
 
-    const suggestionMessage =
-      userTimezone === 'Europe/Madrid, America/Bogota'
-        ? '🛫 Puedes cambiarla con:\n<b>/settimezone America/Bogota</b>\n\n'
-        : ''
+    // Para la zona horaria la lógica es dinámica, si el user está en madrid, entonces le sugerimos cambiar a bogota y viceversa
+    let suggestionMessage
+    if (userTimezone === 'Europe/Madrid') {
+      suggestionMessage =
+        '🛫 Si quieres otro uso horario, usa:\n<b>/settimezone America/Bogota</b>\n\n'
+    } else {
+      suggestionMessage =
+        '🛫 Si prefieres la zona por defecto, usa:\n<b>/settimezone Europe/Madrid</b>\n\n'
+    }
 
     if (authorized) {
       return ctx.reply(
-        `🫡 ¡Hola, ${username}!\n` +
+        `🐵 ¡Hola, ${username}!\n` +
           'TuttoFatto está listo para ayudarte.\n\n' +
           tzMessage +
           suggestionMessage +
