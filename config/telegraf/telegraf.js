@@ -101,7 +101,6 @@ registerForceReplyHandler(bot)
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
 registerTimezoneActions(bot)
-console.log('[telegraf] Handler con problemas registrados')
 
 // ====================================
 // 🔰 Exportación para app.js (webhook)

@@ -12,7 +12,7 @@ export function registerTimezoneActions(bot) {
       const userId = ctx.from.id
 
       // Actualizo en la base de datos
-      const updatedUser = await AuthorizedUser.findOneUpdate(
+      const updatedUser = await AuthorizedUser.findOneAndUpdate(
         { userId },
         { timezone: tz },
         { new: true }
