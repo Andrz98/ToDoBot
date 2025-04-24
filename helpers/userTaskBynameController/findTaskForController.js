@@ -38,7 +38,8 @@ export const findTaskForController = async (
  */
 export const findAllTasksForController = async (userId) => {
   try {
-    return await Task.find({ userId }).sort({ reminderAt: 1 })
+    return await Task.find({ userId, completed: false }) // Solo filtra tareas activas que no hayan sido completadas
+      .sort({ reminderAt: 1 })
   } catch (error) {
     console.error('🦽 Error en findAllTasksForController:', error)
     throw error
