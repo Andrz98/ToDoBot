@@ -72,7 +72,6 @@ export function registerForceReplyHandler(bot) {
         )
       }
       // 4) Guardar cambios y acumular en sesión
-      await task.save()
       ctx.session.edits = { ...edits, ...fields }
       const summary = changes.map((c) => ` • ${c}`).join('\n')
       await ctx.reply(`Cambio aplicado:\n${summary}`, { parse_mode: 'HTML' })
