@@ -1,4 +1,4 @@
-import { findTaskForController } from '../userTaskBynameController/findTaskForController.js'
+import { findTask } from './findTask.js'
 
 /**
  * Registra un handler para cualquier callback del tipo `${prefix}_{taskId}`
@@ -7,7 +7,6 @@ import { findTaskForController } from '../userTaskBynameController/findTaskForCo
  * @param {(ctx: object, task: object)=>Promise<any>} onSelect
  *        – Callback que recibe ctx y la tarea cargada
  */
-
 export function registerTaskSelector(bot, prefix, onSelect) {
   const re = new RegExp(`^${prefix}_(.+)$`)
   bot.action(re, async (ctx) => {
@@ -15,8 +14,8 @@ export function registerTaskSelector(bot, prefix, onSelect) {
     const taskId = ctx.match[1] // lo que viene tras "select_edit_"
     const userId = ctx.from.id
 
-    // Carga la tarea
-    const task = await findTaskForController(userId, null, taskId)
+    // Carga la tarea usando el helper correcto
+    const task = await findTask(userId, { id: taskId })
     if (!task) {
       return ctx.reply('🤯 No se encontró la tarea seleccionada.', {
         parse_mode: 'HTML'
