@@ -14,12 +14,12 @@ export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx) => {
     const { awaiting, editing } = ctx.session
     if (!awaiting || !editing) {
-      // No estamos en un flujo de edición activo
+      // No hay edición en curso
       return
     }
 
     try {
-      // Cargamos la tarea
+      // 1) Cargar la tarea
       const task = await Task.findById(editing.id)
       if (!task) {
         ctx.session.awaiting = null
@@ -31,17 +31,17 @@ export function registerForceReplyHandler(bot) {
       const fields = {}
       let newDate
 
-      // Asignar el campo correspondiente
+      // 2) Asignar el campo correspondiente
       if (awaiting === 'new_name') {
         fields.newName = text
       } else if (awaiting === 'new_desc') {
         fields.newDescription = text
       } else if (awaiting === 'new_date') {
-        // 1) Intento parsear fecha completa
+        // 2.1) Intentar parsear fecha completa
         const parsed = detectAndParseDate([text])
         newDate = parsed.date
 
-        // 2) Si envía solo HH:mm, lo combino con la fecha original
+        // 2.2) Si sólo envía HH:mm, combinar con la fecha original
         if (!newDate && /^\d{1,2}:\d{2}$/.test(text)) {
           const tz = await getUserTimezone(ctx.from.id)
           const origDT = DateTime.fromJSDate(task.reminderAt, { zone: tz })
@@ -49,43 +49,48 @@ export function registerForceReplyHandler(bot) {
           newDate = origDT.set({ hour: h, minute: m }).toJSDate()
         }
 
-        // 3) Si aún no hay fecha válida, mantengo el estado para reintento
+        // 2.3) Si sigue sin fecha válida, dejar que reintente
         if (!newDate) {
           return replyMessages.invalidDateFormat(ctx)
         }
 
         fields.date = newDate
       }
-      // Aplicar cambios
+
+      // 3) Aplicar cambios
       const tz = await getUserTimezone(ctx.from.id)
       const { updated, changes } = updateTaskFields(task, fields, tz)
       if (!updated) {
         ctx.session.awaiting = null
+        // Mensaje de “sin cambios”
         await replyMessages.noChanges(ctx)
-        // Solo reenvío el teclado, SIN volver a mostrar la tarea
+        // Reenvío del menú
         const { markup } = buildEditMenu(task, tz)
         return ctx.reply(
-          'No hubo cambios. Selecciona otro campo o pulsa el botón "Terminar" para terminar.',
+          'No hubo cambios. Selecciona otro campo o pulsa “Terminar” para salir.',
           { parse_mode: 'HTML', ...markup }
         )
       }
 
-      // Guardar y limpiar awaiting, conservar editing
+      // 4) Guardar y notificar éxito
       await task.save()
       ctx.session.awaiting = null
 
-      // Informar éxito
-      await replyMessages.success(ctx, changes)
+      // Mensaje específico de éxito de edición
+      const summary = changes.map((c) => ` • ${c}`).join('\n')
+      await ctx.reply(`✅ Tarea actualizada correctamente:\n${summary}`, {
+        parse_mode: 'HTML'
+      })
 
-      // Solo reenvío el teclado, sin repetir la descripción completa
+      // 5) Reenvío del menú sin repetir la descripción completa
       const { markup } = buildEditMenu(task, tz)
       return ctx.reply(
-        'Selecciona otro campo para editar o pulsa el botón "Terminar" para terminar..',
+        'Selecciona otro campo para editar o pulsa “Terminar” para concluir.',
         { parse_mode: 'HTML', ...markup }
       )
     } catch (error) {
       console.error('😵‍💫 Error en forceReplyHandler:', error)
-      // Al fallar, cancelamos todo el flujo
+      // Cancelar flujo al fallar
       ctx.session.awaiting = null
       ctx.session.editing = null
       return replyMessages.generalError(ctx)
