@@ -1,5 +1,9 @@
 import { formatDateEs } from '../date/formatDateEs.js'
 
+// Escapa caracteres especiales para HTML en Telegram
+const escapeHtml = (str) =>
+  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
 /**
  * Actualiza los campos de una tarea con los nuevos valores proporcionados
  *
@@ -8,7 +12,8 @@ import { formatDateEs } from '../date/formatDateEs.js'
  * @param {string} param1.newName - Nuevo nombre de la tarea (opcional)
  * @param {string} param1.newDescription - Nueva descripción (opcional)
  * @param {Date} param1.date - Nueva fecha de recordatorio (opcional)
- * @returns {object} - Objeto con flag de actualización y cambios realizados
+ * @param {string} timezone - Zona horaria del usuario
+ * @returns {object} - Objeto con flag de actualización y array de cambios formateados en HTML
  */
 export const updateTaskFields = (
   task,
@@ -18,33 +23,30 @@ export const updateTaskFields = (
   const changes = []
   let updated = false
 
-  // Verificar si el nuevo nombre es válido y no coincide con formato de fecha
+  // Cambiar nombre
   if (newName && newName !== task.name) {
     task.name = newName
     updated = true
-    changes.push(`Nuevo nombre: ${newName}`)
+    changes.push(`<b>Nuevo nombre:</b> ${escapeHtml(newName)}`)
   }
 
-  // Verificar si la nueva descripción es válida y no coincide con formato de fecha
+  // Cambiar descripción
   if (newDescription && newDescription !== task.description) {
     task.description = newDescription
     updated = true
-    changes.push(`Descripción: ${newDescription}`)
+    changes.push(`<b>Descripción:</b> ${escapeHtml(newDescription)}`)
   }
 
-  // Verificar y actualizar la fecha si se proporcionó
+  // Cambiar fecha de recordatorio
   if (date) {
-    // Valida que la fecha no sea pasada
     if (date < new Date()) {
       throw new Error('PAST_DATE')
     }
     task.reminderAt = date
     updated = true
-
-    // Formatear la nueva fecha según la zona horaria del usuario
     const formatted = formatDateEs(date, timezone)
-    changes.push(`Nueva fecha: ${formatted}`)
+    changes.push(`<b>Nueva fecha:</b> ${escapeHtml(formatted)}`)
   }
-  // Devuelvo el flag y el mensaje convinado
+
   return { updated, changes }
 }
