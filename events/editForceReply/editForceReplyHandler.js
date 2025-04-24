@@ -1,4 +1,4 @@
-import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
+import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
 import { Task } from '../../models/task.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 import { detectAndParseDate } from '../../helpers/date/detectAndParseDate.js'
