@@ -1,19 +1,14 @@
 import { Markup } from 'telegraf'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
-import { delayedReply } from '../../utils/delayUtils/delayReply.js'
+import { delayReply } from '../../utils/delayUtils/delayReply.js'
 
-/**
- * Registra los callbacks para los botones de /settimezone
- * @param {import('telegraf').Telegraf} bot
- */
 export function registerTimezoneActions(bot) {
-  // 1) El usuario elige la zona: guardamos y pedimos confirmación
+  // Paso 1: elijo zona y pido confirmación
   bot.action(/^set_tz_(.+)$/, async (ctx) => {
-    const tz = ctx.match[1] // ej. "Europe/Madrid"
+    const tz = ctx.match[1]
     ctx.session.flowType = 'timezone'
-    ctx.session.pendingTz = tz // almacenamos temporalmente
-    await ctx.answerCbQuery() // quita el “cargando…” del botón
-
+    ctx.session.pendingTz = tz
+    await ctx.answerCbQuery()
     return ctx.reply(
       `¿Estás segur@ de cambiar tu zona horaria a <b>${tz}</b>?`,
       {
@@ -26,33 +21,34 @@ export function registerTimezoneActions(bot) {
     )
   })
 
-  // 2a) Si confirma “Sí”: actualizamos la base de datos
+  // Paso 2a: confirma “Sí”
   bot.action('confirm_tz_yes', async (ctx) => {
-    await ctx.answerCbQuery() // quito “cargando…”
-    await ctx.editMessageReplyMarkup() // elimino el inline keyboard
-
+    await ctx.answerCbQuery()
+    await ctx.editMessageReplyMarkup()
     const tz = ctx.session.pendingTz
     const userId = ctx.from.id
+
     const updatedUser = await AuthorizedUser.findOneAndUpdate(
       { userId },
       { timezone: tz },
       { new: true }
     )
+    // grabo también en sesión para uso futuro
+    ctx.session.timezone = tz
 
     // fin del flujo
     ctx.session.flowType = null
     ctx.session.pendingTz = null
 
     if (!updatedUser) {
-      return delayedReply(
+      return delayReply(
         ctx,
         '🥸 No estás autorizado para usar este bot.',
         { parse_mode: 'HTML' },
         800
       )
     }
-
-    return delayedReply(
+    return delayReply(
       ctx,
       `🌐 Tu zona horaria ha sido guardada como: <b>${tz}</b>`,
       { parse_mode: 'HTML' },
@@ -60,16 +56,13 @@ export function registerTimezoneActions(bot) {
     )
   })
 
-  // 2b) Si confirma “No”: cancelamos y limpiamos
+  // Paso 2b: confirma “No”
   bot.action('confirm_tz_no', async (ctx) => {
-    await ctx.answerCbQuery() // quito “cargando…”
-    await ctx.editMessageReplyMarkup() // elimino el inline keyboard
-
-    // fin del flujo
+    await ctx.answerCbQuery()
+    await ctx.editMessageReplyMarkup()
     ctx.session.flowType = null
     ctx.session.pendingTz = null
-
-    return delayedReply(
+    return delayReply(
       ctx,
       'Cambio de zona horaria cancelado.',
       { parse_mode: 'HTML' },
