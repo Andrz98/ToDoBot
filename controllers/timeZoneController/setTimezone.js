@@ -15,6 +15,9 @@ export const setTimezone = async (ctx) => {
 
     // 1) Sin argumento: muestro solo la otra zona
     if (!input) {
+      // arranco el flujo timezone
+      ctx.session.flowType = 'timezone'
+      ctx.session.pendingTz = null
       const user = await AuthorizedUser.findOne({ userId })
       const current = user?.timezone
       const { text, markup } = buildTimezoneMenu(current)
