@@ -29,3 +29,18 @@ export const findTaskForController = async (
     throw error
   }
 }
+
+/**
+ * Recupera todas las tareas de un usuario, ordenadas por fecha de recordatorio.
+ *
+ * @param {string} userId – ID del usuario de Telegram
+ * @returns {Promise<Task[]>} – Array de tareas (vacío si no hay ninguna)
+ */
+export const findAllTasksForController = async (userId) => {
+  try {
+    return await Task.find({ userId }).sort({ reminderAt: 1 })
+  } catch (error) {
+    console.error('🦽 Error en findAllTasksForController:', error)
+    throw error
+  }
+}
