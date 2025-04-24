@@ -3,13 +3,15 @@ import { Telegraf } from 'telegraf'
 
 import { pingCommand } from '../../controllers/adminControllers/pingController.js'
 import taskController from '../../controllers/taskControllers/taskController.js'
+import { editTask } from '../../controllers/taskControllers/editTask.js'
 import { startCommand } from '../../controllers/startController/startController.js'
 import { setTimezone } from '../../controllers/timeZoneController/setTimezone.js'
 
 import { rateLimit } from '../../middlewares/secure/rateLimit.js'
 import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
-import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { localSessionMiddleware } from '../../middlewares/session/localSession.js'
+import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
+import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 
 import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
@@ -31,6 +33,7 @@ console.log('[telegraf] Instancia de Telegraf creada')
 bot.use(rateLimit)
 bot.use(sanitizeInput)
 bot.use(localSessionMiddleware)
+bot.use(flowGuard)
 
 // Opcional: loguear **todas** las actualizaciones que pasan por Telegraf
 bot.on('update', (ctx) => {
@@ -69,7 +72,7 @@ console.log('[telegraf] Registrando comando /delete')
 bot.command('delete', isAuthorizedUser, taskController.deleteTask)
 
 console.log('[telegraf] Registrando comando /edit')
-bot.command('edit', isAuthorizedUser, taskController.editTask)
+bot.command('edit', isAuthorizedUser, editTask)
 
 console.log('[telegraf] Registrando comando /clear')
 bot.command('clear', isAuthorizedUser, taskController.clearTask)
@@ -93,7 +96,6 @@ bot.catch((err, ctx) => {
 // ====================================
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
-
 registerEditActions(bot)
 registerForceReplyHandler(bot)
 
