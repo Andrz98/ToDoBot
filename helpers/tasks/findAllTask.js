@@ -1,16 +1,17 @@
+// helpers/tasks/findAllTasks.js
 import { Task } from '../../models/task.js'
 
 /**
- * Recupera todas las tareas activas (no completadas) de un usuario.
- *
- * @param {string} userId – ID de Telegram del usuario
- * @returns {Promise<Task[]>}
+ * Devuelve todas las tareas *activas* de un usuario,
+ * ordenadas por fecha de recordatorio ascendente.
  */
 export async function findAllTasks(userId) {
   try {
-    return await Task.find({ userId, completed: false }).sort({ reminderAt: 1 })
+    return await Task.find({ userId, completed: false })
+      .sort({ reminderAt: 1 })
+      .lean() // ✔️ usar `.lean()` para devolver plain JS objects, optimiza rendimiento
   } catch (err) {
-    console.error('🦽 Error en findAllTasks:', err)
+    console.error('Error en findAllTasks:', err)
     throw err
   }
 }
