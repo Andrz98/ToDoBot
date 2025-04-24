@@ -1,52 +1,50 @@
+import { Markup } from 'telegraf'
 import { buildTimezoneMenu } from '../../helpers/timezone/FlowTimezone/interactiveFlowTimezone.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 
 /**
- * Comando /settimezone - Establece la zona horaria del usuario
- * Permite al usuario escoger entre 'Europe/Madrid' o 'America/Bogota'
- *
- * Ejemplo válido:
- * /settimezone America/Bogota
+ * Comando /settimezone - Inicia el flujo para cambiar huso horario.
+ * Muestra menú o, si recibe argumento, pregunta confirmación.
  */
 export const setTimezone = async (ctx) => {
   try {
     const userId = ctx.from.id
-    const input = ctx.message.text.replace(/^\/settimezone\s*/, '').trim()
+    const input = ctx.message.text.replace(/^\/settimezone\s*/i, '').trim()
 
     const allowedTimezones = ['Europe/Madrid', 'America/Bogota']
 
-    // Sino proporciona argumentos, mostramos el menu de opciones
+    // 1) Sin argumento: muestro solo la otra zona
     if (!input) {
-      const { text, markup } = buildTimezoneMenu()
+      const user = await AuthorizedUser.findOne({ userId })
+      const current = user?.timezone
+      const { text, markup } = buildTimezoneMenu(current)
       return ctx.reply(text, { parse_mode: 'HTML', ...markup })
     }
 
-    // Valido la zona horaria
+    // 2) Validación
     if (!allowedTimezones.includes(input)) {
       return ctx.reply(
         '🌐 Zona horaria no válida. Solo puedes elegir entre:\n' +
           '- <b>Europe/Madrid</b>\n' +
-          '- <b>America/Bogota</b>\n\n',
+          '- <b>America/Bogota</b>',
         { parse_mode: 'HTML' }
       )
     }
 
-    const updatedUser = await AuthorizedUser.findOneAndUpdate(
-      { userId },
-      { timezone: input },
-      { new: true }
-    )
-
-    if (!updatedUser) {
-      return ctx.reply('🥸 No estás autorizado para usar este bot.')
-    }
-
+    // 3) Inicio confirmación: guardo en sesión y pregunto
+    ctx.session.pendingTz = input
     return ctx.reply(
-      `🌐 Tu zona horaria ha sido guardada como: <b>${input}</b>`,
-      { parse_mode: 'HTML' }
+      `¿Estás segur@ de cambiar tu zona horaria a <b>${input}</b>?`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: Markup.inlineKeyboard([
+          [Markup.button.callback('Sí', 'confirm_tz_yes')],
+          [Markup.button.callback('No', 'confirm_tz_no')]
+        ]).reply_markup
+      }
     )
   } catch (error) {
     console.error('😵‍💫 Error en /settimezone:', error.message)
-    return ctx.reply('😵‍💫 Ocurrió un error al guardar tu zona horaria.')
+    return ctx.reply('😵‍💫 Ocurrió un error al procesar tu zona horaria.')
   }
 }
