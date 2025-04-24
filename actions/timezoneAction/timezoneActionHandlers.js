@@ -1,6 +1,6 @@
 import { Markup } from 'telegraf'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
-import { delayedReply } from '../../utils/delayUtils/delayUtils.js'
+import { delayedReply } from '../../utils/delayUtils/delayReply.js'
 
 /**
  * Registra los callbacks para los botones de /settimezone
