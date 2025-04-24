@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf'
-import { registerTaskSelector } from '../../helpers/interactive/taskSelector.js'
+import { registerTaskSelector } from '../../helpers/tasks/taskSelector.js'
 import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
 import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
 
