@@ -1,4 +1,4 @@
-import { buildTimezoneMenu } from '../../helpers/timezone/interactiveflowTimezone.js'
+import { buildTimezoneMenu } from '../../helpers/timezone/FlowTimezone/interactiveFlowTimezone.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 
 /**
