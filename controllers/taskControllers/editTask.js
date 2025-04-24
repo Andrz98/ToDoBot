@@ -1,7 +1,7 @@
 import { Markup } from 'telegraf'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
-import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
+import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
