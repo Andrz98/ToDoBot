@@ -1,7 +1,7 @@
 import { Markup } from 'telegraf'
 import { registerTaskSelector } from '../../helpers/tasks/taskSelector.js'
 import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
-import { getUserTimezone } from '../../helpers/userTimezone/getUserTimezone.js'
+import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
 
 /**
  * Registra los callbacks para los botones inline de /edit
