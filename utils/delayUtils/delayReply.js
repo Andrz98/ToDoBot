@@ -9,7 +9,7 @@ import { sleep } from './sleep.js'
  * @param {number} ms     – Milisegundos de delay antes de enviar
  * @returns {Promise}
  */
-export const delayedReply = async (ctx, text, opts = {}, ms = 1000) => {
+export const delayReply = async (ctx, text, opts = {}, ms = 1000) => {
   await sleep(ms)
   return ctx.reply(text, opts)
 }
