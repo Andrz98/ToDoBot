@@ -26,9 +26,13 @@ export function registerTimezoneActions(bot) {
 
   // 2a) Si confirma “Sí”: actualizamos la base de datos
   bot.action('confirm_tz_yes', async (ctx) => {
+    // 1) quito el “cargando…” del botón
+    await ctx.answerCbQuery()
+    // 2) elimino el inline keyboard de confirmación
+    await ctx.editMessageReplyMarkup()
+
     const tz = ctx.session.pendingTz
     const userId = ctx.from.id
-    await ctx.answerCbQuery()
 
     const updatedUser = await AuthorizedUser.findOneAndUpdate(
       { userId },
@@ -49,8 +53,13 @@ export function registerTimezoneActions(bot) {
 
   // 2b) Si confirma “No”: cancelamos y limpiamos
   bot.action('confirm_tz_no', async (ctx) => {
-    ctx.session.pendingTz = null
+    // 1) quito el “cargando…” del botón
     await ctx.answerCbQuery()
+    // 2) elimino el inline keyboard de confirmación
+    await ctx.editMessageReplyMarkup()
+    // 3) limpio la sesión
+    ctx.session.pendingTz = null
+
     return ctx.reply('Cambio de zona horaria cancelado.', {
       parse_mode: 'HTML'
     })
