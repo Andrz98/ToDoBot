@@ -8,7 +8,7 @@ import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 
 /**
  * Controlador para editar una tarea (/edit).
- * Flujo interactivo guiado con botones inline
+ * Flujo interactivo guiado con botones inline.
  */
 export const editTask = async (ctx) => {
   const text = ctx.message?.text
@@ -24,10 +24,10 @@ export const editTask = async (ctx) => {
     return replyMessages.unauthorized(ctx)
   }
 
-  // Extraigo el nombre de la tarea (parámetro opcional)
+  // 2) Extracción del parámetro (nombre de tarea)
   const oldName = text.replace(/^\/edit\s*/i, '').trim()
 
-  // 2.0) Sin parámetro: muestro listado de tareas activas
+  // 2.1) Sin parámetro: mostrar listado de tareas activas
   if (!oldName) {
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
@@ -41,7 +41,7 @@ export const editTask = async (ctx) => {
     })
   }
 
-  // 2.1) Con parámetro: busco esa tarea y abro menú inline de edición
+  // 2.2) Con parámetro: buscar tarea por nombre
   const task = await findTask(userId, { name: oldName })
   if (!task) {
     return ctx.reply(`🤯 No se encontró ninguna tarea llamada "${oldName}".`, {
@@ -49,11 +49,13 @@ export const editTask = async (ctx) => {
     })
   }
 
-  // 2.2) Iniciar flujo interactivo
+  // 2.3) Iniciar flujo interactivo de edición
+  ctx.session.flowType = 'edit'
   ctx.session.editing = { id: task._id, oldName }
   ctx.session.awaiting = null
+  ctx.session.edits = {}
 
-  // 2.3) Construir y enviar menú inline
+  // 2.4) Construir y enviar menú inline (sin botón "Guardar" inicialmente)
   const tz = await getUserTimezone(userId)
   const { text: menuText, markup } = buildEditMenu(task, tz)
   return ctx.reply(menuText, {
