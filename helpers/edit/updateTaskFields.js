@@ -22,14 +22,14 @@ export const updateTaskFields = (
   if (newName && newName !== task.name) {
     task.name = newName
     updated = true
-    changes.push(`🔺Nuevo nombre: ${newName}`)
+    changes.push(`Nuevo nombre: ${newName}`)
   }
 
   // Verificar si la nueva descripción es válida y no coincide con formato de fecha
   if (newDescription && newDescription !== task.description) {
     task.description = newDescription
     updated = true
-    changes.push(`🔸Descripción: ${newDescription}`)
+    changes.push(`Descripción: ${newDescription}`)
   }
 
   // Verificar y actualizar la fecha si se proporcionó
@@ -43,7 +43,7 @@ export const updateTaskFields = (
 
     // Formatear la nueva fecha según la zona horaria del usuario
     const formatted = formatDateEs(date, timezone)
-    changes.push(`🔹Nueva fecha: ${formatted}`)
+    changes.push(`Nueva fecha: ${formatted}`)
   }
   // Devuelvo el flag y el mensaje convinado
   return { updated, changes }

@@ -78,7 +78,7 @@ export function registerForceReplyHandler(bot) {
 
       // Mensaje específico de éxito de edición
       const summary = changes.map((c) => ` • ${c}`).join('\n')
-      await ctx.reply(`✅ Tarea actualizada correctamente:\n${summary}`, {
+      await ctx.reply(`Tarea actualizada correctamente:\n${summary}`, {
         parse_mode: 'HTML'
       })
 
