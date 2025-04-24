@@ -12,7 +12,7 @@ import { DateTime } from 'luxon'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx) => {
-    const { awaiting, editing } = ctx.session
+    const { awaiting, editing, edits = {} } = ctx.session
     if (!awaiting || !editing) {
       // No hay edición en curso
       return
@@ -23,7 +23,9 @@ export function registerForceReplyHandler(bot) {
       const task = await Task.findById(editing.id)
       if (!task) {
         ctx.session.awaiting = null
+        ctx.session.flowType = null
         ctx.session.editing = null
+        ctx.session.edits = null
         return replyMessages.taskNotFound(ctx, editing.oldName)
       }
 
@@ -57,35 +59,28 @@ export function registerForceReplyHandler(bot) {
         fields.date = newDate
       }
 
-      // 3) Aplicar cambios
+      // 3) Aplicar cambios y gestionar estado
       const tz = await getUserTimezone(ctx.from.id)
       const { updated, changes } = updateTaskFields(task, fields, tz)
+      ctx.session.awaiting = null
       if (!updated) {
-        ctx.session.awaiting = null
-        // Mensaje de “sin cambios”
-        await replyMessages.noChanges(ctx)
-        // Reenvío del menú
-        const { markup } = buildEditMenu(task, tz)
+        const hasEdits = Object.keys(edits).length > 0
+        const { markup } = buildEditMenu(task, tz, hasEdits)
         return ctx.reply(
-          'No hubo cambios. Selecciona otro campo o pulsa “Terminar” para salir.',
+          '🤷 No hubo cambios. Selecciona otro campo o pulsa "Guardar" para finalizar.',
           { parse_mode: 'HTML', ...markup }
         )
       }
-
-      // 4) Guardar y notificar éxito
+      // 4) Guardar cambios y acumular en sesión
       await task.save()
-      ctx.session.awaiting = null
-
-      // Mensaje específico de éxito de edición
+      ctx.session.edits = { ...edits, ...fields }
       const summary = changes.map((c) => ` • ${c}`).join('\n')
-      await ctx.reply(`Tarea actualizada correctamente:\n${summary}`, {
-        parse_mode: 'HTML'
-      })
+      await ctx.reply(`Cambio aplicado:\n${summary}`, { parse_mode: 'HTML' })
 
-      // 5) Reenvío del menú sin repetir la descripción completa
-      const { markup } = buildEditMenu(task, tz)
+      // 5) Mostrar menú con botón Guardar
+      const { markup } = buildEditMenu(task, tz, true)
       return ctx.reply(
-        'Selecciona otro campo para editar o pulsa “Terminar” para concluir.',
+        'Selecciona otro campo o pulsa "Guardar" para finalizar.',
         { parse_mode: 'HTML', ...markup }
       )
     } catch (error) {
@@ -93,6 +88,8 @@ export function registerForceReplyHandler(bot) {
       // Cancelar flujo al fallar
       ctx.session.awaiting = null
       ctx.session.editing = null
+      ctx.session.flowType = null
+      ctx.session.edits = null
       return replyMessages.generalError(ctx)
     }
   })
