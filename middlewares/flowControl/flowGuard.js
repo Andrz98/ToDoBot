@@ -10,13 +10,13 @@ import { Markup } from 'telegraf'
 export async function flowGuard(ctx, next) {
   const { flowType, awaiting } = ctx.session || {}
 
-  // Si no hay un flujo activo, seguimos normalmente
-  if (!flowType) {
+  // 0 Permitir el botón de restablecer acción
+  if (ctx.callbackQuerey?.data === 'flow_reset') {
     return next()
   }
 
-  // 1. Permitir el botón de restablecer acción
-  if (ctx.callbackQuerey?.data === 'flow_reset') {
+  // 1 Si no hay un flujo activo, seguimos normalmente
+  if (!flowType) {
     return next()
   }
 
