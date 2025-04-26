@@ -11,7 +11,7 @@ export async function flowGuard(ctx, next) {
   const { flowType, awaiting } = ctx.session || {}
 
   // 0 Permitir el botón de restablecer acción
-  if (ctx.callbackQuerey?.data === 'flow_reset') {
+  if (ctx.callbackQuery?.data === 'flow_reset') {
     return next()
   }
 
