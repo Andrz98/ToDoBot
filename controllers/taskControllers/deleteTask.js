@@ -1,5 +1,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
-import { findTask } from '../../helpers/tasks/findTask.js'
+import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
+import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
+import { buildDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
 
 /**
  * Controlador para eliminar una tarea específica /delete
@@ -11,53 +13,29 @@ import { findTask } from '../../helpers/tasks/findTask.js'
  */
 export const deleteTask = async (ctx) => {
   try {
-    console.log('📦 deleteTask - preview:', {
-      message_id: ctx.message?.message_id,
-      text: ctx.message?.text,
-      from: ctx.from?.id
-    })
-
-    // 1) Validación básica del contexto
-    const rawText = ctx.message?.text
-    const userId = ctx.from?.id
-    if (!rawText || !userId) {
-      console.warn('⚠️ /delete recibido sin texto válido:', ctx.message)
-      return ctx.reply('🤯 El mensaje recibido no es válido.')
-    }
-
-    // 2) Extraer nombre de la tarea
-    const taskName = rawText.replace(/^\/delete\s*/i, '').trim()
-    if (!taskName) {
-      return ctx.reply(
-        '<b>Formato correcto:</b>\n/delete NombreExactoDeLaTarea\n\n' +
-          '<b>Ejemplo:</b>\n/delete Comprar pan',
-        { parse_mode: 'HTML' }
-      )
-    }
-
-    // 3) Comprobar autorización
+    // Verificación de autorización
     if (!(await isUserAuthorized(ctx))) {
-      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
+      return replyMessages.unauthorized(ctx)
     }
 
-    // 4) Buscar la tarea activa
-    const task = await findTask(userId, { name: taskName, completed: false })
-    if (!task) {
-      return ctx.reply(`🤯 No se encontró ninguna tarea llamada "${taskName}"`)
+    // Obtengo todas las tareas activas
+    const userId = ctx.from.id
+    const tasks = await findAllTasks(userId)
+    if (tasks.length === 0) {
+      return ctx.reply('No tienes tareas pendientes para eliminar.', {
+        parse_mode: 'HTML'
+      })
     }
 
-    // 5) Eliminarla
-    await task.deleteOne()
-
-    // 6) Confirmar al usuario
+    // Muestro el menú de selección
     return ctx.reply(
-      `La tarea <b>"${task.name}"</b> ha sido eliminada correctamente.`,
-      { parse_mode: 'HTML' }
+      'Selecciona la tarea que deseas eliminar:',
+      buildDeleteMenu(tasks)
     )
   } catch (error) {
-    console.error('😵‍💫 Error al eliminar la tarea:', error)
+    console.error('😵‍💫 Error en deleteTask:', error)
     return ctx.reply(
-      '😵‍💫 Ocurrió un error al eliminar la tarea. Intenta más tarde.'
+      '😵‍💫 Ocurrió un error al iniciar el flujo de eliminar tareas. Intenta más tarde.'
     )
   }
 }

@@ -30,7 +30,7 @@ export function registerCompleteActions(bot) {
     )
   })
 
-  // 2a) Confirma “Sí”
+  // 2 Confirma “Sí”
   bot.action('complete_confirm:yes', async (ctx) => {
     const taskId = ctx.session.pendingComplete
     await Task.findByIdAndUpdate(taskId, { completed: true })
@@ -43,7 +43,7 @@ export function registerCompleteActions(bot) {
     return delayReply(ctx, 'Tarea completada correctamente.', 500)
   })
 
-  // 2b) Confirma “No”
+  // 3 Confirma “No”
   bot.action('complete_confirm:no', async (ctx) => {
     await ctx.answerCbQuery()
     await ctx.editMessageReplyMarkup()

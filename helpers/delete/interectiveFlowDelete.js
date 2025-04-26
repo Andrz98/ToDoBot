@@ -1,15 +1,15 @@
-// helpers/complete/interactiveFlowComplete.js
+// helpers/delete/interactiveFlowDelete.js
 import { Markup } from 'telegraf'
 import { buildInlineConfirm } from '../replyConfirm/inlineConfirm'
 
 /**
- * Construye el teclado inline para seleccionar la tarea a completar.
+ * Construye el teclado inline para seleccionar la tarea a eliminar.
  * @param {Array<{ _id: string, name: string }>} tasks
  * @returns {{ reply_markup: object }}
  */
-export const buildCompleteMenu = (tasks) => {
+export const buildDeleteMenu = (tasks) => {
   const buttons = tasks.map((t) =>
-    Markup.button.callback(t.name, `complete_select:${t._id}`)
+    Markup.button.callback(t.name, `delete_select:${t._id}`)
   )
 
   return {
@@ -25,6 +25,6 @@ export const buildCompleteMenu = (tasks) => {
  * Construye el teclado inline de confirmación (Sí/No).
  * @returns {{ reply_markup: object }}
  */
-export const buildConfirmCompleteMenu = () => {
-  return buildInlineConfirm('complete_confirm')
+export const buildConfirmDeleteMenu = () => {
+  return buildInlineConfirm('delete_confirm')
 }
