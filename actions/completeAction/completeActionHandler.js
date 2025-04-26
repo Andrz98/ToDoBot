@@ -1,7 +1,7 @@
 // actions/completeAction/completeActionHandlers.js
 import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
-import { buildConfirmCompleteMenu } from '../../helpers/complete/interactiveFlowComplete.js'
+import { buildConfirmCompleteMenu } from '../../helpers/Complete/interactiveFlowComplete.js'
 
 /**
  * Registra los callbacks para el flujo de completar tareas.
