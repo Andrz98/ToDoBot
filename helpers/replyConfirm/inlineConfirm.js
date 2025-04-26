@@ -1,16 +1,19 @@
+// helpers/common/inlineConfirm.js
 import { Markup } from 'telegraf'
+
 /**
- * Construye el teclado inline de confirmación (Sí/No).
+ * Construye un teclado inline de confirmación (Sí/No)
+ * prefijando la acción de callback para distinguir contextos.
+ *
+ * @param {string} prefix – e.g. 'delete_confirm' o 'complete_confirm'
  * @returns {{ reply_markup: object }}
  */
-export const buildInlineConfirm = () => {
-  return {
-    reply_markup: Markup.inlineKeyboard(
-      [
-        [Markup.button.callback('Sí', 'complete_confirm:yes')],
-        [Markup.button.callback('No', 'complete_confirm:no')]
-      ],
-      { columns: 1 }
-    ).reply_markup
-  }
-}
+export const buildInlineConfirm = (prefix) => ({
+  reply_markup: Markup.inlineKeyboard(
+    [
+      [Markup.button.callback('Sí', `${prefix}:yes`)],
+      [Markup.button.callback('No', `${prefix}:no`)]
+    ],
+    { columns: 1 }
+  ).reply_markup
+})

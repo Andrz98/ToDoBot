@@ -8,7 +8,7 @@ import { buildConfirmDeleteMenu } from '../../helpers/delete/interactiveFlowDele
  * @param {import('telegraf').Telegraf} bot
  */
 export function registerDeleteActions(bot) {
-  // 1. Usuario selecciona la atarea a leminar.
+  // 1) Selección de la tarea a eliminar
   bot.action(/^delete_select:(.+)$/, async (ctx) => {
     const taskId = ctx.match[1]
     const task = await Task.findById(taskId)
@@ -17,34 +17,33 @@ export function registerDeleteActions(bot) {
       return
     }
 
-    // Guardamos selección en sesión
+    // Iniciamos el flujo delete
     ctx.session.flowType = 'delete'
     ctx.session.pendingDelete = taskId
 
     await ctx.answerCbQuery()
-    return ctx.reply(
-      `¿Segur@ de que deseas eliminar la tarea:\n\n<b>${task.name}</b>?`,
-      {
-        parse_mode: 'HTML',
-        ...buildConfirmDeleteMenu()
-      }
-    )
+    const { text, reply_markup } = buildConfirmDeleteMenu(task)
+    return ctx.reply(text, {
+      parse_mode: 'HTML',
+      reply_markup
+    })
   })
 
-  // 2 Confirma “Sí”
+  // 2) Confirmación “Sí”
   bot.action('delete_confirm:yes', async (ctx) => {
     const taskId = ctx.session.pendingDelete
     await Task.findByIdAndDelete(taskId)
 
     await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup() // elimina botones
+    await ctx.editMessageReplyMarkup() // quita botones
+    // Limpiamos el flujo
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
 
-    return delayReply(ctx, 'Tarea eliminada correctamente.', 500)
+    return delayReply(ctx, '🗑️ Tarea eliminada correctamente.', 500)
   })
 
-  // 3 Confirma “No”
+  // 3) Confirmación “No”
   bot.action('delete_confirm:no', async (ctx) => {
     await ctx.answerCbQuery()
     await ctx.editMessageReplyMarkup()

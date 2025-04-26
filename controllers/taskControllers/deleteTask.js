@@ -13,12 +13,10 @@ import { buildDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
  */
 export const deleteTask = async (ctx) => {
   try {
-    // Verificación de autorización
     if (!(await isUserAuthorized(ctx))) {
       return replyMessages.unauthorized(ctx)
     }
 
-    // Obtengo todas las tareas activas
     const userId = ctx.from.id
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
@@ -27,7 +25,6 @@ export const deleteTask = async (ctx) => {
       })
     }
 
-    // Muestro el menú de selección
     return ctx.reply(
       'Selecciona la tarea que deseas eliminar:',
       buildDeleteMenu(tasks)

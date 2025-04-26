@@ -22,9 +22,14 @@ export const buildDeleteMenu = (tasks) => {
 }
 
 /**
- * Construye el teclado inline de confirmación (Sí/No).
- * @returns {{ reply_markup: object }}
+ * Construye el mensaje y teclado para confirmar borrado.
+ * @param {import('../../models/task.js').Task} task
+ * @returns {{ text: string, reply_markup: object }}
  */
-export const buildConfirmDeleteMenu = () => {
-  return buildInlineConfirm('delete_confirm')
+export const buildConfirmDeleteMenu = (task) => {
+  const { reply_markup } = buildInlineConfirm('delete_confirm')
+  return {
+    text: `¿Seguro que deseas eliminar la tarea:\n\n<b>${task.name}</b>?`,
+    reply_markup
+  }
 }
