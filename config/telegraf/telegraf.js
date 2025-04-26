@@ -36,6 +36,15 @@ console.log('[telegraf] Instancia de Telegraf creada')
 bot.use(rateLimit)
 bot.use(sanitizeInput)
 bot.use(localSessionMiddleware)
+bot.use((ctx, next) => {
+  console.log('🔥 [DEBUG] Antes de flowGuard: ', {
+    updateType: ctx.updateType,
+    callbackData: ctx.callbackQuery?.data,
+    messageText: ctx.message?.text,
+    session: ctx.session
+  })
+  return next()
+})
 bot.use(flowGuard)
 
 // Opcional: loguear **todas** las actualizaciones que pasan por Telegraf
