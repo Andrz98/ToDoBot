@@ -18,6 +18,7 @@ import { registerForceReplyHandler } from '../../events/editForceReply/editForce
 import { registerFlowResetHandler } from '../../events/middlewareFlowReset/flowReset.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
 import { registerListActions } from '../../actions/listAction/listActionHandlers.js'
+import { registerCompleteActions } from '../../actions/completeAction/completeActionHandler.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -100,6 +101,7 @@ bot.catch((err, ctx) => {
 registerEditActions(bot)
 registerForceReplyHandler(bot)
 registerFlowResetHandler(bot)
+registerCompleteActions(bot)
 
 // ====================================
 // 🔰 Registrar handlers de Timezone
