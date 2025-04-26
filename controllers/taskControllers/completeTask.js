@@ -1,7 +1,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildCompleteMenu } from '../../helpers/complete/interactiveFlowComplete.js'
+import { buildCompleteMenu } from '../../helpers/Complete/interactiveFlowComplete.js'
 
 /**
  * Controlador para marcar una tarea como completada /done
