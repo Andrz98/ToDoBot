@@ -6,8 +6,10 @@ export function registerTimezoneActions(bot) {
   // Paso 1: elijo zona y pido confirmación
   bot.action(/^set_tz_(.+)$/, async (ctx) => {
     const tz = ctx.match[1]
+    console.log('antes clear:', ctx.session)
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = tz
+    console.log('después clear:', ctx.session)
     await ctx.answerCbQuery()
     return ctx.reply(
       `¿Estás segur@ de cambiar tu zona horaria a <b>${tz}</b>?`,
