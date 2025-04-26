@@ -11,6 +11,7 @@ import { rateLimit } from '../../middlewares/secure/rateLimit.js'
 import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
 import { localSessionMiddleware } from '../../middlewares/session/localSession.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
+import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 
 import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
@@ -32,6 +33,7 @@ console.log('[telegraf] Instancia de Telegraf creada')
 bot.use(rateLimit)
 bot.use(sanitizeInput)
 bot.use(localSessionMiddleware)
+bot.use(flowGuard)
 
 // Opcional: loguear **todas** las actualizaciones que pasan por Telegraf
 bot.on('update', (ctx) => {
