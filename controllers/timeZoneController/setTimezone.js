@@ -7,6 +7,7 @@ import { AuthorizedUser } from '../../models/authorizedUser.js'
  * Muestra menú o, si recibe argumento, pregunta confirmación.
  */
 export const setTimezone = async (ctx) => {
+  console.log('🕒 [DEBUG:setTimezone] entrada, sesión:', ctx.session)
   try {
     const userId = ctx.from.id
     const input = ctx.message.text.replace(/^\/settimezone\s*/i, '').trim()
