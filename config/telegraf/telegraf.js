@@ -15,7 +15,7 @@ import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 
 import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
-import { registerFlowResetHandler } from '../../events/middlewareFlowReset/flowReset.js'
+import { registerFlowResetHandler } from '../../events/middlewareEventFlowReset/flowReset.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
 import { registerListActions } from '../../actions/listAction/listActionHandlers.js'
 import { registerCompleteActions } from '../../actions/completeAction/completeActionHandler.js'
