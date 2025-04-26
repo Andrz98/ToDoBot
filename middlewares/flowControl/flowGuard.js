@@ -2,67 +2,45 @@ import { Markup } from 'telegraf'
 
 /**
  * Este middleware se encarga de evitar usar comandos
- * mientras haya un flujo pendiente (/add, /edit, /settimezone…).
- *
- * Requiere que, al inicio de cada flujo, hagas en tu handler:
- *   ctx.session.flowType = 'add'      // o 'edit' o 'timezone'
- *   ctx.session.awaiting  = null      // o 'awaiting_*'
+ * mientras haya un flujo pendiente (/add, /edit, /delete, /clear, etc.)
  */
 export async function flowGuard(ctx, next) {
   const { flowType, awaiting } = ctx.session || {}
   const data = ctx.callbackQuery?.data
 
-  // 0) DEBUG
-  console.log(
-    '🚧 [flowGuard] flowType=',
-    flowType,
-    'awaiting=',
-    awaiting,
-    'callback=',
-    data,
-    'text=',
-    ctx.message?.text
-  )
-
-  // 1) Botón “Restablecer acción”
+  // 0) Siempre permitimos el botón de “Restablecer acción”
   if (data === 'flow_reset') {
-    console.log('🔄 [flowGuard] permitiendo flow_reset')
     return next()
   }
 
-  // 2) Si no hay flujo activo, seguimos
+  // 1) Si no hay flujo activo, seguimos
   if (!flowType) {
     return next()
   }
 
-  // 3) Si estamos en flujo timezone, permitimos sus callbacks:
-  //    - Elegir zona: set_tz_<zona>
-  //    - Confirmar:   confirm_tz_yes / confirm_tz_no
-  if (
-    ctx.callbackQuery &&
-    flowType === 'timezone' &&
-    (/^set_tz_/.test(data) || /^confirm_tz_/.test(data))
-  ) {
-    console.log('✅ [flowGuard] permitiendo timezone callback', data)
+  // 2) Callbacks inline propios: delete_*, edit_*, set_tz_*, etc.
+  if (data && new RegExp(`^${flowType}_`).test(data)) {
     return next()
   }
 
-  // 4) Permitir callbacks inline de otros flujos (add_*, edit_*)
-  if (ctx.callbackQuery && new RegExp(`^${flowType}_`).test(data)) {
-    console.log('✅ [flowGuard] permitiendo inline callback', data)
+  // 3) Confirmaciones “extra” que no usan el prefijo flowType_
+  //    – Para /delete: complete_confirm:yes|no
+  //    – Para /clear : clear_confirm:yes|no
+  if (flowType === 'delete' && data?.startsWith('complete_confirm:')) {
+    return next()
+  }
+  if (flowType === 'clear' && data?.startsWith('clear_confirm:')) {
     return next()
   }
 
-  // 5) Permitir respuesta a forceReply dentro de un flujo con awaiting
+  // 4) Respuestas de forceReply en medio del flujo
   if (awaiting && ctx.message?.text && !ctx.message.text.startsWith('/')) {
-    console.log('✅ [flowGuard] permitiendo forceReply dentro de flujo')
     return next()
   }
 
-  // 6) Bloquear cualquier otro comando/mensaje
-  console.log('❌ [flowGuard] bloqueando, invitando a restablecer')
+  // 5) Cualquier otro mensaje o comando, lo bloqueamos
   return ctx.reply(
-    `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa "🔄 Restablecer acción" o completa el flujo.`,
+    `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa "🔄 Restablecer acción" o termina el flujo.`,
     {
       parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
