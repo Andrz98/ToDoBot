@@ -1,7 +1,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildDeleteMenu } from '../../helpers/delete/interectiveFlowDelete.js'
+import { buildDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
 
 /**
  * Controlador para eliminar una tarea específica /delete
