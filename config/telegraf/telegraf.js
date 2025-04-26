@@ -15,6 +15,7 @@ import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 
 import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
+import { registerFlowResetHandler } from '../../events/middlewareFlowReset/flowReset.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
 import { registerListActions } from '../../actions/listAction/listActionHandlers.js'
 
@@ -98,6 +99,7 @@ bot.catch((err, ctx) => {
 // ====================================
 registerEditActions(bot)
 registerForceReplyHandler(bot)
+registerFlowResetHandler(bot)
 
 // ====================================
 // 🔰 Registrar handlers de Timezone

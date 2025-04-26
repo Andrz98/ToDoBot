@@ -1,3 +1,4 @@
+import { Markup } from 'telegraf'
 /**
  * Este middleware se encarga de evitar usar comandos
  * mientras haya un flujo pendiente (/add, /edit…).
@@ -29,7 +30,12 @@ export async function flowGuard(ctx, next) {
 
   // 3) Bloquear cualquier otro comando o mensaje
   return ctx.reply(
-    `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa el botón "Guardar" o responde al prompt para completarla.`,
-    { parse_mode: 'HTML' }
+    `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa el botón "Restablecer acción" o termina el flujo.`,
+    {
+      parse_mode: 'HTML',
+      reply_markup: Markup.inlineKeyboard([
+        Markup.button.callback('🔄 Restablecer acción', 'flow_reset')
+      ]).reply_markup
+    }
   )
 }
