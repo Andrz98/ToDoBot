@@ -1,7 +1,7 @@
 // actions/deleteAction/deleteActionHandlers.js
 import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
-import { buildConfirmDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
+import { buildConfirmDeleteMenu } from '../../helpers/delete/interectiveFlowDelete.js'
 
 /**
  * Registra los callbacks para el flujo de eliminación de tareas.
