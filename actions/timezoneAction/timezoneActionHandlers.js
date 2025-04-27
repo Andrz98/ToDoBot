@@ -1,4 +1,6 @@
 import { Markup } from 'telegraf'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
+
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 
@@ -11,7 +13,8 @@ export function registerTimezoneActions(bot) {
     ctx.session.pendingTz = tz
     console.log('después clear:', ctx.session)
     await ctx.answerCbQuery()
-    return ctx.reply(
+    return safeReply(
+      ctx,
       `¿Estás segur@ de cambiar tu zona horaria a <b>${tz}</b>?`,
       {
         parse_mode: 'HTML',

@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { Telegraf } from 'telegraf'
+import { createBot } from './botFactory.js'
 
 import { pingCommand } from '../../controllers/adminControllers/pingController.js'
 import taskController from '../../controllers/taskControllers/taskController.js'
@@ -27,9 +27,9 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('🪧 TELEGRAM_BOT_TOKEN no está definido en el archivo .env')
 }
 
-// Creo una instancia del bot con el Token
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN)
-console.log('[telegraf] Instancia de Telegraf creada')
+// Crear instancia de bot con keep-alive HTTP
+const bot = createBot(process.env.TELEGRAM_BOT_TOKEN)
+console.log('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
 
 // ====================================
 // 🔰 Middlewares

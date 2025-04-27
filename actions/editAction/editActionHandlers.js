@@ -1,4 +1,5 @@
 import { Markup } from 'telegraf'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { registerTaskSelector } from '../../helpers/tasks/taskSelector.js'
 import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
 import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
@@ -14,7 +15,7 @@ export function registerEditActions(bot) {
   bot.action('edit_name', async (ctx) => {
     await ctx.answerCbQuery()
     ctx.session.awaiting = 'new_name'
-    return ctx.reply('🔺 Escribe el <b>nuevo nombre</b> de la tarea:', {
+    return safeReply(ctx, '🔺 Escribe el <b>nuevo nombre</b> de la tarea:', {
       parse_mode: 'HTML',
       reply_markup: Markup.forceReply().reply_markup
     })
@@ -24,17 +25,19 @@ export function registerEditActions(bot) {
   bot.action('edit_desc', async (ctx) => {
     await ctx.answerCbQuery()
     ctx.session.awaiting = 'new_desc'
-    return ctx.reply('🔸 Escribe la <b>nueva descripción</b> de la tarea:', {
-      parse_mode: 'HTML',
-      reply_markup: Markup.forceReply().reply_markup
-    })
+    return safeReply(
+      ctx,
+      '🔸 Escribe la <b>nueva descripción</b> de la tarea:',
+      { parse_mode: 'HTML', reply_markup: Markup.forceReply().reply_markup }
+    )
   })
 
   // Cambiar fecha
   bot.action('edit_date', async (ctx) => {
     await ctx.answerCbQuery()
     ctx.session.awaiting = 'new_date'
-    return ctx.reply(
+    return safeReply(
+      ctx,
       '🔹 Escribe la <b>nueva fecha</b> de la tarea (DD/MM/AAAA [HH:mm]):',
       { parse_mode: 'HTML', reply_markup: Markup.forceReply().reply_markup }
     )
@@ -47,7 +50,7 @@ export function registerEditActions(bot) {
     const session = ctx.session
     if (!session.editing) {
       // Nada que guardar
-      return ctx.reply('No hay edición activa.', { parse_mode: 'HTML' })
+      return safeReply(ctx, 'No hay edición activa.', { parse_mode: 'HTML' })
     }
 
     // Cargo la tarea
@@ -59,7 +62,7 @@ export function registerEditActions(bot) {
       session.edits = null
       session.awaiting = null
       session.timezone = null
-      return ctx.reply('Error: no se pudo encontrar la tarea.', {
+      return safeReply(ctx, 'Error: no se pudo encontrar la tarea.', {
         parse_mode: 'HTML'
       })
     }
@@ -71,9 +74,13 @@ export function registerEditActions(bot) {
     if (updated) {
       await task.save()
       const summary = changes.map((c) => ` • ${c}`).join('\n')
-      await ctx.reply(`Tarea guardada:\n${summary}`, { parse_mode: 'HTML' })
+      await safeReply(ctx, `Tarea guardada:\n${summary}`, {
+        parse_mode: 'HTML'
+      })
     } else {
-      await ctx.reply('No hubo cambios que guardar.', { parse_mode: 'HTML' })
+      await safeReply(ctx, 'No hubo cambios que guardar.', {
+        parse_mode: 'HTML'
+      })
     }
 
     // Limpio completamente el flujo de edición
@@ -100,6 +107,6 @@ export function registerEditActions(bot) {
 
     // Muestro menú inicial sin botón "Guardar"
     const { text, markup } = buildEditMenu(task, tz, false)
-    return ctx.reply(text, { parse_mode: 'HTML', ...markup })
+    return safeReply(ctx, text, { parse_mode: 'HTML', ...markup })
   })
 }

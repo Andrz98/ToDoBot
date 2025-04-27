@@ -1,5 +1,6 @@
 import { Task } from '../../models/task.js'
 import { formatDateEs } from '../../helpers/date/formatDateEs.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Registra los callbacks para los botones de /list
@@ -27,7 +28,7 @@ export function registerListActions(bot) {
     // 4) Responder al callback (quita el spinner)
     await ctx.answerCbQuery()
     // 5) Enviar los detalles
-    return ctx.reply(`${nameLine}${descLine}${dateLine}`, {
+    return safeReply(ctx, `${nameLine}${descLine}${dateLine}`, {
       parse_mode: 'HTML'
     })
   })

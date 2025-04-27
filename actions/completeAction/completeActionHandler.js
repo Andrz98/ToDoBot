@@ -2,6 +2,7 @@
 import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { buildConfirmCompleteMenu } from '../../helpers/Complete/interactiveFlowComplete.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Registra los callbacks para el flujo de completar tareas.
@@ -21,7 +22,8 @@ export function registerCompleteActions(bot) {
     ctx.session.pendingComplete = taskId
 
     await ctx.answerCbQuery()
-    return ctx.reply(
+    return safeReply(
+      ctx,
       `¿Estás segur@ de marcar como completada la tarea:\n\n<b>${task.name}</b>?`,
       {
         parse_mode: 'HTML',

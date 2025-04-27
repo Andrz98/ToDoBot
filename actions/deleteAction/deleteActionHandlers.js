@@ -2,6 +2,7 @@
 import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { buildConfirmDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Registra los callbacks para el flujo de eliminación de tareas.
@@ -23,10 +24,7 @@ export function registerDeleteActions(bot) {
 
     await ctx.answerCbQuery()
     const { text, reply_markup } = buildConfirmDeleteMenu(task)
-    return ctx.reply(text, {
-      parse_mode: 'HTML',
-      reply_markup
-    })
+    return safeReply(ctx, text, { parse_mode: 'HTML', reply_markup })
   })
 
   // 2) Confirmación “Sí”
