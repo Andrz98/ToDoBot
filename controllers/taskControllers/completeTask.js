@@ -1,7 +1,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildCompleteMenu } from '../../helpers/Complete/interactiveFlowComplete.js'
+import { buildCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**

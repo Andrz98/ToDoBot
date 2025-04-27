@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid'
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildConfirmClearMenu } from '../../helpers/clear/interactiveFlowClear.js'
+import { buildConfirmClearMenu } from '../../helpers/taskHelpers/clear/interactiveFlowClear.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**

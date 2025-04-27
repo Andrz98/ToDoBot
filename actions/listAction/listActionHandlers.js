@@ -1,5 +1,5 @@
 import { Task } from '../../models/task.js'
-import { formatDateEs } from '../../helpers/date/formatDateEs.js'
+import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 

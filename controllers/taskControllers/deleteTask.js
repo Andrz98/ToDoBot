@@ -1,7 +1,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
+import { buildDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
