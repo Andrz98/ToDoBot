@@ -1,4 +1,4 @@
-import { sleep } from './sleep.js'
+import { sleep } from '../delayUtils/sleep.js'
 /**
  * Intenta enviar un reply hasta N veces con backoff.
  *

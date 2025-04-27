@@ -1,4 +1,4 @@
-import { sleep } from './sleep.js'
+import { sleep } from '../delayUtils/sleep.js'
 
 export async function safeEditMessageReplyMarkup(ctx, opts = {}, retries = 3) {
   let attempt = 0
