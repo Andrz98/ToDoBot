@@ -1,7 +1,7 @@
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { DateTime } from 'luxon'
-import { parseHumanDate } from '../../helpers/date/parseHumanDate.js'
+import { parseHumanDate } from '../../helpers/taskHelpers/date/parseHumanDate.js'
 import { formatDateEsMadrid } from '../../helpers/date/formatDateEs.js'
 
 /**
