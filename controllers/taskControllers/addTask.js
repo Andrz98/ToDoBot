@@ -2,7 +2,7 @@ import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { DateTime } from 'luxon'
 import { parseHumanDate } from '../../helpers/taskHelpers/date/parseHumanDate.js'
-import { formatDateEsMadrid } from '../../helpers/date/formatDateEs.js'
+import { formatDateEsMadrid } from '../../helpers/taskHelpers/date/formatDateEs.js'
 
 /**
  * Controlador para agregar una tarea /add
