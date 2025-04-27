@@ -1,5 +1,8 @@
+import { v4 as uuid } from 'uuid'
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
+import { buildConfirmClearMenu } from '../../helpers/clear/interactiveFlowClear.js'
 
 /**
  * Controlador para manejar /clear y /confirmclear
@@ -9,57 +12,36 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
  */
 export const clearTask = async (ctx) => {
   try {
-    // Extraigo el ID del usuario y normalizo el comando recibido
-    const userId = ctx.from.id
-    const command = ctx.message.text.trim().toLowerCase()
-
-    // Verifico si el usuario está autorizado a usar el bot
+    // Autorización de usuario
     if (!(await isUserAuthorized(ctx))) {
-      return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
+      return replyMessages.unauthorized(ctx)
     }
 
-    // Validación específica para comando vacío
-    if (command === '/clear' || command === '/confirmclear') {
-      // No hay parámetros adicionales que validar, estos comandos funcionan sin argumentos
-      // Continuamos con el flujo normal
-    } else if (
-      command.startsWith('/clear :') ||
-      command.startsWith('/confirmclear :')
-    ) {
-      return ctx.reply(
-        '🧾 <b>Formato correcto:</b>\n/clear - Solicita confirmación para eliminar todas las tareas\n/confirmclear - Elimina todas las tareas',
-        { parse_mode: 'HTML' }
-      )
+    const userId = ctx.from.id
+    const count = await Task.countDocuments({ userId })
+
+    // 1. caso "sin tareas"
+    if (count === 0) {
+      return ctx.reply('🤯 No tienes tareas activas para eliminar.', {
+        parse_mode: 'HTML'
+      })
     }
 
-    // /clear → Solicitud de confirmación
-    if (command.startsWith('/clear')) {
-      const taskCount = await Task.countDocuments({ userId })
+    // 2. Debo generar un token y guardar la sesión para proteger las tareas del usuario
+    const token = uuid()
+    ctx.session.flowTypes = 'clear'
+    ctx.session.pendingClearToken = token
 
-      if (taskCount === 0) {
-        return ctx.reply('🤯 No tienes tareas activas que eliminar.')
-      }
-
-      return ctx.reply(
-        `🤯 Estás a punto de eliminar <b>${taskCount}</b> tareas activas.\n` +
-          'Si estás completamente segur@, escribe el comando:\n/confirmclear',
-        { parse_mode: 'HTML' }
-      )
-    }
-
-    // /confirmclear → Eliminación real de las tareas
-    if (command.startsWith('/confirmclear')) {
-      const result = await Task.deleteMany({ userId })
-
-      return ctx.reply(
-        `${result.deletedCount} tarea(s) eliminadas correctamente.`
-      )
-    }
-
-    // Comando desconocido (fallback interno)
-    return ctx.reply('🤯 Comando no reconocido. Usa /clear o /confirmclear.')
+    // 3Enviar menú de confirmación (confirmClearMenu)
+    const { text, reply_markup } = buildConfirmClearMenu(count, token)
+    return ctx.reply(text, {
+      parse_mode: 'HTML',
+      reply_markup
+    })
   } catch (error) {
     console.error('😵‍💫 Error en clearTask:', error)
-    return ctx.reply('😵‍💫 Ocurrió un error al intentar eliminar tus tareas.')
+    return ctx.reply(
+      '😵‍💫 Ocurrió un error al iniciar el borrado. Intenta más tarde.'
+    )
   }
 }

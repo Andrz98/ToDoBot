@@ -20,6 +20,7 @@ import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneAc
 import { registerListActions } from '../../actions/listAction/listActionHandlers.js'
 import { registerCompleteActions } from '../../actions/completeAction/completeActionHandler.js'
 import { registerDeleteActions } from '../../actions/deleteAction/deleteActionHandlers.js'
+import { registerClearActions } from '../../actions/clearAction/clearActionHandler.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -113,6 +114,7 @@ registerForceReplyHandler(bot)
 registerFlowResetHandler(bot)
 registerCompleteActions(bot)
 registerDeleteActions(bot)
+registerClearActions(bot)
 
 // ====================================
 // 🔰 Registrar handlers de Timezone
