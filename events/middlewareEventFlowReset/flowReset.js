@@ -1,22 +1,21 @@
 /**
- * Este handler registra el callback `flow_reset` para restablecer el flujo de edición de tareas
+ * Registra el callback `flow_reset` para limpiar cualquier flujo activo
  */
 export function registerFlowResetHandler(bot) {
   bot.action('flow_reset', async (ctx) => {
-    // Reconoce el click, para que el botón deje interpretar que "hay una query pendiente"
-    await ctx.answerCbQuery('Acción restablecida') // quita el “cargando…” de Telegram
-    // Limpia Todo el estado del flujo
-    ctx.session.flowType = null // limpia el tipo de flujo
-    ctx.session.awaiting = null // limpia el awaiting
-    ctx.session.editing = null // limpia cualquier edición pendiente
+    await ctx.answerCbQuery('✅ Acción restablecida')
+    // Limpiamos todo el estado de flujo
+    ctx.session.flowType = null
+    ctx.session.awaiting = null
+    ctx.session.editing = null
+    ctx.session.pendingDelete = null
+    ctx.session.pendingComplete = null
+    ctx.session.pendingTz = null
 
-    // Eliminar el teclado inline de ese mensaje
+    // Quitar inline keyboard
     if (ctx.update.callback_query.message) {
       await ctx.editMessageReplyMarkup({})
     }
-
-    return ctx.reply(
-      'Flujo restablecido. Ahora puedes usar comandos normalmente.'
-    )
+    return ctx.reply('Flujo restablecido. Ya puedes usar comandos normalmente.')
   })
 }

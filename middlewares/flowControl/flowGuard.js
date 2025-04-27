@@ -1,15 +1,18 @@
 import { Markup } from 'telegraf'
 
 /**
- * Este middleware se encarga de evitar usar comandos
- * mientras haya un flujo pendiente (/add, /edit, /delete, /clear, etc.)
+ * Evita usar comandos mientras haya un flujo pendiente (/add, /edit, /delete, /complete, /timezone…).
+ *
+ * Requiere que, al inicio de cada flujo, hagas:
+ *   ctx.session.flowType = 'add' | 'edit' | 'delete' | 'complete' | 'timezone'
+ *   ctx.session.awaiting   = null | 'awaiting_*'
  */
 export async function flowGuard(ctx, next) {
   const { flowType, awaiting } = ctx.session || {}
-  const data = ctx.callbackQuery?.data
+  const cb = ctx.callbackQuery?.data
 
-  // 0) Siempre permitimos el botón de “Restablecer acción”
-  if (data === 'flow_reset') {
+  // 0) Siempre permitimos el reset
+  if (cb === 'flow_reset') {
     return next()
   }
 
@@ -18,33 +21,38 @@ export async function flowGuard(ctx, next) {
     return next()
   }
 
-  // 2) Callbacks inline propios: delete_*, edit_*, set_tz_*, etc.
-  if (data && new RegExp(`^${flowType}_`).test(data)) {
-    return next()
+  // 2) Permitir callbacks inline según cada flujo
+  if (ctx.callbackQuery) {
+    switch (flowType) {
+      case 'add':
+      case 'edit':
+      case 'delete':
+      case 'complete':
+        if (new RegExp(`^${flowType}_`).test(cb)) {
+          return next()
+        }
+        break
+      case 'timezone':
+        // permitir tanto el menú inicial como la confirmación
+        if (/^(set_tz_|confirm_tz_)/.test(cb)) {
+          return next()
+        }
+        break
+    }
   }
 
-  // 3) Confirmaciones “extra” que no usan el prefijo flowType_
-  //    – Para /delete: complete_confirm:yes|no
-  //    – Para /clear : clear_confirm:yes|no
-  if (flowType === 'delete' && data?.startsWith('complete_confirm:')) {
-    return next()
-  }
-  if (flowType === 'clear' && data?.startsWith('clear_confirm:')) {
-    return next()
-  }
-
-  // 4) Respuestas de forceReply en medio del flujo
+  // 3) Permitir forceReply (respuestas de texto sin “/”)
   if (awaiting && ctx.message?.text && !ctx.message.text.startsWith('/')) {
     return next()
   }
 
-  // 5) Cualquier otro mensaje o comando, lo bloqueamos
+  // 4) Bloquear todo lo demás
   return ctx.reply(
-    `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa "🔄 Restablecer acción" o termina el flujo.`,
+    `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa el botón "Restablecer acción" o termina el flujo.`,
     {
       parse_mode: 'HTML',
       reply_markup: Markup.inlineKeyboard([
-        Markup.button.callback('🔄 Restablecer acción', 'flow_reset')
+        [Markup.button.callback('Restablecer acción', 'flow_reset')]
       ]).reply_markup
     }
   )
