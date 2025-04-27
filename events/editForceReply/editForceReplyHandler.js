@@ -3,7 +3,7 @@ import { Task } from '../../models/task.js'
 import { updateTaskFields } from '../../helpers/taskHelpers/edit/updateTaskFields.js'
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
+import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
 import { DateTime } from 'luxon'
 
 /**
