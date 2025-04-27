@@ -1,5 +1,5 @@
 import { sleep } from './sleep.js'
-import { safeReply } from './safeReply.js'
+import { safeReply } from '../retryUtils/safeReply.js'
 
 /**
  * Envía un reply tras esperar un tiempo.
