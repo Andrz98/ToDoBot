@@ -1,6 +1,6 @@
 // src/controllers/startController/startController.js
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
-import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
