@@ -1,6 +1,7 @@
 import { Markup } from 'telegraf'
 import { buildTimezoneMenu } from '../../helpers/timezone/FlowTimezone/interactiveFlowTimezone.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Comando /settimezone - Inicia el flujo para cambiar huso horario.
@@ -22,12 +23,13 @@ export const setTimezone = async (ctx) => {
       const user = await AuthorizedUser.findOne({ userId })
       const current = user?.timezone
       const { text, markup } = buildTimezoneMenu(current)
-      return ctx.reply(text, { parse_mode: 'HTML', ...markup })
+      return safeReply(ctx, text, { parse_mode: 'HTML', ...markup })
     }
 
     // 2) Validación
     if (!allowedTimezones.includes(input)) {
-      return ctx.reply(
+      return safeReply(
+        ctx,
         '🌐 Zona horaria no válida. Solo puedes elegir entre:\n' +
           '- <b>Europe/Madrid</b>\n' +
           '- <b>America/Bogota</b>',
@@ -37,7 +39,8 @@ export const setTimezone = async (ctx) => {
 
     // 3) Inicio confirmación: guardo en sesión y pregunto
     ctx.session.pendingTz = input
-    return ctx.reply(
+    return safeReply(
+      ctx,
       `¿Estás segur@ de cambiar tu zona horaria a <b>${input}</b>?`,
       {
         parse_mode: 'HTML',
@@ -49,6 +52,6 @@ export const setTimezone = async (ctx) => {
     )
   } catch (error) {
     console.error('😵‍💫 Error en /settimezone:', error.message)
-    return ctx.reply('😵‍💫 Ocurrió un error al procesar tu zona horaria.')
+    return safeReply(ctx, '😵‍💫 Ocurrió un error al procesar tu zona horaria.')
   }
 }

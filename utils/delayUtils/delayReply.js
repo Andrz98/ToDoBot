@@ -1,4 +1,5 @@
 import { sleep } from './sleep.js'
+import { safeReply } from './safeReply.js'
 
 /**
  * Envía un reply tras esperar un tiempo.
@@ -11,5 +12,5 @@ import { sleep } from './sleep.js'
  */
 export const delayReply = async (ctx, text, opts = {}, ms = 1000) => {
   await sleep(ms)
-  return ctx.reply(text, opts)
+  return safeReply(ctx, text, opts)
 }

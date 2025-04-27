@@ -1,6 +1,7 @@
 // src/controllers/startController/startController.js
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Comando /start - Este es el punto de inicio del bot
@@ -37,7 +38,8 @@ export const startCommand = async (ctx) => {
     }
 
     if (authorized) {
-      return ctx.reply(
+      return safeReply(
+        ctx,
         `🛡️ ¡Hola, ${username}!\n` +
           'TuttoFatto está listo para ayudarte.\n\n' +
           tzMessage +
@@ -55,15 +57,17 @@ export const startCommand = async (ctx) => {
     }
 
     // Mensaje si no está autorizado
-    return ctx.reply(
+    return safeReply(
+      ctx,
       '🤨 No estás autorizad@ para usar este bot.\n' +
         'Solicita acceso a @tuttofatto_bot para que te añada como usuario.\n' +
-        'Nuestra base de datos es limitada, por lo tanto no podemos permitir el acceso de todos los usuarios que nos lo soliciten.',
+        'Nuestra base de datos es limitada, por lo tanto no podemos permitir el acceso de todos los usuarios que nos losoliciten.',
       { parse_mode: 'HTML' }
     )
   } catch (error) {
     console.error(`😵‍💫 Error en /start: ${error.message}`)
-    return ctx.reply(
+    return safeReply(
+      ctx,
       '😵 Ocurrieron problemas al procesar el comando. Inténtalo más tarde.',
       { parse_mode: 'HTML' }
     )

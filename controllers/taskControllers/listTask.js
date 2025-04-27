@@ -1,6 +1,7 @@
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Controlador para manejar las tareas activas del usuario /list
@@ -8,28 +9,27 @@ import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.
  * @param {Object} ctx - Contexto proporcionado por Telegraf
  */
 export const listTasks = async (ctx) => {
-  // Validación de autorización
+  // 1. Validación de autorización
   if (!(await isUserAuthorized(ctx))) {
     return replyMessages.unauthorizedUser(ctx)
   }
 
-  // Extraigo el ID del usuario que envió el comando
+  // 2. Extraigo el ID del usuario y recupero tareas pendientes
   const userId = ctx.from.id
-  const task = await Task.find({ userId, completed: false }).sort('reminderAt')
-  if (!task.length === 0) {
-    return ctx.reply('No tienes tareas activas.', { parse_mode: 'HTML' })
+  const tasks = await Task.find({ userId, completed: false }).sort('reminderAt')
+
+  // 2.1 Si no hay tareas, informo al usuario
+  if (tasks.length === 0) {
+    return safeReply(ctx, 'No tienes tareas activas.', { parse_mode: 'HTML' })
   }
 
-  // Construcción de los botones
-  const buttons = task.map((task, i) =>
-    // callback_data: show_task_<id>
-    [{ text: `${i + 1}. ${task.name}`, callback_data: `show_task_${task._id}` }]
-  )
+  // 3. Construcción de los botones
+  const buttons = tasks.map((t, i) => [
+    { text: `${i + 1}. ${t.name}`, callback_data: `show_task_${t._id}` }
+  ])
 
-  // 4) Enviar mensaje con inline keyboard
-  return ctx.reply('Selecciona una tarea para ver sus detalles:', {
-    reply_markup: {
-      inline_keyboard: buttons
-    }
+  // 4. Enviar mensaje con inline keyboard usando safeReply
+  return safeReply(ctx, 'Selecciona una tarea para ver sus detalles:', {
+    reply_markup: { inline_keyboard: buttons }
   })
 }

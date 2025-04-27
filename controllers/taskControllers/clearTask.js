@@ -3,6 +3,7 @@ import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildConfirmClearMenu } from '../../helpers/clear/interactiveFlowClear.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Controlador para manejar /clear y /confirmclear
@@ -22,7 +23,7 @@ export const clearTask = async (ctx) => {
 
     // 1. caso "sin tareas"
     if (count === 0) {
-      return ctx.reply('🤯 No tienes tareas activas para eliminar.', {
+      return safeReply(ctx, '🤯 No tienes tareas activas para eliminar.', {
         parse_mode: 'HTML'
       })
     }
@@ -34,13 +35,11 @@ export const clearTask = async (ctx) => {
 
     // 3Enviar menú de confirmación (confirmClearMenu)
     const { text, reply_markup } = buildConfirmClearMenu(count, token)
-    return ctx.reply(text, {
-      parse_mode: 'HTML',
-      reply_markup
-    })
+    return safeReply(ctx, text, { parse_mode: 'HTML', reply_markup })
   } catch (error) {
     console.error('😵‍💫 Error en clearTask:', error)
-    return ctx.reply(
+    return safeReply(
+      ctx,
       '😵‍💫 Ocurrió un error al iniciar el borrado. Intenta más tarde.'
     )
   }

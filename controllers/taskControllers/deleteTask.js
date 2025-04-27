@@ -2,6 +2,7 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Controlador para eliminar una tarea específica /delete
@@ -20,18 +21,20 @@ export const deleteTask = async (ctx) => {
     const userId = ctx.from.id
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
-      return ctx.reply('No tienes tareas pendientes para eliminar.', {
+      return safeReply(ctx, 'No tienes tareas pendientes para eliminar.', {
         parse_mode: 'HTML'
       })
     }
 
-    return ctx.reply(
+    return safeReply(
+      ctx,
       'Selecciona la tarea que deseas eliminar:',
       buildDeleteMenu(tasks)
     )
   } catch (error) {
     console.error('😵‍💫 Error en deleteTask:', error)
-    return ctx.reply(
+    return safeReply(
+      ctx,
       '😵‍💫 Ocurrió un error al iniciar el flujo de eliminar tareas. Intenta más tarde.'
     )
   }
