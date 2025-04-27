@@ -1,7 +1,7 @@
 // actions/deleteAction/deleteActionHandlers.js
 import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
-import { buildConfirmDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
+import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
