@@ -1,6 +1,6 @@
 // helpers/delete/interactiveFlowDelete.js
 import { Markup } from 'telegraf'
-import { buildInlineConfirm } from '../replyConfirm/inlineConfirm.js'
+import { buildInlineConfirm } from '../../replyConfirm/inlineConfirm.js'
 
 /**
  * Construye el teclado inline para seleccionar la tarea a eliminar.
