@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf'
-import { buildTimezoneMenu } from '../../helpers/taskHelpers/timezone/interactiveFlowTimezone.js'
+import { buildTimezoneMenu } from '../../helpers/taskHelpers/timezone/FlowTimezone/interactiveFlowTimezone.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
