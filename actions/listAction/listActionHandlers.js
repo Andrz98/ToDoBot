@@ -1,5 +1,6 @@
 import { Task } from '../../models/task.js'
 import { formatDateEs } from '../../helpers/date/formatDateEs.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
@@ -14,7 +15,7 @@ export function registerListActions(bot) {
     // 2) Recuperar tarea
     const task = await Task.findById(taskId)
     if (!task) {
-      await ctx.answerCbQuery('Tarea no encontrada.', { show_alert: true })
+      await safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
       return
     }
 
@@ -26,7 +27,7 @@ export function registerListActions(bot) {
     const dateLine = `\n\n<b>🔹 Fecha:</b> ${formatDateEs(task.reminderAt, ctx.session.timezone || 'Europe/Madrid')}`
 
     // 4) Responder al callback (quita el spinner)
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     // 5) Enviar los detalles
     return safeReply(ctx, `${nameLine}${descLine}${dateLine}`, {
       parse_mode: 'HTML'

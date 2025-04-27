@@ -3,7 +3,8 @@ import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { buildConfirmDeleteMenu } from '../../helpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
-
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
+import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 /**
  * Registra los callbacks para el flujo de eliminación de tareas.
  * @param {import('telegraf').Telegraf} bot
@@ -14,7 +15,7 @@ export function registerDeleteActions(bot) {
     const taskId = ctx.match[1]
     const task = await Task.findById(taskId)
     if (!task) {
-      await ctx.answerCbQuery('Tarea no encontrada.', { show_alert: true })
+      await safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
       return
     }
 
@@ -22,7 +23,7 @@ export function registerDeleteActions(bot) {
     ctx.session.flowType = 'delete'
     ctx.session.pendingDelete = taskId
 
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     const { text, reply_markup } = buildConfirmDeleteMenu(task)
     return safeReply(ctx, text, { parse_mode: 'HTML', reply_markup })
   })
@@ -32,8 +33,8 @@ export function registerDeleteActions(bot) {
     const taskId = ctx.session.pendingDelete
     await Task.findByIdAndDelete(taskId)
 
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup() // quita botones
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     // Limpiamos el flujo
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
@@ -43,8 +44,8 @@ export function registerDeleteActions(bot) {
 
   // 3) Confirmación “No”
   bot.action('delete_confirm:no', async (ctx) => {
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup()
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
 

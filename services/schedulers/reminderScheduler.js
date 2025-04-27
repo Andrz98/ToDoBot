@@ -1,6 +1,7 @@
 import cron from 'node-cron'
 import { Task } from '../../models/task.js'
 import { bot } from '../../config/telegraf/telegraf.js'
+import { safeSendMessage } from '../../utils/retryUtils/safeSendMessage.js'
 
 /**
  * Scheduler que revisa cada minuto si hay tareas con recordatorio activo.
@@ -34,15 +35,13 @@ export const startReminderScheduler = () => {
         for (const window of alertMessage) {
           const delta = Math.abs(diff - window.ms)
           if (delta <= 60 * 1000 && !alerts.includes(window.label)) {
-            await bot.telegram.sendMessage(
+            await safeSendMessage(
+              bot,
               task.userId,
               `⌚ <b>Recordatorio (${window.label} antes)</b>:\n<b>${task.name}</b>\n` +
                 `📅 Programado para el ${task.reminderAt.toLocaleString(
                   'es-ES',
-                  {
-                    dateStyle: 'full',
-                    timeStyle: 'short'
-                  }
+                  { dateStyle: 'full', timeStyle: 'short' }
                 )}`,
               { parse_mode: 'HTML' }
             )

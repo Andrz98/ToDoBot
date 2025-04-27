@@ -3,6 +3,8 @@ import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { buildConfirmCompleteMenu } from '../../helpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
+import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 
 /**
  * Registra los callbacks para el flujo de completar tareas.
@@ -13,7 +15,7 @@ export function registerCompleteActions(bot) {
     const taskId = ctx.match[1]
     const task = await Task.findById(taskId)
     if (!task) {
-      await ctx.answerCbQuery('Tarea no encontrada.', { show_alert: true })
+      await safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
       return
     }
 
@@ -21,7 +23,7 @@ export function registerCompleteActions(bot) {
     ctx.session.flowType = 'complete'
     ctx.session.pendingComplete = taskId
 
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     return safeReply(
       ctx,
       `¿Estás segur@ de marcar como completada la tarea:\n\n<b>${task.name}</b>?`,
@@ -37,8 +39,8 @@ export function registerCompleteActions(bot) {
     const taskId = ctx.session.pendingComplete
     await Task.findByIdAndUpdate(taskId, { completed: true })
 
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup() // elimina botones
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
 
@@ -47,8 +49,8 @@ export function registerCompleteActions(bot) {
 
   // 3 Confirma “No”
   bot.action('complete_confirm:no', async (ctx) => {
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup()
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
 

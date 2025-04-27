@@ -5,6 +5,7 @@ import { buildEditMenu } from '../../helpers/edit/interactiveFlowEdit.js'
 import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
 import { updateTaskFields } from '../../helpers/edit/updateTaskFields.js'
 import { Task } from '../../models/task.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 /**
  * Registra los callbacks para los botones inline de /edit
@@ -13,7 +14,7 @@ import { Task } from '../../models/task.js'
 export function registerEditActions(bot) {
   // Cambiar nombre
   bot.action('edit_name', async (ctx) => {
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     ctx.session.awaiting = 'new_name'
     return safeReply(ctx, '🔺 Escribe el <b>nuevo nombre</b> de la tarea:', {
       parse_mode: 'HTML',
@@ -23,7 +24,7 @@ export function registerEditActions(bot) {
 
   // Cambiar descripción
   bot.action('edit_desc', async (ctx) => {
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     ctx.session.awaiting = 'new_desc'
     return safeReply(
       ctx,
@@ -34,7 +35,7 @@ export function registerEditActions(bot) {
 
   // Cambiar fecha
   bot.action('edit_date', async (ctx) => {
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     ctx.session.awaiting = 'new_date'
     return safeReply(
       ctx,
@@ -45,7 +46,7 @@ export function registerEditActions(bot) {
 
   // Guardar edición
   bot.action('edit_save', async (ctx) => {
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
 
     const session = ctx.session
     if (!session.editing) {
@@ -93,7 +94,7 @@ export function registerEditActions(bot) {
 
   // Seleccionar tarea e iniciar flujo de edición
   registerTaskSelector(bot, 'select_edit', async (ctx, task) => {
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
 
     // Inicio del flujo
     ctx.session.flowType = 'edit'

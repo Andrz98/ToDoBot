@@ -1,5 +1,7 @@
 import { Markup } from 'telegraf'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
@@ -12,7 +14,7 @@ export function registerTimezoneActions(bot) {
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = tz
     console.log('después clear:', ctx.session)
-    await ctx.answerCbQuery()
+    await safeAnswerCbQuery(ctx)
     return safeReply(
       ctx,
       `¿Estás segur@ de cambiar tu zona horaria a <b>${tz}</b>?`,
@@ -28,8 +30,8 @@ export function registerTimezoneActions(bot) {
 
   // Paso 2a: confirma “Sí”
   bot.action('confirm_tz_yes', async (ctx) => {
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup()
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     const tz = ctx.session.pendingTz
     const userId = ctx.from.id
 
@@ -63,8 +65,8 @@ export function registerTimezoneActions(bot) {
 
   // Paso 2b: confirma “No”
   bot.action('confirm_tz_no', async (ctx) => {
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup()
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingTz = null
     return delayReply(

@@ -1,5 +1,7 @@
 import { Task } from '../../models/task.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
+import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 
 /**
  * Registra los callbacks para completar o cancelar /clear
@@ -10,7 +12,7 @@ export function registerClearActions(bot) {
     const token = ctx.match[1]
     // 1.1) Validar token contra sesión
     if (ctx.session.pendingClearToken !== token) {
-      return ctx.answerCbQuery('Operación inválida o expirada.', {
+      return safeAnswerCbQuery(ctx, 'Operación inválida o expirada.', {
         show_alert: true
       })
     }
@@ -20,8 +22,8 @@ export function registerClearActions(bot) {
     const result = await Task.deleteMany({ userId })
 
     // 3) Quito spinner y botones
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup()
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
 
     // 4) Limpio sesión
     ctx.session.flowType = null
@@ -37,8 +39,8 @@ export function registerClearActions(bot) {
 
   // 2) Confirma “no”
   bot.action(/^clear_confirm_(.+):no$/, async (ctx) => {
-    await ctx.answerCbQuery()
-    await ctx.editMessageReplyMarkup()
+    await safeAnswerCbQuery(ctx)
+    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null
     return delayReply(ctx, 'Operación cancelada.', 500)

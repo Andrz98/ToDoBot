@@ -1,0 +1,15 @@
+import { sleep } from './sleep.js'
+
+export async function safeEditMessageReplyMarkup(ctx, opts = {}, retries = 3) {
+  let attempt = 0
+  while (true) {
+    try {
+      return await ctx.editMessageReplyMarkup(opts)
+    } catch (err) {
+      if (++attempt > retries || err.code !== 'ECONNRESET') {
+        throw err
+      }
+      await sleep(200 * attempt)
+    }
+  }
+}
