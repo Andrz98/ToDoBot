@@ -1,4 +1,4 @@
-import { buildInlineConfirm } from '../replyConfirm/inlineConfirm.js'
+import { buildInlineConfirm } from '../../replyConfirm/inlineConfirm.js'
 /**
  * Construye texto y teclado inline para confirmar /clear
  *
