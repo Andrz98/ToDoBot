@@ -1,6 +1,4 @@
-// actions/addAction/addActionHandlers.js
-
-import { isUserAuthorized } from '../../middlewares/access/isAuthorizedUser.js'
+import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 import { buildInlineConfirm } from '../../helpers/replyConfirm/inlineConfirm.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -16,7 +14,7 @@ import { TaskInstance } from '../../models/taskInstance.js'
 
 export function registerAddAction(bot) {
   // 1. Comando /add → Menú de frecuencia
-  bot.command('add', isUserAuthorized, (ctx) => {
+  bot.command('add', isAuthorizedUser, (ctx) => {
     const { text, markup } = buildFrequencyMenu()
     return ctx.reply(text, markup)
   })
