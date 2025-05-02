@@ -6,7 +6,7 @@ import { buildInlineConfirm } from '../../helpers/replyConfirm/inlineConfirm.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
-import { RecurrenceTemplate } from '../../models/recurrencenTemplate.js'
+import { RecurrenceTemplate } from '../../models/recurrenceTemplate.js'
 import { TaskInstance } from '../../models/taskInstance.js'
 
 export function registerAddAction(bot) {
