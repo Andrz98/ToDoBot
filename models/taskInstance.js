@@ -45,8 +45,7 @@ const taskInstanceSchema = new mongoose.Schema(
     // Limpieza automática de instancias caducadas
     expiresAt: {
       type: Date,
-      required: true,
-      index: true
+      required: true
     }
   },
   {
