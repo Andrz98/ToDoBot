@@ -1,28 +1,61 @@
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
+import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
+import { buildName } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 import { buildInlineConfirm } from '../../helpers/replyConfirm/inlineConfirm.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
-import { RecurrenceTemplate } from '../../models/recurrenceTemplate.js'
+import { RecurrenceTemplate } from '../../models/recurrencenTemplate.js'
 import { TaskInstance } from '../../models/taskInstance.js'
 
-/**
- * Registra TODO el flujo de /add: comando + selección de frecuencia + confirmación.
- * @param {import('telegraf').Telegraf} bot
- */
-
 export function registerAddAction(bot) {
-  // 1. Comando /add → Menú de frecuencia
-  bot.command('add', isAuthorizedUser, (ctx) => {
+  // 1. /add → menú de plantillas o “nueva”
+  bot.command('add', isAuthorizedUser, async (ctx) => {
+    const { text, reply_markup } = await buildAddMenu(ctx)
+    return ctx.reply(text, { reply_markup })
+  })
+
+  // 1.1 “Nueva plantilla”
+  bot.action('add_tpl_new', async (ctx) => {
+    ctx.session.flowType = 'add'
+    ctx.session.pendingAdd = {}
+    await safeAnswerCbQuery(ctx)
+    const { text, reply_markup } = buildName()
+    return ctx.reply(text, { reply_markup })
+  })
+
+  // 1.2 “Plantilla existente” (solo IDs, no “new”)
+  bot.action(/^add_tpl_(?!new)(.+)$/, async (ctx) => {
+    // regex ajustada
+    ctx.session.flowType = 'add'
+    ctx.session.pendingAdd = { templateId: ctx.match[1] }
+    await safeAnswerCbQuery(ctx)
+    // saltamos directamente a elegir frecuencia
     const { text, markup } = buildFrequencyMenu()
     return ctx.reply(text, markup)
   })
 
-  // 2. Selección de frecuencia
+  // 2. Captura nombre (force-reply)
+  bot.on('message', async (ctx) => {
+    if (
+      ctx.session.flowType === 'add' &&
+      ctx.session.pendingAdd &&
+      !ctx.session.pendingAdd.name &&
+      ctx.message.reply_to_message
+    ) {
+      ctx.session.pendingAdd.name = ctx.message.text.trim()
+      await ctx.deleteMessage()
+      // tras nombre, saltamos a frecuencia (sin descripción)
+      const { text, markup } = buildFrequencyMenu()
+      return ctx.reply(text, markup)
+    }
+  })
+
+  // 3. Selección de frecuencia
   bot.action(/^add_freq_(daily|weekly|monthly|yearly)$/, async (ctx) => {
     const frequency = ctx.match[1]
-    ctx.session.pendingAdd = { frequency }
+    Object.assign(ctx.session.pendingAdd, { frequency })
 
     await safeAnswerCbQuery(ctx)
     const question = `Frecuencia seleccionada: ${frequency}. ¿Confirmas crear esta plantilla?`
@@ -30,50 +63,55 @@ export function registerAddAction(bot) {
     return ctx.reply(question, { parse_mode: 'Markdown', ...confirmMk })
   })
 
-  // 3.1 Confirmación Sí → Creamos plantilla + primera instancia
+  // 4. Confirmación Sí → crear plantilla + instancia
   bot.action('add_confirm:yes', async (ctx) => {
     await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
-
-    const { frequency } = ctx.session.pendingAdd
+    const { templateId, name, frequency } = ctx.session.pendingAdd
     const userId = ctx.from.id
 
-    // Creamos la plantilla
-    const tpl = await RecurrenceTemplate.create({
-      userId,
-      name: `Tarea ${frequency}`,
-      frequency,
-      active: true
-    })
+    const tpl = templateId
+      ? await RecurrenceTemplate.findByIdAndUpdate(
+          templateId,
+          { name, frequency },
+          { new: true }
+        )
+      : await RecurrenceTemplate.create({
+          userId,
+          name,
+          frequency,
+          active: true
+        })
 
-    // Generamos la primera instancia para hoy
     const now = new Date()
-    const expiresAt = new Date(now.getTime() + 24 * 3600 * 1000)
+    const expiresAt = new Date(now.valueOf() + 24 * 3600 * 1000)
     await TaskInstance.create({
       userId,
       templateId: tpl._id,
-      name: tpl.name,
+      name,
       description: tpl.description,
       reminderAt: now,
-      frequency: tpl.frequency,
+      frequency,
       status: 'pending',
       expiresAt
     })
 
+    delete ctx.session.flowType
     delete ctx.session.pendingAdd
 
     return delayReply(
       ctx,
-      `Plantilla ${tpl.name} creada con frecuencia ${tpl.frequency}. Se ha generado la primera instancia para hoy.`,
+      `Plantilla "${tpl.name}" creada/actualizada con frecuencia "${tpl.frequency}". Primera instancia generada.`,
       { parse_mode: 'Markdown' },
       500
     )
   })
 
-  // 3.2 Confirmación No → Cancelamos
+  // 5. Confirmación No → cancelar
   bot.action('add_confirm:no', async (ctx) => {
     await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
+    delete ctx.session.flowType
     delete ctx.session.pendingAdd
     return delayReply(
       ctx,
