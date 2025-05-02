@@ -41,7 +41,7 @@ export async function flowGuard(ctx, next) {
     }
   }
 
-  // 3) Permitir forceReply (respuestas de texto sin “/”)
+  // 3) Permitir forceReply (respuestas de texto sin “/”) si estamos esperando dato
   if (awaiting && ctx.message?.text && !ctx.message.text.startsWith('/')) {
     return next()
   }
