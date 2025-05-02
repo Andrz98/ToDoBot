@@ -26,14 +26,14 @@ const recurrenceTemplateSchema = new mongoose.Schema(
       required: true
     },
 
-    // Parametros según la frecuencia
+    // Parámetros según la frecuencia
     // daily: hora o franja horaria
-    timeOdDay: {
+    timeOfDay: {
       type: String,
       default: null
     },
-    // weekly: diá de la semana
-    dayOfWeek: {
+    // weekly: días de la semana (1=Lun … 7=Dom)
+    daysOfWeek: {
       type: [Number],
       validate: {
         validator: (arr) => arr.every((n) => n >= 1 && n <= 7),
@@ -41,7 +41,7 @@ const recurrenceTemplateSchema = new mongoose.Schema(
       },
       default: []
     },
-    // monthly: dia del mes
+    // monthly: día del mes
     dayOfMonth: {
       type: Number,
       min: 1,
@@ -49,8 +49,8 @@ const recurrenceTemplateSchema = new mongoose.Schema(
       default: null
     },
     // yearly: mes y día
-    monthAndDAy: {
-      month: { tyoe: Number, min: 1, max: 12 },
+    monthAndDay: {
+      month: { type: Number, min: 1, max: 12 },
       day: { type: Number, min: 1, max: 31 }
     },
     active: {
@@ -64,10 +64,10 @@ const recurrenceTemplateSchema = new mongoose.Schema(
   }
 )
 
-// Unico por usuario + nombre + nombre de plantilla
+// Único por usuario + nombre de plantilla
 recurrenceTemplateSchema.index({ userId: 1, name: 1 }, { unique: true })
 
-export const recurrenceTemplate = mongoose.model(
+export const RecurrenceTemplate = mongoose.model(
   'RecurrenceTemplate',
   recurrenceTemplateSchema
 )

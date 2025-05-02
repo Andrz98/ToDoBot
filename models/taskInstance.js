@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 /**
- * Instancias diarias/semanales/mensuales/anuales que el planificador (scheduler) generará
+ * Instancias diarias/semanales/mensuales/anuales que el planificador generará
  */
 const taskInstanceSchema = new mongoose.Schema(
   {
@@ -22,9 +22,9 @@ const taskInstanceSchema = new mongoose.Schema(
       trim: true
     },
     description: {
-      type: Date,
-      required: true,
-      index: true
+      type: String,
+      trim: true,
+      default: ''
     },
     reminderAt: {
       type: Date,
@@ -57,4 +57,4 @@ const taskInstanceSchema = new mongoose.Schema(
 // TTL: borrar instancia tras vencer expiresAt
 taskInstanceSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 })
 
-export const taskInstance = mongoose.model('TaskInstance', taskInstanceSchema)
+export const TaskInstance = mongoose.model('TaskInstance', taskInstanceSchema)
