@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf'
-import { RecurrenceTemplate } from '../../../models/recurrencenTemplate.js'
+import { RecurrenceTemplate } from '../../../models/recurrenceTemplate.js'
 
 // 1. El primer paso es mostrar las plantillas existentes + "Nueva plantilla"
 export async function buildAddMenu(ctx) {
