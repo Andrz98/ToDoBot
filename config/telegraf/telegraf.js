@@ -21,7 +21,7 @@ import { registerListActions } from '../../actions/listAction/listActionHandlers
 import { registerCompleteActions } from '../../actions/completeAction/completeActionHandler.js'
 import { registerDeleteActions } from '../../actions/deleteAction/deleteActionHandlers.js'
 import { registerClearActions } from '../../actions/clearAction/clearActionHandler.js'
-import { registerAddActions } from '../../actions/addActions/addActionHanlders.js'
+import { registerAddAction } from '../../actions/addActions/addActionHanlders.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -110,7 +110,7 @@ bot.catch((err, ctx) => {
 // ====================================
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
-registerAddActions(bot)
+registerAddAction(bot)
 registerEditActions(bot)
 registerForceReplyHandler(bot)
 registerFlowResetHandler(bot)
