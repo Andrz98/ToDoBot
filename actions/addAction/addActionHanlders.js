@@ -1,6 +1,8 @@
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
-import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
-import { buildName } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
+import {
+  buildAddMenu,
+  buildName
+} from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 import { buildInlineConfirm } from '../../helpers/replyConfirm/inlineConfirm.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -22,41 +24,39 @@ export function registerAddAction(bot) {
     ctx.session.pendingAdd = {}
     ctx.session.awaiting = 'add_name'
     await safeAnswerCbQuery(ctx)
+
     const { text, reply_markup } = buildName()
     return ctx.reply(text, { reply_markup })
   })
 
   // 1.2 “Plantilla existente” (solo IDs, no “new”)
-  bot.action(/^add_tpl_(?!new)(.+)$/, async (ctx) => {
-    // regex ajustada
+  bot.action(/^add_tpl_([0-9a-fA-F]{24})$/, async (ctx) => {
     ctx.session.flowType = 'add'
     ctx.session.pendingAdd = { templateId: ctx.match[1] }
+    ctx.session.awaiting = null
     await safeAnswerCbQuery(ctx)
-    // saltamos directamente a elegir frecuencia
-    const { text, markup } = buildFrequencyMenu()
-    return ctx.reply(text, markup)
+
+    const { text, reply_markup } = buildFrequencyMenu()
+    return ctx.reply(text, { reply_markup })
   })
 
-  // 2. Captura nombre (force-reply)
+  // 2. Captura nombre (awaiting === 'add_name')
   bot.on('message', async (ctx) => {
     const { flowType, awaiting, pendingAdd } = ctx.session
-
     if (
       flowType === 'add' &&
-      awaiting === 'add_name' && // ← sólo aquí dejamos pasar
+      awaiting === 'add_name' &&
       ctx.message?.text &&
       !ctx.message.text.startsWith('/')
     ) {
-      // 2.1 Guardamos el nombre
       pendingAdd.name = ctx.message.text.trim()
-
-      // 2.2 Limpiamos el mensaje de force-reply
       await ctx.deleteMessage()
 
-      // 2.3 Preparamos el siguiente paso: elegir frecuencia
-      ctx.session.awaiting = null // ya no esperamos nombre
-      const { text, markup } = buildFrequencyMenu()
-      return ctx.reply(text, markup)
+      ctx.session.awaiting = null
+      await safeAnswerCbQuery(ctx)
+
+      const { text, reply_markup } = buildFrequencyMenu()
+      return ctx.reply(text, { reply_markup })
     }
   })
 
@@ -64,8 +64,8 @@ export function registerAddAction(bot) {
   bot.action(/^add_freq_(daily|weekly|monthly|yearly)$/, async (ctx) => {
     const frequency = ctx.match[1]
     Object.assign(ctx.session.pendingAdd, { frequency })
-
     await safeAnswerCbQuery(ctx)
+
     const question = `Frecuencia seleccionada: ${frequency}. ¿Confirmas crear esta plantilla?`
     const confirmMk = buildInlineConfirm('add_confirm')
     return ctx.reply(question, { parse_mode: 'Markdown', ...confirmMk })
@@ -75,6 +75,7 @@ export function registerAddAction(bot) {
   bot.action('add_confirm:yes', async (ctx) => {
     await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
+
     const { templateId, name, frequency } = ctx.session.pendingAdd
     const userId = ctx.from.id
 
@@ -99,12 +100,14 @@ export function registerAddAction(bot) {
       name,
       description: tpl.description,
       reminderAt: now,
-      frequency,
+      frequency: tpl.frequency,
       status: 'pending',
       expiresAt
     })
 
+    // Limpio sesión
     delete ctx.session.flowType
+    delete ctx.session.awaiting
     delete ctx.session.pendingAdd
 
     return delayReply(
@@ -119,8 +122,11 @@ export function registerAddAction(bot) {
   bot.action('add_confirm:no', async (ctx) => {
     await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
+
     delete ctx.session.flowType
+    delete ctx.session.awaiting
     delete ctx.session.pendingAdd
+
     return delayReply(
       ctx,
       'Creación de plantilla cancelada.',
