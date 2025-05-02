@@ -20,6 +20,7 @@ export function registerAddAction(bot) {
   bot.action('add_tpl_new', async (ctx) => {
     ctx.session.flowType = 'add'
     ctx.session.pendingAdd = {}
+    ctx.session.awaiting = 'add_name'
     await safeAnswerCbQuery(ctx)
     const { text, reply_markup } = buildName()
     return ctx.reply(text, { reply_markup })
@@ -38,15 +39,22 @@ export function registerAddAction(bot) {
 
   // 2. Captura nombre (force-reply)
   bot.on('message', async (ctx) => {
+    const { flowType, awaiting, pendingAdd } = ctx.session
+
     if (
-      ctx.session.flowType === 'add' &&
-      ctx.session.pendingAdd &&
-      !ctx.session.pendingAdd.name &&
-      ctx.message.reply_to_message
+      flowType === 'add' &&
+      awaiting === 'add_name' && // ← sólo aquí dejamos pasar
+      ctx.message?.text &&
+      !ctx.message.text.startsWith('/')
     ) {
-      ctx.session.pendingAdd.name = ctx.message.text.trim()
+      // 2.1 Guardamos el nombre
+      pendingAdd.name = ctx.message.text.trim()
+
+      // 2.2 Limpiamos el mensaje de force-reply
       await ctx.deleteMessage()
-      // tras nombre, saltamos a frecuencia (sin descripción)
+
+      // 2.3 Preparamos el siguiente paso: elegir frecuencia
+      ctx.session.awaiting = null // ya no esperamos nombre
       const { text, markup } = buildFrequencyMenu()
       return ctx.reply(text, markup)
     }
