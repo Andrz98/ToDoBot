@@ -13,7 +13,7 @@ import { localSessionMiddleware } from '../../middlewares/session/localSession.j
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 
-import { registerEditActions } from '../../actions/editAction/editActionHandlers.js'
+import { registerEditActions } from '../../actions/editAction/index.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
 import { registerFlowResetHandler } from '../../events/middlewareEventFlowReset/flowReset.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
