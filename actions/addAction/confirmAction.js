@@ -1,5 +1,3 @@
-// actions/addAction/confirmAction.js
-
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'

@@ -1,5 +1,3 @@
-// actions/addAction/messageHandler.js
-
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 
@@ -11,6 +9,15 @@ export function registerMessageHandler(bot) {
     }
 
     const text = ctx.message.text.trim()
+
+    // 1. Si es respuesta a un force-reply, borramos el prompt original
+    const replied = ctx.message.reply_to_message
+    if (replied?.message_id) {
+      await ctx.telegram
+        .deleteMessage(ctx.chat.id, replied.message_id)
+        .catch(() => {})
+    }
+    // 2. Borramos la respuesta del usuario
     await ctx.deleteMessage().catch(() => {})
 
     switch (awaiting) {

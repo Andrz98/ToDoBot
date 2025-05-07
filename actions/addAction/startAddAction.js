@@ -1,5 +1,3 @@
-// actions/addAction/startAddAction.js
-
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { buildAddButton } from '../../helpers/taskHelpers/add/addCommand.js'
 
