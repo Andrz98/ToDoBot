@@ -21,7 +21,7 @@ import { registerListActions } from '../../actions/listAction/listActionHandlers
 import { registerCompleteActions } from '../../actions/completeAction/completeActionHandler.js'
 import { registerDeleteActions } from '../../actions/deleteAction/deleteActionHandlers.js'
 import { registerClearActions } from '../../actions/clearAction/clearActionHandler.js'
-import { registerAddAction } from '../../actions/addAction/addActionHandlers.js'
+import { registerAddAction } from '../../actions/addAction/index.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
