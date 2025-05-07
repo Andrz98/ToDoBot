@@ -15,7 +15,8 @@ export function registerAddAction(bot) {
     ctx.session.flowType = 'add'
     ctx.session.pendingTask = {}
     ctx.session.awaiting = null
-    return ctx.reply(...buildAddButton())
+    const { text, markup } = buildAddButton()
+    return ctx.reply(text, markup)
   })
 
   // 2. Usuario pulsa "Crear tarea" -> muestro el menú de campos
