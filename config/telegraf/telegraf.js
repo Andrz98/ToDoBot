@@ -12,7 +12,7 @@ import { localSessionMiddleware } from '../../middlewares/session/localSession.j
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 
-import { registerEditActions } from '../../actions/editAction/index.js'
+import { registerEditAction } from '../../actions/editAction/index.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
 import { registerFlowResetHandler } from '../../events/middlewareEventFlowReset/flowReset.js'
 import { registerTimezoneActions } from '../../actions/timezoneAction/timezoneActionHandlers.js'
@@ -104,7 +104,7 @@ bot.catch((err, ctx) => {
 // 🔰 Registrar handlers de edición interactiva
 // ====================================
 registerAddAction(bot)
-registerEditActions(bot)
+registerEditAction(bot)
 registerForceReplyHandler(bot)
 registerFlowResetHandler(bot)
 registerCompleteActions(bot)
