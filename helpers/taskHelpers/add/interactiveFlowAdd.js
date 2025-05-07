@@ -12,6 +12,20 @@ import { Markup } from 'telegraf'
 export function buildAddMenu(pendingTask = {}) {
   const keyboard = []
 
+  // ── Resumen de campos ya completados ──
+  const summaryLines = []
+  if (pendingTask.name) {
+    summaryLines.push(`🔺 Nombre: ${pendingTask.name}`)
+  }
+  if (pendingTask.description) {
+    summaryLines.push(`🔸 Descripción: ${pendingTask.description}`)
+  }
+  if (pendingTask.reminderAt) {
+    // formateamos la fecha para mostrarla al usuario
+    summaryLines.push(`🔹 Fecha: ${pendingTask.reminderAt.toLocaleString()}`)
+  }
+  // Si hay resumen, lo unimos y añadimos dos saltos de línea
+  const summary = summaryLines.length ? summaryLines.join('\n') + '\n\n' : ''
   if (!pendingTask.name) {
     keyboard.push([
       Markup.button.callback('Nombre (obligatorio)', 'add_field_name')
@@ -35,7 +49,7 @@ export function buildAddMenu(pendingTask = {}) {
     keyboard.push([Markup.button.callback('Confirmar creación', 'add_confirm')])
   }
 
-  const text = 'Selecciona el campo que deseas completar:'
+  const text = summary + 'Selecciona el campo que deseas completar:'
   const inline = Markup.inlineKeyboard(keyboard, { columns: 1 })
 
   return {
