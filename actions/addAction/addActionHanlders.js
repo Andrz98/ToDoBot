@@ -1,5 +1,3 @@
-// actions/addAction/addActionHandlers.js
-
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { buildAddButton } from '../../helpers/taskHelpers/add/addCommand.js'
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
@@ -23,7 +21,7 @@ export function registerAddAction(bot) {
   bot.action('add_create', async (ctx) => {
     await safeAnswerCbQuery(ctx)
     ctx.session.awaiting = null
-    const { text, markup } = buildAddMenu()
+    const { text, markup } = buildAddMenu(ctx.session.pendingTask)
     return ctx.reply(text, markup)
   })
 
@@ -107,7 +105,7 @@ export function registerAddAction(bot) {
     }
 
     // Tras capturar un campo, volvemos a mostrar el menú de campos
-    const { text: menuText, markup } = buildAddMenu()
+    const { text: menuText, markup } = buildAddMenu(ctx.session.pendingTask)
     return ctx.reply(menuText, markup)
   })
 
