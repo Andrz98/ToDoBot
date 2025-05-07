@@ -73,9 +73,6 @@ bot.start(startCommand)
 // ====================================
 // 🔰 Comandos protegidos por middleware
 // ====================================
-console.log('[telegraf] Registrando comando /add')
-bot.command('add', isAuthorizedUser, taskController.addTask)
-
 console.log('[telegraf] Registrando comando /list')
 bot.command('list', isAuthorizedUser, taskController.listTasks)
 

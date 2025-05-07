@@ -1,4 +1,3 @@
-// config/botFactory.js
 import { Telegraf, Telegram } from 'telegraf'
 import https from 'https'
 
