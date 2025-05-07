@@ -1,5 +1,3 @@
-// actions/editAction/messageEditHandler.js
-
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { showEditMenu } from '../../helpers/taskHelpers/edit/showEditMenu.js'
 
@@ -25,7 +23,7 @@ export function registerMessageEditHandler(bot) {
       case 'new_date': {
         const { date } = detectAndParseDate([text], ctx.session.timezone)
         if (!date) {
-          return ctx.reply('Fecha inválida. Usa el formato DD/MM/YYYY HH:mm.', {
+          return ctx.reply('Fecha inválida. Usa DD/MM/YYYY HH:mm.', {
             reply_markup: { force_reply: true }
           })
         }
@@ -37,10 +35,11 @@ export function registerMessageEditHandler(bot) {
         return
     }
 
+    // vuelco edits y limpio awaiting
     ctx.session.edits = edits
     ctx.session.awaiting = null
 
-    // refresca el menú de edición en el mismo mensaje
+    // re-renderiza el menú en el mismo mensaje con los cambios
     return showEditMenu(ctx)
   })
 }
