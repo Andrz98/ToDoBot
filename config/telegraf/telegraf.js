@@ -3,7 +3,6 @@ import { createBot } from './botFactory.js'
 
 import { pingCommand } from '../../controllers/adminControllers/pingController.js'
 import taskController from '../../controllers/taskControllers/taskController.js'
-import { editTask } from '../../controllers/taskControllers/editTask.js'
 import { startCommand } from '../../controllers/startController/startController.js'
 import { setTimezone } from '../../controllers/timeZoneController/setTimezone.js'
 
@@ -81,9 +80,6 @@ bot.command('done', isAuthorizedUser, taskController.completeTask)
 
 console.log('[telegraf] Registrando comando /delete')
 bot.command('delete', isAuthorizedUser, taskController.deleteTask)
-
-console.log('[telegraf] Registrando comando /edit')
-bot.command('edit', isAuthorizedUser, editTask)
 
 console.log('[telegraf] Registrando comando /clear')
 bot.command('clear', isAuthorizedUser, taskController.clearTask)
