@@ -1,5 +1,4 @@
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
-import { buildAddButton } from '../../helpers/taskHelpers/add/addCommand.js'
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
@@ -7,22 +6,28 @@ import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { Task } from '../../models/task.js'
 
+/**
+ * Envía el menú dinámico de creación según el estado de ctx.session.pendingTask.
+ */
+function showAddMenu(ctx) {
+  const { text, markup } = buildAddMenu(ctx.session.pendingTask)
+  return ctx.reply(text, markup)
+}
+
 export function registerAddAction(bot) {
-  // 1. /add -> Para mostrar el botón inicial
+  // 1. /add -> inicializa sesión y muestra menú de creación
   bot.command('add', isAuthorizedUser, (ctx) => {
     ctx.session.flowType = 'add'
     ctx.session.pendingTask = {}
     ctx.session.awaiting = null
-    const { text, markup } = buildAddButton()
-    return ctx.reply(text, markup)
+    return showAddMenu(ctx)
   })
 
   // 2. Usuario pulsa "Crear tarea" -> muestro el menú de campos
   bot.action('add_create', async (ctx) => {
     await safeAnswerCbQuery(ctx)
     ctx.session.awaiting = null
-    const { text, markup } = buildAddMenu(ctx.session.pendingTask)
-    return ctx.reply(text, markup)
+    return showAddMenu(ctx)
   })
 
   // 3. Selección de campo "Nombre"
@@ -54,19 +59,15 @@ export function registerAddAction(bot) {
     })
   })
 
-  // 6. Captura de mensajes forzados
+  // 6. Captura de respuestas force-reply
   bot.on('message', async (ctx) => {
     const { flowType, awaiting, pendingTask } = ctx.session
-    if (flowType !== 'add' || !awaiting || !ctx.message || !ctx.message.text) {
+    if (flowType !== 'add' || !awaiting || !ctx.message?.text) {
       return
     }
     const text = ctx.message.text.trim()
-    // Elimina el force-reply
-    try {
-      await ctx.deleteMessage()
-    } catch {
-      // ignore
-    }
+    // elimina el mensaje de force-reply
+    await ctx.deleteMessage().catch(() => {})
 
     switch (awaiting) {
       case 'add_name':
@@ -77,14 +78,10 @@ export function registerAddAction(bot) {
           )
         }
         pendingTask.name = text
-        ctx.session.pendingTask = pendingTask
-        ctx.session.awaiting = null
         break
 
       case 'add_desc':
         pendingTask.description = text
-        ctx.session.pendingTask = pendingTask
-        ctx.session.awaiting = null
         break
 
       case 'add_date': {
@@ -95,8 +92,6 @@ export function registerAddAction(bot) {
           })
         }
         pendingTask.reminderAt = date
-        ctx.session.pendingTask = pendingTask
-        ctx.session.awaiting = null
         break
       }
 
@@ -104,9 +99,12 @@ export function registerAddAction(bot) {
         return
     }
 
-    // Tras capturar un campo, volvemos a mostrar el menú de campos
-    const { text: menuText, markup } = buildAddMenu(ctx.session.pendingTask)
-    return ctx.reply(menuText, markup)
+    // guardamos estado y reiniciamos awaiting
+    ctx.session.pendingTask = pendingTask
+    ctx.session.awaiting = null
+
+    // volvemos a mostrar el menú dinámico con los botones pendientes
+    return showAddMenu(ctx)
   })
 
   // 7. Confirmación final
@@ -126,14 +124,14 @@ export function registerAddAction(bot) {
     })
     await task.save()
 
-    // Limpiamos sesión
+    // limpiamos la sesión
     delete ctx.session.flowType
     delete ctx.session.awaiting
     delete ctx.session.pendingTask
 
     return delayReply(
       ctx,
-      `Tarea creada:\n• ${task.name}\n• ${task.frequency}\n ${task.reminderAt.toLocaleString()}`
+      `Tarea creada:\n• ${task.name}\n• ${task.frequency}\n${task.reminderAt.toLocaleString()}`
     )
   })
 }
