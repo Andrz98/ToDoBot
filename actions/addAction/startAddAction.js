@@ -6,7 +6,7 @@ import { buildAddButton } from '../../helpers/taskHelpers/add/addCommand.js'
 /**
  * Registra el comando /add:
  *  - Resetea la sesión
- *  - Muestra el botón “Crear tarea” y guarda el message_id del menú
+ *  - Envía el botón “Crear tarea” y guarda su message_id
  */
 export function registerStartAddAction(bot) {
   bot.command('add', isAuthorizedUser, async (ctx) => {
@@ -16,7 +16,7 @@ export function registerStartAddAction(bot) {
 
     const { text, markup } = buildAddButton()
     const msg = await ctx.reply(text, markup)
-    // Guardamos el ID del mensaje para posteriores ediciones
+    // Guardamos el ID de este mensaje para futuras ediciones
     ctx.session.menuMessageId = msg.message_id
   })
 }

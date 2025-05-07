@@ -1,18 +1,24 @@
+// actions/addAction/fieldActions.js
+
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 const FIELDS = [
   { action: 'add_create', key: null, prompt: null },
-  { action: 'add_field_name', key: 'add_name', prompt: 'Ingresa nombre:' },
+  {
+    action: 'add_field_name',
+    key: 'add_name',
+    prompt: 'Por favor, ingresa el *nombre* de la tarea:'
+  },
   {
     action: 'add_field_desc',
     key: 'add_desc',
-    prompt: 'Ingresa descripción (opcional):'
+    prompt: 'Ingresa la _descripción_ de la tarea (opcional):'
   },
   {
     action: 'add_field_date',
     key: 'add_date',
-    prompt: 'Ingresa fecha (DD/MM/YYYY HH:mm):'
+    prompt: 'Ingresa la fecha de la tarea (ej. DD/MM/YYYY HH:mm):'
   }
 ]
 
@@ -22,7 +28,7 @@ export function registerFieldActions(bot) {
       await safeAnswerCbQuery(ctx)
 
       if (action === 'add_create') {
-        // Inicia el flujo y muestra/edita el menú
+        // Simplemente mostramos/EDITAMOS el menú
         ctx.session.awaiting = null
         const { text, markup } = buildAddMenu(ctx.session.pendingTask)
         return ctx.telegram.editMessageText(
@@ -33,9 +39,10 @@ export function registerFieldActions(bot) {
           { parse_mode: 'Markdown', ...markup }
         )
       } else {
-        // Entrar en modo force-reply para el campo seleccionado
+        // Entramos en modo force-reply para rellenar este campo
         ctx.session.awaiting = key
         return ctx.reply(prompt, {
+          parse_mode: 'Markdown',
           reply_markup: { force_reply: true }
         })
       }
