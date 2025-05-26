@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf'
-import { formatDateEs } from '../../date/formatDateEs.js'
+import { formatDateEs } from '../../../helpers/taskHelpers/date/formatDateEs.js'
 
 /**
  * Menú de selección de campos para completar:
