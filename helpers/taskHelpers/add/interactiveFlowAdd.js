@@ -1,4 +1,5 @@
 import { Markup } from 'telegraf'
+import { formatDateEs } from '../../date/formatDateEs.js'
 
 /**
  * Menú de selección de campos para completar:
@@ -9,7 +10,7 @@ import { Markup } from 'telegraf'
  * @param {object} pendingTask – Estado actual de la tarea en construcción
  * @returns {{ text: string, markup: { reply_markup: Object } }}
  */
-export function buildAddMenu(pendingTask = {}) {
+export function buildAddMenu(pendingTask = {}, timezone = 'Europe/Madrid') {
   const keyboard = []
 
   // ── Resumen de campos ya completados ──
@@ -22,7 +23,9 @@ export function buildAddMenu(pendingTask = {}) {
   }
   if (pendingTask.reminderAt) {
     // formateamos la fecha para mostrarla al usuario
-    summaryLines.push(`🔹 Fecha: ${pendingTask.reminderAt.toLocaleString()}`)
+    summaryLines.push(
+      `🔹 Fecha: ${formatDateEs(pendingTask.reminderAt, timezone || 'Europe/Madrid')}`
+    )
   }
   // Si hay resumen, lo unimos y añadimos dos saltos de línea
   const summary = summaryLines.length ? summaryLines.join('\n') + '\n\n' : ''
