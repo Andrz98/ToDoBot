@@ -15,7 +15,12 @@ export function registerStartEditAction(bot) {
     // ——————————————
     // Limpio cualquier estado de flujos anteriores
     // ——————————————
-    delete ctx.session.flowType
+    console.log('ANTES DE MODIFICAR ctx.session:', ctx.session)
+
+    ctx.session.flowType = 'edit'
+
+    console.log('DESPUÉS DE MODIFICAR ctx.session:', ctx.session)
+
     delete ctx.session.awaiting
     delete ctx.session.pendingTask
     delete ctx.session.menuMessageId
