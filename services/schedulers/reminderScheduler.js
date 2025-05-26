@@ -2,12 +2,12 @@ import cron from 'node-cron'
 import { Task } from '../../models/task.js'
 import { bot } from '../../config/telegraf/telegraf.js'
 import { safeSendMessage } from '../../utils/retryUtils/safeSendMessage.js'
+import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 
 /**
  * Scheduler que revisa cada minuto si hay tareas con recordatorio activo.
- * Si detecta una coincidencia con alguna ventana de alerta, envía mensaje automático.
  */
-
 export const startReminderScheduler = () => {
   cron.schedule('* * * * *', async () => {
     const now = new Date()
@@ -28,23 +28,24 @@ export const startReminderScheduler = () => {
         const diff = task.reminderAt.getTime() - now.getTime()
         if (diff < 0) {
           continue
-        } // Tarea vencida
+        }
 
+        const timezone = await getUserTimezone(task.userId)
         const alerts = task.alertsSent || []
 
         for (const window of alertMessage) {
           const delta = Math.abs(diff - window.ms)
           if (delta <= 60 * 1000 && !alerts.includes(window.label)) {
+            const formattedDate = formatDateEs(task.reminderAt, timezone)
+
             await safeSendMessage(
               bot,
               task.userId,
               `⌚ <b>Recordatorio (${window.label} antes)</b>:\n<b>${task.name}</b>\n` +
-                `📅 Programado para el ${task.reminderAt.toLocaleString(
-                  'es-ES',
-                  { dateStyle: 'full', timeStyle: 'short' }
-                )}`,
+                `📅 Programado para el ${formattedDate}`,
               { parse_mode: 'HTML' }
             )
+
             console.log(`🛎️ ${window.label} → ${task.userId}: ${task.name}`)
             alerts.push(window.label)
             break
