@@ -2,6 +2,8 @@ import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { Task } from '../../models/task.js'
+import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
+import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
 
 /**
  * Cuando el usuario pulsa “Confirmar creación”
@@ -24,6 +26,8 @@ export function registerConfirmAction(bot) {
     })
     await task.save()
 
+    const timezone = await getUserTimezone(userId)
+
     // Limpiamos la sesión
     delete ctx.session.flowType
     delete ctx.session.awaiting
@@ -35,7 +39,7 @@ export function registerConfirmAction(bot) {
       'Tarea creada:\n' +
         `• Nombre: ${task.name}\n` +
         `• Descripción: ${task.description}\n` +
-        `• Fecha: ${task.reminderAt.toLocaleString()}`
+        `• Fecha: ${formatDateEs(task.reminderAt, timezone)}`
     )
   })
 }
