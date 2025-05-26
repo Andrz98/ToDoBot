@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon'
+
 /**
  * Formatea una fecha en español.
  *
@@ -9,11 +11,11 @@ export const formatDateEs = (date, timeZone = 'Europe/Madrid') => {
   if (!date) {
     return '(sin fecha)'
   }
-  return date.toLocaleString('es-ES', {
-    timeZone,
-    dateStyle: 'full', // jueves, 24 de abril de 2025
-    timeStyle: 'short' // 22:00
-  })
+
+  return DateTime.fromJSDate(date, { zone: 'utc' })
+    .setZone(timeZone)
+    .setLocale('es')
+    .toLocaleString(DateTime.DATETIME_FULL)
 }
 
 /* Atajos opcionales */

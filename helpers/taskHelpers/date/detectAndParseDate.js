@@ -33,7 +33,7 @@ export const detectAndParseDate = (lines, timeZone = 'Europe/Madrid') => {
     // 2. Explicit “Fecha: …”
     const m = candidate.match(explicitPattern)
     if (m) {
-      const human = parseHumanDate(m[1].trim())
+      const human = parseHumanDate(m[1].trim(), timeZone)
       if (human) {
         return { date: human, index: i }
       }

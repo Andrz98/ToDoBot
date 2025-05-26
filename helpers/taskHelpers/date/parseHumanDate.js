@@ -1,11 +1,15 @@
+import { DateTime } from 'luxon'
+
 /**
  * Convierte una fecha en español “humanizada” a objeto Date.
  *
- * @param {string} humanDate Ej.: "jueves, 24 de abril de 2025, 22:00"
- * @returns {Date|null}      Date o null si la cadena no se puede parsear
+ * @param {string} humanDate - Ej.: "jueves, 24 de abril de 2025, 22:00"
+ * @param {string} timeZone  - Zona horaria IANA (ej. 'Europe/Madrid' o 'America/Bogota')
+ * @returns {Date|null}      - Objeto Date parseado con zona horaria correcta, o null si falla
  */
-export const parseHumanDate = (humanDate) => {
+export const parseHumanDate = (humanDate, timeZone = 'Europe/Madrid') => {
   try {
+    // Diccionario para convertir nombre de mes a número
     const monthNames = {
       enero: 1,
       febrero: 2,
@@ -21,9 +25,11 @@ export const parseHumanDate = (humanDate) => {
       diciembre: 12
     }
 
-    const regex =
+    // Extrae día, mes, año, hora y minutos (si están presentes)
+    const extract =
       /(?:.*?,\s*)?(\d{1,2})\s+de\s+([^\d,]+)\s+de\s+(\d{4})(?:,\s*(\d{1,2}):(\d{1,2}))?/i
-    const match = humanDate.match(regex)
+
+    const match = humanDate.match(extract)
     if (!match) {
       return null
     }
@@ -34,12 +40,18 @@ export const parseHumanDate = (humanDate) => {
     const hour = match[4] ? Number(match[4]) : 0
     const minute = match[5] ? Number(match[5]) : 0
 
-    if (!monthNames[monthName]) {
+    const month = monthNames[monthName]
+    if (!month) {
       return null
     }
 
-    const month = monthNames[monthName] - 1 // JS months 0‑11
-    return new Date(year, month, day, hour, minute)
+    // Creo la fecha en la zona horaria definida por el usuario.
+    const dt = DateTime.fromObject(
+      { year, month, day, hour, minute },
+      { zone: timeZone }
+    )
+
+    return dt.isValid ? dt.toJSDate() : null
   } catch (err) {
     console.error('Error parseando fecha humanizada:', err)
     return null
