@@ -3,7 +3,7 @@ import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessa
 import { delayReply } from '../../utils/delayUtils/delayReply.js'
 import { Task } from '../../models/task.js'
 import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
-import { getUserTimezone } from '../../helpers/timezone/userTimezone/getUserTimezone.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 
 /**
  * Cuando el usuario pulsa “Confirmar creación”
