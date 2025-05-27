@@ -48,22 +48,6 @@ bot.use((ctx, next) => {
 })
 bot.use(flowGuard)
 
-// TRACE de mensajes (añádelo aquí)
-bot.on('message', async (ctx, next) => {
-  console.log('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
-  return next()
-})
-
-// Opcional: loguear **todas** las actualizaciones que pasan por Telegraf
-bot.on('update', (ctx) => {
-  console.log(
-    '[telegraf] updateType:',
-    ctx.updateType,
-    '| update payload:',
-    ctx.update
-  )
-})
-
 // ====================================
 // 🔰 Comando /ping /settimezone
 // ====================================
@@ -80,23 +64,35 @@ bot.start(startCommand)
 // ====================================
 console.log('[telegraf] Registrando comando /list')
 bot.command('list', isAuthorizedUser, taskController.listTasks)
-
-console.log('[telegraf] Registrando comando /done')
 bot.command('done', isAuthorizedUser, taskController.completeTask)
-
-console.log('[telegraf] Registrando comando /delete')
 bot.command('delete', isAuthorizedUser, taskController.deleteTask)
-
-console.log('[telegraf] Registrando comando /clear')
 bot.command('clear', isAuthorizedUser, taskController.clearTask)
-
-console.log('[telegraf] Registrando comando /confirmclear')
 bot.command('confirmclear', isAuthorizedUser, taskController.clearTask)
+
+// ====================================
+// 🔰 Registrar handlers de edición interactiva
+// ====================================
+registerAddAction(bot)
+registerEditActions(bot)
+console.log('🧪 registerEditActions invocado en telegraf.js')
+registerFlowResetHandler(bot)
+registerCompleteActions(bot)
+registerDeleteActions(bot)
+registerClearActions(bot)
+registerTimezoneActions(bot)
+registerListActions(bot)
+
+//  FINALMENTE el .on('message') y forceReplyHandler 🔻
+registerForceReplyHandler(bot)
+
+bot.on('message', async (ctx, next) => {
+  console.log('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
+  return next()
+})
 
 // ====================================
 // 🔰 Manejo global de errores del bot
 // ====================================
-console.log('[telegraf] Configurando handler global de errores')
 bot.catch((err, ctx) => {
   console.error('😵‍💫 Error interno del bot:', err)
   if (ctx?.reply) {
@@ -107,31 +103,7 @@ bot.catch((err, ctx) => {
 })
 
 // ====================================
-// 🔰 Registrar handlers de edición interactiva
-// ====================================
-registerAddAction(bot)
-registerEditActions(bot)
-console.log('🧪 registerEditActions invocado en telegraf.js')
-
-registerForceReplyHandler(bot)
-registerFlowResetHandler(bot)
-registerCompleteActions(bot)
-registerDeleteActions(bot)
-registerClearActions(bot)
-
-// ====================================
-// 🔰 Registrar handlers de Timezone
-// ====================================
-registerTimezoneActions(bot)
-
-// ====================================
-// 🔰 Registrar handlers de list
-// ====================================
-registerListActions(bot)
-
-// ====================================
 // 🔰 Exportación para app.js (webhook)
 // ====================================
 const webhookCallback = bot.webhookCallback('/telegraf/tuttobot-path-seguro')
-
 export { bot, webhookCallback }
