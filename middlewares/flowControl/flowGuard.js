@@ -21,8 +21,15 @@ export async function flowGuard(ctx, next) {
     return next()
   }
 
-  // Si el mensaje es un nuevo comando(ej: /add, /edit, /delete, /complete, /timezone), permitimos que se inicie un nuevo flujo
+  // 1.bis) Si el mensaje es un nuevo comando (ej: /add, /edit, /delete...), permitimos que se inicie un nuevo flujo
   if (ctx.message?.text?.startsWith('/')) {
+    console.log(
+      '🟢 [flowGuard] Permitiendo nuevo comando:',
+      ctx.message.text,
+      '| flujo actual:',
+      flowType
+    )
+
     return next()
   }
 
@@ -48,10 +55,30 @@ export async function flowGuard(ctx, next) {
 
   // 3) Permitir forceReply (respuestas de texto sin “/”) si estamos esperando dato
   if (awaiting && ctx.message?.text && !ctx.message.text.startsWith('/')) {
+    console.log(
+      '🟢 [flowGuard] Permitiendo forceReply. flowType:',
+      flowType,
+      '| awaiting:',
+      awaiting,
+      '| mensaje:',
+      ctx.message?.text
+    )
+
     return next()
   }
 
   // 4) Bloquear todo lo demás
+  console.log(
+    '⛔️ [flowGuard] BLOQUEADO. flowType:',
+    flowType,
+    '| awaiting:',
+    awaiting,
+    '| mensaje:',
+    ctx.message?.text,
+    '| callback:',
+    ctx.callbackQuery?.data
+  )
+
   return ctx.reply(
     `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa el botón "Restablecer acción" o termina el flujo.`,
     {

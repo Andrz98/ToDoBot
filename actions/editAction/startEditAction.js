@@ -12,6 +12,7 @@ import { getTaskSelectionKeyboard } from '../../helpers/taskHelpers/edit/taskSel
 export function registerStartEditAction(bot) {
   // 1) /edit → desplegar selector de tareas
   bot.command('edit', isAuthorizedUser, async (ctx) => {
+    console.log('🟢 [DEBUG] Entró al handler /edit')
     // ——————————————
     // Limpio cualquier estado de flujos anteriores
     // ——————————————
