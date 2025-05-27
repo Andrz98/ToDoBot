@@ -17,7 +17,16 @@ export function registerForceReplyHandler(bot) {
       ctx.message?.text
     )
 
-    // Protección defensiva en caso de errores silenciosos
+    // 🔒 Evitar interceptar comandos
+    if (ctx.message?.text?.startsWith('/')) {
+      console.log(
+        '⛔️ [editForceReplyHandler] Ignorando comando:',
+        ctx.message.text
+      )
+      return typeof next === 'function' ? next() : undefined
+    }
+
+    // 🔁 Ignorar si no hay flujo activo
     if (!ctx.session || !ctx.session.awaiting || !ctx.session.editing) {
       console.log(
         '🔁 [editForceReplyHandler] No hay flujo activo. Liberando flujo.'
@@ -28,7 +37,6 @@ export function registerForceReplyHandler(bot) {
     const { awaiting, editing, edits = {} } = ctx.session
 
     try {
-      // 1) Cargar la tarea
       const task = await Task.findById(editing.id)
       if (!task) {
         ctx.session = {}
@@ -39,7 +47,6 @@ export function registerForceReplyHandler(bot) {
       const fields = {}
       let newDate
 
-      // 2) Asignar el campo correspondiente
       if (awaiting === 'new_name') {
         fields.newName = text
       } else if (awaiting === 'new_desc') {
@@ -62,7 +69,6 @@ export function registerForceReplyHandler(bot) {
         fields.date = newDate
       }
 
-      // 3) Aplicar cambios y gestionar estado
       const tz = await getUserTimezone(ctx.from.id)
       const { updated, changes } = updateTaskFields(task, fields, tz)
       ctx.session.awaiting = null
@@ -70,36 +76,22 @@ export function registerForceReplyHandler(bot) {
       if (!updated) {
         const hasEdits = Object.keys(edits).length > 0
         const { markup } = buildEditMenu(task, tz, hasEdits)
-        try {
-          return await ctx.reply(
-            'No hubo cambios. Selecciona otro campo o pulsa "Guardar" para finalizar.',
-            { parse_mode: 'HTML', ...markup }
-          )
-        } catch (e) {
-          console.error('Error al mostrar el menú sin cambios:', e)
-          return replyMessages.generalError(ctx)
-        }
+        return await ctx.reply(
+          'No hubo cambios. Selecciona otro campo o pulsa "Guardar" para finalizar.',
+          { parse_mode: 'HTML', ...markup }
+        )
       }
 
       ctx.session.edits = { ...edits, ...fields }
       const summary = changes.map((c) => ` • ${c}`).join('\n')
 
-      try {
-        await ctx.reply(`Cambio aplicado:\n${summary}`, { parse_mode: 'HTML' })
-      } catch (e) {
-        console.error('Error al enviar resumen de cambios:', e)
-      }
+      await ctx.reply(`Cambio aplicado:\n${summary}`, { parse_mode: 'HTML' })
 
       const { markup } = buildEditMenu(task, tz, true)
-      try {
-        return await ctx.reply(
-          'Selecciona otro campo o pulsa "Guardar" para finalizar.',
-          { parse_mode: 'HTML', ...markup }
-        )
-      } catch (e) {
-        console.error('Error al mostrar el menú de continuación:', e)
-        return replyMessages.generalError(ctx)
-      }
+      return await ctx.reply(
+        'Selecciona otro campo o pulsa "Guardar" para finalizar.',
+        { parse_mode: 'HTML', ...markup }
+      )
     } catch (error) {
       console.error('❌ Error en forceReplyHandler:', error)
       ctx.session.awaiting = null
