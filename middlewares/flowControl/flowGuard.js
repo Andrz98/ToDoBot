@@ -21,6 +21,11 @@ export async function flowGuard(ctx, next) {
     return next()
   }
 
+  // Si el mensaje es un nuevo comando(ej: /add, /edit, /delete, /complete, /timezone), permitimos que se inicie un nuevo flujo
+  if (ctx.message?.text?.startsWith('/')) {
+    return next()
+  }
+
   // 2) Permitir callbacks inline según cada flujo
   if (ctx.callbackQuery) {
     switch (flowType) {
