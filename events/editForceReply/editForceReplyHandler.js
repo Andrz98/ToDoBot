@@ -11,11 +11,11 @@ import { DateTime } from 'luxon'
  * @param {import('telegraf').Telegraf} bot
  */
 export function registerForceReplyHandler(bot) {
-  bot.on('message', async (ctx) => {
+  bot.on('message', async (ctx, next) => {
     const { awaiting, editing, edits = {} } = ctx.session
     if (!awaiting || !editing) {
       // No hay edición en curso
-      return
+      return next()
     }
 
     try {
