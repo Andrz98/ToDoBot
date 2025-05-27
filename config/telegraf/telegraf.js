@@ -105,6 +105,8 @@ bot.catch((err, ctx) => {
 // ====================================
 registerAddAction(bot)
 registerEditActions(bot)
+console.log('🧪 registerEditActions invocado en telegraf.js')
+
 registerForceReplyHandler(bot)
 registerFlowResetHandler(bot)
 registerCompleteActions(bot)
