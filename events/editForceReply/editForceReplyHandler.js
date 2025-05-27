@@ -12,10 +12,14 @@ import { DateTime } from 'luxon'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx, next) => {
+    console.log(
+      '📥 [editForceReplyHandler] Recibido mensaje:',
+      ctx.message?.text
+    )
+
     const { awaiting, editing, edits = {} } = ctx.session
     if (!awaiting || !editing) {
-      // No hay edición en curso
-      return next()
+      return typeof next === 'function' ? next() : undefined
     }
 
     try {
