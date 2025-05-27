@@ -12,6 +12,7 @@ import { registerSaveEditAction } from './saveEditAction.js'
  * 4) Guardar cambios
  */
 export function registerEditActions(bot) {
+  console.log('🧪 Dentro de registerEditActions()')
   registerStartEditAction(bot)
   registerFieldEditActions(bot)
   registerSaveEditAction(bot)
