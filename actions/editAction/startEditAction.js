@@ -9,7 +9,9 @@ import { getTaskSelectionKeyboard } from '../../helpers/taskHelpers/edit/taskSel
  *  - Comando /edit
  *  - Callback select_edit_… para montar la sesión y mostrar el menú de edición
  */
+console.log('🧪 Archivo startEditAction.js fue cargado') // Al tope del archivo
 export function registerStartEditAction(bot) {
+  console.log('🧪 registerStartEditAction() fue invocado')
   // 1) /edit → desplegar selector de tareas
   bot.command('edit', isAuthorizedUser, async (ctx) => {
     console.log('🟢 [DEBUG] Entró al handler /edit')
