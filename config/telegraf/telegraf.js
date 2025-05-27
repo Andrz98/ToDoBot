@@ -48,6 +48,12 @@ bot.use((ctx, next) => {
 })
 bot.use(flowGuard)
 
+// TRACE de mensajes (añádelo aquí)
+bot.on('message', async (ctx, next) => {
+  console.log('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
+  return next()
+})
+
 // Opcional: loguear **todas** las actualizaciones que pasan por Telegraf
 bot.on('update', (ctx) => {
   console.log(
