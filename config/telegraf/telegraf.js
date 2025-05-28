@@ -82,13 +82,12 @@ registerClearActions(bot)
 registerTimezoneActions(bot)
 registerListActions(bot)
 
-//  FINALMENTE el .on('message') y forceReplyHandler 🔻
-registerForceReplyHandler(bot)
-
 bot.on('message', async (ctx, next) => {
   console.log('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
   return next()
 })
+//  FINALMENTE el .on('message') y forceReplyHandler 🔻
+registerForceReplyHandler(bot)
 
 // ====================================
 // 🔰 Manejo global de errores del bot
