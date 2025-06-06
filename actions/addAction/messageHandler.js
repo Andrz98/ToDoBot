@@ -2,10 +2,10 @@ import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndPars
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 
 export function registerMessageHandler(bot) {
-  bot.on('message', async (ctx) => {
+  bot.on('message', async (ctx, next) => {
     const { flowType, awaiting, pendingTask, menuMessageId } = ctx.session
     if (flowType !== 'add' || !awaiting || !ctx.message?.text) {
-      return
+      return typeof next === 'function' ? next() : undefined
     }
 
     const text = ctx.message.text.trim()
