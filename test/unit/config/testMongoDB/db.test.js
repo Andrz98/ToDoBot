@@ -51,7 +51,7 @@ describe('connectDB', () => {
     process.env.MONGO_URI = 'mongodb://uri-for-testing'
 
     // Importamos dinámicamente después del mock
-    const connectDB = (await import('../../../../config/db.js')).default
+    const connectDB = (await import('../../../../config/MongoDB/db.js')).default
 
     // Ejecutamos la función real connectDB, siendo este el paso Act de AAA
     await connectDB()
@@ -79,12 +79,12 @@ describe('connectDB', () => {
     process.env.MONGO_URI = 'mongodb://uri-for-testing-error'
 
     // Nuevamente importamos la función connectDB y la ejecutamos dinámicamente, hemos preparado el mock para que caiga directamente en el catch
-    const connectDB = (await import('../../../../config/db.js')).default
+    const connectDB = (await import('../../../../config/MongoDB/db.js')).default
     await connectDB()
 
     // Después validamos que console.error ha sido llamado con el mensaje que ya predefiní como parte del console.error
     expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('🦽 Nos está fallando la conexión a MOngoDB')
+      expect.stringContaining('🦽 Nos está fallando la conexión a MongoDB')
     )
 
     // Acto seguido, confirmamos que el proceso se intentó cerrar con exit(1), como definí en mi componente db.js
