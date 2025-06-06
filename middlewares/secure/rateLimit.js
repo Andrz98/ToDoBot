@@ -2,7 +2,7 @@
 
 const userActions = new Map()
 
-// Permitir hasta 3 acciones cada 7 000 ms (10 s)
+// Permitir hasta 3 acciones cada 7 000 ms (7 s)
 const MAX_ACTIONS = 3
 const WINDOW_MS = 7_000
 
