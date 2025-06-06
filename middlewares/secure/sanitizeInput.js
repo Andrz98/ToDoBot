@@ -9,7 +9,7 @@ export const sanitizeInput = async (ctx, next) => {
     // Rechazo mensajes vacíos o peligrosos
     const text = incomingText.trim()
 
-    if (text.length === 0 || text.includes('<scrip>')) {
+    if (text.length === 0 || text.includes('<script>')) {
       return ctx.reply(
         '🫸🏽 Entrada inválida. Inténtalo de nuevo con texto válido.'
       )
