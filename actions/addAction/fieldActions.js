@@ -29,13 +29,27 @@ export function registerFieldActions(bot) {
         // Simplemente mostramos/EDITAMOS el menú
         ctx.session.awaiting = null
         const { text, markup } = buildAddMenu(ctx.session.pendingTask)
-        return ctx.telegram.editMessageText(
-          ctx.chat.id,
-          ctx.session.menuMessageId,
-          null,
-          text,
-          { parse_mode: 'Markdown', ...markup }
-        )
+        let targetId =
+          ctx.session.menuMessageId ?? ctx.callbackQuery?.message?.message_id
+
+        if (!targetId) {
+          const newMsg = await ctx.reply(text, markup)
+          ctx.session.menuMessageId = newMsg.message_id
+          return
+        }
+
+        try {
+          await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            targetId,
+            null,
+            text,
+            { parse_mode: 'Markdown', ...markup }
+          )
+        } catch {
+          const newMsg = await ctx.reply(text, markup)
+          ctx.session.menuMessageId = newMsg.message_id
+        }
       } else {
         // Entramos en modo force-reply para rellenar este campo
         ctx.session.awaiting = key

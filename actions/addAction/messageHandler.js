@@ -55,12 +55,25 @@ export function registerMessageHandler(bot) {
 
     // Editamos el menú en el mismo mensaje
     const { text: menuText, markup } = buildAddMenu(pendingTask)
-    return ctx.telegram.editMessageText(
-      ctx.chat.id,
-      menuMessageId,
-      null,
-      menuText,
-      { parse_mode: 'Markdown', ...markup }
-    )
+    let targetId = menuMessageId
+
+    if (!targetId) {
+      const newMsg = await ctx.reply(menuText, { parse_mode: 'Markdown', ...markup })
+      ctx.session.menuMessageId = newMsg.message_id
+      return
+    }
+
+    try {
+      await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        targetId,
+        null,
+        menuText,
+        { parse_mode: 'Markdown', ...markup }
+      )
+    } catch {
+      const newMsg = await ctx.reply(menuText, { parse_mode: 'Markdown', ...markup })
+      ctx.session.menuMessageId = newMsg.message_id
+    }
   })
 }
