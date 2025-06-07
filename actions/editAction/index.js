@@ -3,6 +3,7 @@
 import { registerStartEditAction } from './startEditAction.js'
 import { registerFieldEditActions } from './fieldEditActions.js'
 import { registerSaveEditAction } from './saveEditAction.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Agrega al bot todos los pasos del flujo /edit:
@@ -12,7 +13,7 @@ import { registerSaveEditAction } from './saveEditAction.js'
  * 4) Guardar cambios
  */
 export function registerEditActions(bot) {
-  console.log('🧪 Dentro de registerEditActions()')
+  debugLog('🧪 Dentro de registerEditActions()')
   registerStartEditAction(bot)
   registerFieldEditActions(bot)
   registerSaveEditAction(bot)

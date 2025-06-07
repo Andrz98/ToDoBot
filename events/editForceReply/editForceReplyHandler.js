@@ -5,6 +5,7 @@ import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndPars
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
 import { DateTime } from 'luxon'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Maneja las respuestas forzadas tras pulsar un botón de edición.
@@ -12,14 +13,14 @@ import { DateTime } from 'luxon'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx, next) => {
-    console.log(
+    debugLog(
       '📥 [editForceReplyHandler] Recibido mensaje:',
       ctx.message?.text
     )
 
     // 🔒 Evitar interceptar comandos
     if (ctx.message?.text?.startsWith('/')) {
-      console.log(
+      debugLog(
         '⛔️ [editForceReplyHandler] Ignorando comando:',
         ctx.message.text
       )
@@ -28,7 +29,7 @@ export function registerForceReplyHandler(bot) {
 
     // 🔁 Ignorar si no hay flujo activo
     if (!ctx.session || !ctx.session.awaiting || !ctx.session.editing) {
-      console.log(
+      debugLog(
         '🔁 [editForceReplyHandler] No hay flujo activo. Liberando flujo.'
       )
       return typeof next === 'function' ? next() : undefined

@@ -21,6 +21,7 @@ import { registerCompleteActions } from '../../actions/completeAction/completeAc
 import { registerDeleteActions } from '../../actions/deleteAction/deleteActionHandlers.js'
 import { registerClearActions } from '../../actions/clearAction/clearActionHandler.js'
 import { registerAddAction } from '../../actions/addAction/index.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -29,7 +30,7 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 
 // Crear instancia de bot con keep-alive HTTP
 const bot = createBot(process.env.TELEGRAM_BOT_TOKEN)
-console.log('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
+debugLog('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
 
 // ====================================
 // 🔰 Middlewares
@@ -38,7 +39,7 @@ bot.use(rateLimit)
 bot.use(sanitizeInput)
 bot.use(localSessionMiddleware)
 bot.use((ctx, next) => {
-  console.log('🔥 [DEBUG] Antes de flowGuard: ', {
+  debugLog('🔥 [DEBUG] Antes de flowGuard: ', {
     updateType: ctx.updateType,
     callbackData: ctx.callbackQuery?.data,
     messageText: ctx.message?.text,
@@ -62,7 +63,7 @@ bot.start(startCommand)
 // ====================================
 // 🔰 Comandos protegidos por middleware
 // ====================================
-console.log('[telegraf] Registrando comando /list')
+debugLog('[telegraf] Registrando comando /list')
 bot.command('list', isAuthorizedUser, taskController.listTasks)
 bot.command('done', isAuthorizedUser, taskController.completeTask)
 bot.command('delete', isAuthorizedUser, taskController.deleteTask)
@@ -74,7 +75,7 @@ bot.command('confirmclear', isAuthorizedUser, taskController.clearTask)
 // ====================================
 registerAddAction(bot)
 registerEditActions(bot)
-console.log('🧪 registerEditActions invocado en telegraf.js')
+debugLog('🧪 registerEditActions invocado en telegraf.js')
 registerFlowResetHandler(bot)
 registerCompleteActions(bot)
 registerDeleteActions(bot)
@@ -83,7 +84,7 @@ registerTimezoneActions(bot)
 registerListActions(bot)
 
 bot.on('message', async (ctx, next) => {
-  console.log('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
+  debugLog('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
   return next()
 })
 //  FINALMENTE el .on('message') y forceReplyHandler 🔻

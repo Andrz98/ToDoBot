@@ -2,13 +2,14 @@ import { Markup } from 'telegraf'
 import { buildTimezoneMenu } from '../../helpers/taskHelpers/timezone/FlowTimezone/interactiveFlowTimezone.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Comando /settimezone - Inicia el flujo para cambiar huso horario.
  * Muestra menú o, si recibe argumento, pregunta confirmación.
  */
 export const setTimezone = async (ctx) => {
-  console.log('🕒 [DEBUG:setTimezone] entrada, sesión:', ctx.session)
+  debugLog('🕒 [DEBUG:setTimezone] entrada, sesión:', ctx.session)
   try {
     const userId = ctx.from.id
     const input = ctx.message.text.replace(/^\/settimezone\s*/i, '').trim()
