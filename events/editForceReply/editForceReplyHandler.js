@@ -83,7 +83,7 @@ export function registerForceReplyHandler(bot) {
       }
 
       ctx.session.edits = { ...edits, ...fields }
-      const summary = changes.map((c) => ` • ${c}`).join('\n')
+      const summary = changes.join('\n')
 
       await ctx.reply(`Cambio aplicado:\n${summary}`, { parse_mode: 'HTML' })
 
