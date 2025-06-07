@@ -1,6 +1,6 @@
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
-import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { updateTaskFields } from '../../helpers/taskHelpers/edit/updateTaskFields.js'
 import { Task } from '../../models/task.js'
 
@@ -19,13 +19,9 @@ export function registerSaveEditAction(bot) {
     )
     if (updated) {
       await task.save()
-      await delayReply(
-        ctx,
-        `👌🏽 Tarea guardada:\n${changes.join('\n')}`,
-        { parse_mode: 'HTML' }
-      )
+      await flashReply(ctx, '👌🏽 Tarea editada')
     } else {
-      await delayReply(ctx, 'ℹ️ No hubo cambios.', { parse_mode: 'HTML' })
+      await flashReply(ctx, 'ℹ️ No hubo cambios.', { parse_mode: 'HTML' })
     }
 
     // limpiamos todo

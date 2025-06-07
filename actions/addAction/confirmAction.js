@@ -1,6 +1,6 @@
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
-import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { Task } from '../../models/task.js'
 import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
@@ -34,12 +34,6 @@ export function registerConfirmAction(bot) {
     delete ctx.session.pendingTask
     delete ctx.session.menuMessageId
 
-    return delayReply(
-      ctx,
-      'Tarea creada:\n' +
-        `🔺 Nombre: ${task.name}\n` +
-        `🔸 Descripción: ${task.description}\n` +
-        `🔹 Fecha: ${formatDateEs(task.reminderAt, timezone)}`
-    )
+    return flashReply(ctx, '👌🏽 Tarea creada')
   })
 }

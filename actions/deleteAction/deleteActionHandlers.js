@@ -1,6 +1,6 @@
 // actions/deleteAction/deleteActionHandlers.js
 import { Task } from '../../models/task.js'
-import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -39,7 +39,7 @@ export function registerDeleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
 
-    return delayReply(ctx, '🗑️ Tarea eliminada correctamente.', 500)
+    return flashReply(ctx, '👌🏽 Tarea eliminada')
   })
 
   // 3) Confirmación “No”
@@ -49,6 +49,6 @@ export function registerDeleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
 
-    return delayReply(ctx, 'Operación cancelada.', 500)
+    return flashReply(ctx, 'Operación cancelada.')
   })
 }
