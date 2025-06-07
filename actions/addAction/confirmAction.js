@@ -14,6 +14,10 @@ export function registerConfirmAction(bot) {
     await safeAnswerCbQuery(ctx, '👌🏽 Tarea creada')
     await safeEditMessageReplyMarkup(ctx)
 
+    if (ctx.callbackQuery?.message) {
+      await ctx.deleteMessage().catch(() => {})
+    }
+
     const { pendingTask } = ctx.session
     const userId = ctx.from.id
 
