@@ -63,8 +63,8 @@ describe('clearTask', () => {
     await clearTask(ctx)
 
     expect(ctx.reply).toHaveBeenCalledWith(
-      '🤯 Estás a punto de eliminar TODAS tus tareas.\n' +
-        'Si estás completamente seguro, escribe el comando:\n/confirmclear'
+      '❗ Estás a punto de eliminar *3* tareas. ¿Confirmas?',
+      expect.any(Object)
     )
   })
 
@@ -91,9 +91,7 @@ describe('clearTask', () => {
     await clearTask(ctx)
 
     expect(Task.deleteMany).toHaveBeenCalledWith({ userId })
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '🫡 Se han eliminado tus 2 tareas. ¡Empezamos de cero!'
-    )
+    expect(ctx.reply).toHaveBeenCalledWith('👌🏽 Tareas eliminadas')
   })
 
   // Parte 6: Cuando el comando no es válido entonces mostramos un mensaje de "Comando no válido"
@@ -117,7 +115,7 @@ describe('clearTask', () => {
     await clearTask(ctx)
 
     expect(ctx.reply).toHaveBeenCalledWith(
-      '😵‍💫 Ocurrió un error al procesar tu solicitud. Intenta más tarde.'
+      '😵‍💫 Ocurrió un error al iniciar el borrado. Intenta más tarde.'
     )
   })
 })

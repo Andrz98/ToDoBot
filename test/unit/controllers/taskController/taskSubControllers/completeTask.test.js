@@ -39,23 +39,21 @@ describe('completeTask', () => {
     // Afirmo que la lógica se comportó como se esperaba.
     expect(mockTask.completed).toBe(true)
     expect(mockTask.save).toHaveBeenCalled()
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '🫡 Ojitooo finalizaste la tarea "Comprar pan", sigue así.'
-    )
+    expect(ctx.reply).toHaveBeenCalledWith('👌🏽 Tarea completada')
   })
 
   // Parte 2: Cuando la tarea no se encuentra se rechaza y entonces devolvemos un mensaje de error
   it('debe responder con un mensaje si ocurre un error en el helper', async () => {
     // Simulo que el helper no encuentra el valor de la tarea
     findUserTaskByName.mockResolvedValue({
-      error: '🤯 No se encoentro ninguna tarea llamada "Comprar pan"'
+      error: '🤯 No se encontró ninguna tarea llamada "Comprar pan"'
     })
 
     await completeTask(ctx)
 
     // Afirmo que la lógica se comportó como se esperaba.
     expect(ctx.reply).toHaveBeenCalledWith(
-      '🤯 No se encoentro ninguna tarea llamada "Comprar pan"'
+      '🤯 No se encontró ninguna tarea llamada "Comprar pan"'
     )
   })
 
@@ -67,7 +65,7 @@ describe('completeTask', () => {
 
     // Afirmo que la lógica se comportó como se esperaba.
     expect(ctx.reply).toHaveBeenCalledWith(
-      '😵‍💫 Ocurrio un error al completar la tarea. Intenta mas tarde.'
+      '😵‍💫 Algo salió mal al iniciar el flujo de completar tareas. Intenta más tarde.'
     )
   })
 })

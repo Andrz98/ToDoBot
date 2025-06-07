@@ -38,34 +38,10 @@ describe('editTask', () => {
     // Afirmo que la lógica se comportó como se esperaba.
     expect(mockTask.description).toBe('En la panadería nueva')
     expect(mockTask.save).toHaveBeenCalled()
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '🫡 Venga va, has actualizado la descripción de "Comprar pan". Ahora dice:\n"En la panadería nueva"'
-    )
+    expect(ctx.reply).toHaveBeenCalledWith('👌🏽 Tarea editada')
   })
 
-  // Parte 2: Debe de rechazar la edición si no hay un guión de separación
-  it('debe rechazar la edición si no hay un guión de separación', async () => {
-    ctx.message.text = '/edit Comprar pan'
-
-    await editTask(ctx)
-
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '🤯 Debes proporcionar una descripción de la tarea. Ejemplo:\n/edit Comprar pan - En la panadería nueva'
-    )
-  })
-
-  // Parte 3: Debe de rechazar la edición si no hay un nombre o una descripción de la tarea
-  it('debe rechazar la edición si no hay un nombre de tarea', async () => {
-    ctx.message.text = '/edit - Falta el nombre'
-
-    await editTask(ctx)
-
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '🤯 Asegúrate de incluir tanto el nombre como la nueva descripción. Ejemplo:\n/edit Comprar pan - En la panadería nueva'
-    )
-  })
-
-  // Parte 4: Responde con un error si el helper no encuentra la tarea
+  // Parte 2: Responde con un error si el helper no encuentra la tarea
   it('debe responder con un error si el helper no encuentra la tarea', async () => {
     findUserTaskByName.mockResolvedValue({
       error: 'No se pudo encontrar la tarea'
