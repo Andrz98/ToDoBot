@@ -27,6 +27,11 @@ export function registerSaveEditAction(bot) {
     }
     await safeAnswerCbQuery(ctx, cbText)
 
+    // Elimino el mensaje original solo si existe
+    if (ctx.callbackQuery?.message) {
+      await ctx.deleteMessage().catch(() => {})
+    }
+
     // limpiamos todo
     delete ctx.session.flowType
     delete ctx.session.editing
