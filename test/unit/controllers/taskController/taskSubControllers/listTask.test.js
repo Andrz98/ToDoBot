@@ -77,13 +77,11 @@ describe('listTasks', () => {
     // llamo la acción real de listTasks
     await listTasks(ctx)
 
-    // Creo el mensaje esperado
-    const expectedList =
-      '🗒️ Estas son tus tareas pendientes:\n\n' +
-      '🫡 1. Comprar pan\n' +
-      '🫡 2. Comprar ordenador'
-
-    expect(ctx.reply).toHaveBeenCalledWith(expectedList)
+    expect(ctx.reply).toHaveBeenCalledWith('Aquí tienes la lista')
+    expect(ctx.reply).toHaveBeenCalledWith(
+      'Selecciona una tarea para ver sus detalles:',
+      expect.any(Object)
+    )
   })
 
   // Parte 4: Muestro un error genérico si algo falla

@@ -34,9 +34,7 @@ describe('deleteTask', () => {
     await deleteTask(ctx)
 
     expect(mockTask.deleteOne).toHaveBeenCalled()
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '🫡 Ojitooo eliminaste la tarea "Comprar pan". Ten cuidado y no la líes'
-    )
+    expect(ctx.reply).toHaveBeenCalledWith('👌🏽 Tarea eliminada')
   })
 
   // Parte 2: La tarea no se ha encontrado
@@ -59,7 +57,7 @@ describe('deleteTask', () => {
     await deleteTask(ctx)
 
     expect(ctx.reply).toHaveBeenCalledWith(
-      '😵‍💫 Ocurrio un error al eliminar la tarea. Intenta más tarde.'
+      '😵‍💫 Ocurrió un error al iniciar el flujo de eliminar tareas. Intenta más tarde.'
     )
   })
 })
