@@ -34,6 +34,6 @@ export function registerConfirmAction(bot) {
     delete ctx.session.pendingTask
     delete ctx.session.menuMessageId
 
-    return flashReply(ctx, '👌🏽 Tarea creada')
+    flashReply(ctx, '👌🏽 Tarea creada')
   })
 }

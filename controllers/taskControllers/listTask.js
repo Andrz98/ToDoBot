@@ -30,7 +30,7 @@ export const listTasks = async (ctx) => {
   ])
 
   // 4. Enviar mensaje con inline keyboard usando safeReply
-  await flashReply(ctx, 'Aquí tienes la lista')
+  flashReply(ctx, 'Aquí tienes la lista')
   return safeReply(ctx, 'Selecciona una tarea para ver sus detalles:', {
     reply_markup: { inline_keyboard: buttons }
   })

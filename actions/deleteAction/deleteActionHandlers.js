@@ -39,7 +39,7 @@ export function registerDeleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
 
-    return flashReply(ctx, '👌🏽 Tarea eliminada')
+    flashReply(ctx, '👌🏽 Tarea eliminada')
   })
 
   // 3) Confirmación “No”
@@ -49,6 +49,6 @@ export function registerDeleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
 
-    return flashReply(ctx, 'Operación cancelada.')
+    flashReply(ctx, 'Operación cancelada.')
   })
 }

@@ -19,9 +19,9 @@ export function registerSaveEditAction(bot) {
     )
     if (updated) {
       await task.save()
-      await flashReply(ctx, '👌🏽 Tarea editada')
+      flashReply(ctx, '👌🏽 Tarea editada')
     } else {
-      await flashReply(ctx, 'ℹ️ No hubo cambios.', { parse_mode: 'HTML' })
+      flashReply(ctx, 'ℹ️ No hubo cambios.', { parse_mode: 'HTML' })
     }
 
     // limpiamos todo
