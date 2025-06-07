@@ -39,7 +39,7 @@ export function registerCompleteActions(bot) {
     const taskId = ctx.session.pendingComplete
     await Task.findByIdAndUpdate(taskId, { completed: true })
 
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, '👌🏽 Tarea completada')
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
@@ -49,7 +49,7 @@ export function registerCompleteActions(bot) {
 
   // 3 Confirma “No”
   bot.action('complete_confirm:no', async (ctx) => {
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, 'Operación cancelada.')
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null

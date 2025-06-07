@@ -6,7 +6,6 @@ import { Task } from '../../models/task.js'
 
 export function registerSaveEditAction(bot) {
   bot.action('edit_save', async (ctx) => {
-    await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
 
     const { editing, edits } = ctx.session
@@ -17,12 +16,16 @@ export function registerSaveEditAction(bot) {
       edits,
       ctx.session.timezone
     )
+    let cbText
     if (updated) {
       await task.save()
-      flashReply(ctx, '👌🏽 Tarea editada')
+      cbText = '👌🏽 Tarea editada'
+      flashReply(ctx, cbText)
     } else {
-      flashReply(ctx, 'ℹ️ No hubo cambios.', { parse_mode: 'HTML' })
+      cbText = 'ℹ️ No hubo cambios.'
+      flashReply(ctx, cbText, { parse_mode: 'HTML' })
     }
+    await safeAnswerCbQuery(ctx, cbText)
 
     // limpiamos todo
     delete ctx.session.flowType

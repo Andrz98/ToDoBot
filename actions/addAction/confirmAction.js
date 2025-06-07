@@ -11,7 +11,7 @@ import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone
  */
 export function registerConfirmAction(bot) {
   bot.action('add_confirm', async (ctx) => {
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, '👌🏽 Tarea creada')
     await safeEditMessageReplyMarkup(ctx)
 
     const { pendingTask } = ctx.session
