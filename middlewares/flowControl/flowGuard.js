@@ -40,7 +40,11 @@ export async function flowGuard(ctx, next) {
       case 'edit':
       case 'delete':
       case 'complete':
-        if (new RegExp(`^${flowType}_`).test(cb)) {
+        if (
+          flowType === 'edit'
+            ? /^(edit_|select_edit_)/.test(cb)
+            : new RegExp(`^${flowType}_`).test(cb)
+        ) {
           return next()
         }
         break
