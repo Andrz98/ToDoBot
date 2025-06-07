@@ -2,6 +2,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Comando /start - Este es el punto de inicio del bot
@@ -9,7 +10,7 @@ import { safeReply } from '../../utils/retryUtils/safeReply.js'
  * @param {object} ctx - Contexto del bot
  */
 export const startCommand = async (ctx) => {
-  console.log('ctx.from:', ctx.from)
+  debugLog('ctx.from:', ctx.from)
   try {
     const username =
       ctx.from?.username ||

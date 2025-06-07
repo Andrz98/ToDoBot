@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 
 import { bot, webhookCallback } from './config/telegraf/telegraf.js'
 import { startReminderScheduler } from './services/schedulers/reminderScheduler.js'
+import { debugLog } from './utils/logUtils/debugLog.js'
 
 // ====================================
 // 🔰 Verifico .env
@@ -26,7 +27,7 @@ if (!domain) {
 mongoose
   .connect(mongoURI)
   .then(() => {
-    console.log('👾 Conectado a MongoDB correctamente')
+    console.info('👾 Conectado a MongoDB correctamente')
 
     // ======================
     // 🔰 Inicializo Scheduler
@@ -43,12 +44,12 @@ mongoose
     // =======================
     const path = '/telegraf/tuttobot-path-seguro'
     app.post(path, express.json(), (req, res, next) => {
-      console.log('📩 Petición recibida en webhook') // Necesito forzar a render a mostrarme
+      debugLog('📩 Petición recibida en webhook') // Necesito forzar a render a mostrarme
       webhookCallback(req, res, next)
     })
 
     bot.telegram.setWebhook(`${domain}${path}`)
-    console.log(`🤖 Webhook activo en: ${domain}${path}`)
+    console.info(`🤖 Webhook activo en: ${domain}${path}`)
 
     // =========================================
     // 🔰 Ruta raíz para mantener render activo
@@ -63,7 +64,7 @@ mongoose
     // 🔰 Levanto el servidor
     // =======================
     app.listen(port, () => {
-      console.log(`🛫 Servidor escuchando en http://localhost:${port}`)
+      console.info(`🛫 Servidor escuchando en http://localhost:${port}`)
     })
   })
   .catch((err) => {

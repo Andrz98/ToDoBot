@@ -5,15 +5,16 @@ import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 export function registerTimezoneActions(bot) {
   // Paso 1: elijo zona y pido confirmación
   bot.action(/^set_tz_(.+)$/, async (ctx) => {
     const tz = ctx.match[1]
-    console.log('antes clear:', ctx.session)
+    debugLog('antes clear:', ctx.session)
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = tz
-    console.log('después clear:', ctx.session)
+    debugLog('después clear:', ctx.session)
     await safeAnswerCbQuery(ctx)
     return safeReply(
       ctx,

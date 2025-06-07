@@ -1,4 +1,5 @@
 import { Markup } from 'telegraf'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Evita usar comandos mientras haya un flujo pendiente (/add, /edit, /delete, /complete, /timezone…).
@@ -23,7 +24,7 @@ export async function flowGuard(ctx, next) {
 
   // 1.bis) Si el mensaje es un nuevo comando (ej: /add, /edit, /delete...), permitimos que se inicie un nuevo flujo
   if (ctx.message?.text?.startsWith('/')) {
-    console.log(
+    debugLog(
       '🟢 [flowGuard] Permitiendo nuevo comando:',
       ctx.message.text,
       '| flujo actual:',
@@ -59,7 +60,7 @@ export async function flowGuard(ctx, next) {
 
   // 3) Permitir forceReply (respuestas de texto sin “/”) si estamos esperando dato
   if (awaiting && ctx.message?.text && !ctx.message.text.startsWith('/')) {
-    console.log(
+    debugLog(
       '🟢 [flowGuard] Permitiendo forceReply. flowType:',
       flowType,
       '| awaiting:',
@@ -72,7 +73,7 @@ export async function flowGuard(ctx, next) {
   }
 
   // 4) Bloquear todo lo demás
-  console.log(
+  debugLog(
     '⛔️ [flowGuard] BLOQUEADO. flowType:',
     flowType,
     '| awaiting:',

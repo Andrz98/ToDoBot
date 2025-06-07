@@ -4,15 +4,16 @@ import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone
 import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
 // 🔧 Este helper lo vamos a comprobar en pasos siguientes
 import { getTaskSelectionKeyboard } from '../../helpers/taskHelpers/edit/taskSelection.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
-console.log('🧪 Archivo startEditAction.js fue cargado')
+debugLog('🧪 Archivo startEditAction.js fue cargado')
 
 export function registerStartEditAction(bot) {
-  console.log('🧪 registerStartEditAction() fue invocado')
+  debugLog('🧪 registerStartEditAction() fue invocado')
 
   bot.command('edit', isAuthorizedUser, async (ctx) => {
-    console.log('🟢 [DEBUG] Entró al handler /edit')
-    console.log('ANTES DE LIMPIAR ctx.session:', ctx.session)
+    debugLog('🟢 [DEBUG] Entró al handler /edit')
+    debugLog('ANTES DE LIMPIAR ctx.session:', ctx.session)
 
     // 🧹 Paso 1: limpiar flujo anterior
     delete ctx.session.awaiting
@@ -25,7 +26,7 @@ export function registerStartEditAction(bot) {
     // ✅ Paso 2: marcar nuevo flujo
     ctx.session.flowType = 'edit'
 
-    console.log('DESPUÉS DE SETEAR flowType:', ctx.session)
+    debugLog('DESPUÉS DE SETEAR flowType:', ctx.session)
 
     try {
       // ⚠️ Paso 3: Validar funcionamiento real del helper

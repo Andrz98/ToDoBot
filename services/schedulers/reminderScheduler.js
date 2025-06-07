@@ -4,6 +4,7 @@ import { bot } from '../../config/telegraf/telegraf.js'
 import { safeSendMessage } from '../../utils/retryUtils/safeSendMessage.js'
 import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Scheduler que revisa cada minuto si hay tareas con recordatorio activo.
@@ -46,7 +47,7 @@ export const startReminderScheduler = () => {
               { parse_mode: 'HTML' }
             )
 
-            console.log(`🛎️ ${window.label} → ${task.userId}: ${task.name}`)
+            debugLog(`🛎️ ${window.label} → ${task.userId}: ${task.name}`)
             alerts.push(window.label)
             break
           }
