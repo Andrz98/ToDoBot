@@ -37,9 +37,9 @@ export function registerConfirmAction(bot) {
     return delayReply(
       ctx,
       'Tarea creada:\n' +
-        `• Nombre: ${task.name}\n` +
-        `• Descripción: ${task.description}\n` +
-        `• Fecha: ${formatDateEs(task.reminderAt, timezone)}`
+        `🔺 Nombre: ${task.name}\n` +
+        `🔸 Descripción: ${task.description}\n` +
+        `🔹 Fecha: ${formatDateEs(task.reminderAt, timezone)}`
     )
   })
 }

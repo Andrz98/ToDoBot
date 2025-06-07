@@ -21,7 +21,7 @@ export function registerSaveEditAction(bot) {
       await task.save()
       await delayReply(
         ctx,
-        `✅ Tarea guardada:\n${changes.map((c) => `• ${c}`).join('\n')}`,
+        `👌🏽 Tarea guardada:\n${changes.join('\n')}`,
         { parse_mode: 'HTML' }
       )
     } else {

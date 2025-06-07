@@ -27,14 +27,14 @@ export const updateTaskFields = (
   if (newName && newName !== task.name) {
     task.name = newName
     updated = true
-    changes.push(`<b>Nuevo nombre:</b> ${escapeHtml(newName)}`)
+    changes.push(`🔺 <b>Nuevo nombre:</b> ${escapeHtml(newName)}`)
   }
 
   // Cambiar descripción
   if (newDescription && newDescription !== task.description) {
     task.description = newDescription
     updated = true
-    changes.push(`<b>Descripción:</b> ${escapeHtml(newDescription)}`)
+    changes.push(`🔸 <b>Nueva descripción:</b> ${escapeHtml(newDescription)}`)
   }
 
   // Cambiar fecha de recordatorio
@@ -45,7 +45,7 @@ export const updateTaskFields = (
     task.reminderAt = date
     updated = true
     const formatted = formatDateEs(date, timezone)
-    changes.push(`<b>Nueva fecha:</b> ${escapeHtml(formatted)}`)
+    changes.push(`🔹 <b>Nueva fecha:</b> ${escapeHtml(formatted)}`)
   }
 
   return { updated, changes }
