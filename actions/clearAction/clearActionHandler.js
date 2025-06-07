@@ -1,5 +1,5 @@
 import { Task } from '../../models/task.js'
-import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 
@@ -30,11 +30,7 @@ export function registerClearActions(bot) {
     ctx.session.pendingClearToken = null
 
     // 5) Mensaje final con delay
-    return delayReply(
-      ctx,
-      `🗑️ Se han eliminado ${result.deletedCount} tarea(s).`,
-      500
-    )
+    return flashReply(ctx, '👌🏽 Tareas eliminadas')
   })
 
   // 2) Confirma “no”
@@ -43,6 +39,6 @@ export function registerClearActions(bot) {
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null
-    return delayReply(ctx, 'Operación cancelada.', 500)
+    return flashReply(ctx, 'Operación cancelada.')
   })
 }

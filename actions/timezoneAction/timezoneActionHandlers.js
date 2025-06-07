@@ -4,7 +4,7 @@ import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessa
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 import { AuthorizedUser } from '../../models/authorizedUser.js'
-import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 
 export function registerTimezoneActions(bot) {
   // Paso 1: elijo zona y pido confirmación
@@ -48,19 +48,11 @@ export function registerTimezoneActions(bot) {
     ctx.session.pendingTz = null
 
     if (!updatedUser) {
-      return delayReply(
-        ctx,
-        '🥸 No estás autorizado para usar este bot.',
-        { parse_mode: 'HTML' },
-        800
-      )
+      return flashReply(ctx, '🥸 No estás autorizado para usar este bot.', {
+        parse_mode: 'HTML'
+      })
     }
-    return delayReply(
-      ctx,
-      `🌐 Tu zona horaria ha sido guardada como: <b>${tz}</b>`,
-      { parse_mode: 'HTML' },
-      800
-    )
+    return flashReply(ctx, '🛫 zona cambiada')
   })
 
   // Paso 2b: confirma “No”
@@ -69,11 +61,8 @@ export function registerTimezoneActions(bot) {
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingTz = null
-    return delayReply(
-      ctx,
-      'Cambio de zona horaria cancelado.',
-      { parse_mode: 'HTML' },
-      800
-    )
+    return flashReply(ctx, 'Cambio de zona horaria cancelado.', {
+      parse_mode: 'HTML'
+    })
   })
 }

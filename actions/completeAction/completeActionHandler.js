@@ -1,6 +1,6 @@
 // actions/completeAction/completeActionHandlers.js
 import { Task } from '../../models/task.js'
-import { delayReply } from '../../utils/delayUtils/delayReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -44,7 +44,7 @@ export function registerCompleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
 
-    return delayReply(ctx, 'Tarea completada correctamente.', 500)
+    return flashReply(ctx, '👌🏽 Tarea completada')
   })
 
   // 3 Confirma “No”
@@ -54,6 +54,6 @@ export function registerCompleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
 
-    return delayReply(ctx, 'Operación cancelada.', 500)
+    return flashReply(ctx, 'Operación cancelada.')
   })
 }
