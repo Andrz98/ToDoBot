@@ -54,10 +54,7 @@ export function registerStartEditAction(bot) {
   })
 
   // ✅ Flujo cuando el usuario elige una tarea para editar
-  bot.action(/^select_edit_(.+)$/, async (ctx) => {
-    await ctx.answerCbQuery()
-
-    const task = await registerTaskSelector.resolve(ctx)
+  registerTaskSelector(bot, 'select_edit', async (ctx, task) => {
     ctx.session.flowType = 'edit'
     ctx.session.editing = { id: task._id, oldName: task.name }
     ctx.session.edits = {}
@@ -65,7 +62,6 @@ export function registerStartEditAction(bot) {
     ctx.session.timezone = await getUserTimezone(ctx.from.id)
 
     const { text, markup } = buildEditMenu(task, ctx.session.timezone, false)
-
     try {
       await ctx.telegram.editMessageText(
         ctx.chat.id,
