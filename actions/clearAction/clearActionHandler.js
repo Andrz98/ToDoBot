@@ -22,7 +22,7 @@ export function registerClearActions(bot) {
     const result = await Task.deleteMany({ userId })
 
     // 3) Quito spinner y botones
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, '👌🏽 Tareas eliminadas')
     await safeEditMessageReplyMarkup(ctx)
 
     // 4) Limpio sesión
@@ -35,7 +35,7 @@ export function registerClearActions(bot) {
 
   // 2) Confirma “no”
   bot.action(/^clear_confirm_(.+):no$/, async (ctx) => {
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, 'Operación cancelada.')
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null

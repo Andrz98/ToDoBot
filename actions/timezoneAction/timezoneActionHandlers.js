@@ -31,7 +31,6 @@ export function registerTimezoneActions(bot) {
 
   // Paso 2a: confirma “Sí”
   bot.action('confirm_tz_yes', async (ctx) => {
-    await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
     const tz = ctx.session.pendingTz
     const userId = ctx.from.id
@@ -49,20 +48,23 @@ export function registerTimezoneActions(bot) {
     ctx.session.pendingTz = null
 
     if (!updatedUser) {
-      flashReply(ctx, '🥸 No estás autorizado para usar este bot.', {
+      const msg = '🥸 No estás autorizado para usar este bot.'
+      await safeAnswerCbQuery(ctx, msg)
+      flashReply(ctx, msg, {
         parse_mode: 'HTML'
       })
       return
     }
+    await safeAnswerCbQuery(ctx, '🛫 zona cambiada')
     flashReply(ctx, '🛫 zona cambiada')
   })
 
   // Paso 2b: confirma “No”
   bot.action('confirm_tz_no', async (ctx) => {
-    await safeAnswerCbQuery(ctx)
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingTz = null
+    await safeAnswerCbQuery(ctx, 'Cambio de zona horaria cancelado.')
     flashReply(ctx, 'Cambio de zona horaria cancelado.', {
       parse_mode: 'HTML'
     })

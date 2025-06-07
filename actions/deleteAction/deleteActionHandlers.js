@@ -33,7 +33,7 @@ export function registerDeleteActions(bot) {
     const taskId = ctx.session.pendingDelete
     await Task.findByIdAndDelete(taskId)
 
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, '👌🏽 Tarea eliminada')
     await safeEditMessageReplyMarkup(ctx)
     // Limpiamos el flujo
     ctx.session.flowType = null
@@ -44,7 +44,7 @@ export function registerDeleteActions(bot) {
 
   // 3) Confirmación “No”
   bot.action('delete_confirm:no', async (ctx) => {
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, 'Operación cancelada.')
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
