@@ -30,7 +30,7 @@ export function registerClearActions(bot) {
     ctx.session.pendingClearToken = null
 
     // 5) Mensaje final con delay
-    return flashReply(ctx, '👌🏽 Tareas eliminadas')
+    flashReply(ctx, '👌🏽 Tareas eliminadas')
   })
 
   // 2) Confirma “no”
@@ -39,6 +39,6 @@ export function registerClearActions(bot) {
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null
-    return flashReply(ctx, 'Operación cancelada.')
+    flashReply(ctx, 'Operación cancelada.')
   })
 }

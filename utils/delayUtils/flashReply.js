@@ -1,4 +1,3 @@
-import { sleep } from './sleep.js'
 import { safeReply } from '../retryUtils/safeReply.js'
 
 /**
@@ -11,10 +10,12 @@ import { safeReply } from '../retryUtils/safeReply.js'
  */
 export const flashReply = async (ctx, text, opts = {}, ms = 1500) => {
   const msg = await safeReply(ctx, text, opts)
-  await sleep(ms)
-  try {
-    await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id)
-  } catch {
-    // ignore deletion errors
-  }
+  setTimeout(async () => {
+    try {
+      await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id)
+    } catch {
+      // ignore deletion errors
+    }
+  }, ms)
+  return msg
 }

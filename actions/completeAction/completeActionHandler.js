@@ -44,7 +44,7 @@ export function registerCompleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
 
-    return flashReply(ctx, '👌🏽 Tarea completada')
+    flashReply(ctx, '👌🏽 Tarea completada')
   })
 
   // 3 Confirma “No”
@@ -54,6 +54,6 @@ export function registerCompleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
 
-    return flashReply(ctx, 'Operación cancelada.')
+    flashReply(ctx, 'Operación cancelada.')
   })
 }
