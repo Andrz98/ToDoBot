@@ -19,10 +19,9 @@ export const buildEditMenu = (task, timeZone, hasEdits = false) => {
     : '(sin fecha)'
 
   const text =
-    '<b>Edición de tarea:</b>\n' +
-    `• <b>Nombre:</b> ${name}\n` +
-    `• <b>Descripción:</b> ${descriptionText}\n` +
-    `• <b>Recordatorio:</b> ${reminderAt}`
+    `🔺 Nombre: ${name}\n` +
+    `🔸 Descripción: ${descriptionText}\n` +
+    `🔹 Fecha: ${reminderAt}`
 
   // Preparo un array de botones sin iconos
   const buttons = [
