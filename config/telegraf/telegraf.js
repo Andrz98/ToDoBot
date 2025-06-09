@@ -21,6 +21,7 @@ import { registerCompleteActions } from '../../actions/completeAction/completeAc
 import { registerDeleteActions } from '../../actions/deleteAction/deleteActionHandlers.js'
 import { registerClearActions } from '../../actions/clearAction/clearActionHandler.js'
 import { registerAddAction } from '../../actions/addAction/index.js'
+import { registerReminderActions } from '../../actions/reminderAction/index.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 // Me aseguro que el token exista
@@ -82,6 +83,7 @@ registerDeleteActions(bot)
 registerClearActions(bot)
 registerTimezoneActions(bot)
 registerListActions(bot)
+registerReminderActions(bot)
 
 bot.on('message', async (ctx, next) => {
   debugLog('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
