@@ -53,6 +53,7 @@ export function registerTimezoneActions(bot) {
       return
     }
     await safeAnswerCbQuery(ctx, '🛫 zona cambiada')
+    flashReply(ctx, 'Zona cambiada')
   })
 
   // Paso 2b: confirma “No”
