@@ -28,7 +28,7 @@ export function registerListActions(bot) {
     const dateLine = `\n\n<b>🔹 Fecha:</b> ${formatDateEs(task.reminderAt, ctx.session.timezone || 'Europe/Madrid')}`
 
     // 4) Responder al callback (quita el spinner)
-    await safeAnswerCbQuery(ctx)
+    await safeAnswerCbQuery(ctx, 'Aquí tienes los detalles de la tarea')
     // 5) Mensaje temporal para el usuario
     flashReply(ctx, 'Aquí tienes los detalles de la tarea')
     // 6) Enviar los detalles
