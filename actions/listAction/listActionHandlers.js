@@ -33,8 +33,6 @@ export function registerListActions(bot) {
     // 4) Responder al callback con un toast
     await safeAnswerCbQuery(ctx, 'Aquí tienes los detalles de la tarea')
 
-    // 5) Mensaje temporal en el chat
-    flashReply(ctx, 'Aquí tienes los detalles de la tarea')
 
     // 6) Enviar los detalles completos
     return safeReply(ctx, `${nameLine}${descLine}${dateLine}`, {
