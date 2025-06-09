@@ -2,6 +2,7 @@ import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 
 /**
  * Controlador para manejar las tareas activas del usuario /list
@@ -11,12 +12,15 @@ import { safeReply } from '../../utils/retryUtils/safeReply.js'
 export const listTasks = async (ctx) => {
   // 1. Validación de autorización
   if (!(await isUserAuthorized(ctx))) {
-    return replyMessages.unauthorizedUser(ctx)
+    return replyMessages.unauthorized(ctx)
   }
 
   // 2. Extraigo el ID del usuario y recupero tareas pendientes
   const userId = ctx.from.id
   const tasks = await Task.find({ userId, completed: false }).sort('reminderAt')
+
+  // Aviso al usuario que se mostrará la lista
+  await flashReply(ctx, 'Lista de tareas')
 
   // 2.1 Si no hay tareas, informo al usuario
   if (tasks.length === 0) {
