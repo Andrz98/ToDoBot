@@ -2,7 +2,6 @@ import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
 
 /**
  * Controlador para manejar las tareas activas del usuario /list
@@ -29,8 +28,7 @@ export const listTasks = async (ctx) => {
     { text: `${i + 1}. ${t.name}`, callback_data: `show_task_${t._id}` }
   ])
 
-  // 4. Enviar mensaje con inline keyboard usando safeReply
-  flashReply(ctx, 'Aquí tienes la lista')
+  // 4. Enviar mensaje con inline keyboard
   return safeReply(ctx, 'Selecciona una tarea para ver sus detalles:', {
     reply_markup: { inline_keyboard: buttons }
   })

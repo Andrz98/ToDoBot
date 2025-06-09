@@ -77,7 +77,6 @@ describe('listTasks', () => {
     // llamo la acción real de listTasks
     await listTasks(ctx)
 
-    expect(ctx.reply).toHaveBeenCalledWith('Aquí tienes la lista')
     expect(ctx.reply).toHaveBeenCalledWith(
       'Selecciona una tarea para ver sus detalles:',
       expect.any(Object)
