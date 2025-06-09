@@ -3,7 +3,7 @@ import { registerTaskSelector } from '../../helpers/tasks/taskSelector.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
 // 🔧 Este helper lo vamos a comprobar en pasos siguientes
-import { getTaskSelectionKeyboard } from '../../helpers/taskHelpers/edit/taskSelection.js'
+import { getTaskSelectionKeyboard } from '../../helpers/tasks/common/taskSelection.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 debugLog('🧪 Archivo startEditAction.js fue cargado')

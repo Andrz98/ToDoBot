@@ -1,6 +1,6 @@
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { Task } from '../../models/task.js'
-import { updateTaskFields } from '../../helpers/taskHelpers/edit/updateTaskFields.js'
+import { updateTaskFields } from '../../helpers/tasks/common/updateTaskFields.js'
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'

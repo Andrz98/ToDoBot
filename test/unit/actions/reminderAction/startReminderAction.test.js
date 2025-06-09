@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { startReminderAction } from '@/actions/reminderAction/startReminderAction.js'
-import { getActiveTasksByUser } from '@/helpers/taskHelpers/edit/taskSelection.js'
+import { getActiveTasksByUser } from '@/helpers/tasks/common/taskSelection.js'
 
-vi.mock('@/helpers/taskHelpers/edit/taskSelection.js', () => ({
+vi.mock('@/helpers/tasks/common/taskSelection.js', () => ({
   getActiveTasksByUser: vi.fn()
 }))
 

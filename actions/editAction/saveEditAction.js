@@ -1,7 +1,7 @@
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
-import { updateTaskFields } from '../../helpers/taskHelpers/edit/updateTaskFields.js'
+import { updateTaskFields } from '../../helpers/tasks/common/updateTaskFields.js'
 import { Task } from '../../models/task.js'
 
 export function registerSaveEditAction(bot) {
