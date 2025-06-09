@@ -34,7 +34,7 @@ export const startReminderAction = async (ctx) => {
     ]
   })
 
-  return ctx.reply('Selecciona una tarea para configurar su recordatorio:', {
+  return safeReply(ctx, 'Selecciona una tarea para configurar su recordatorio:', {
     reply_markup: {
       inline_keyboard: buttons
     }
