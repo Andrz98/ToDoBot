@@ -17,10 +17,17 @@ vi.mock('@/utils/retryUtils/safeEditMessageReplyMarkup.js', () => ({
 }))
 
 describe('handleReminderFrequency', () => {
-  const ctx = { callbackQuery: { data: 'setReminder::42' }, answerCbQuery: vi.fn() }
+  const ctx = {
+    callbackQuery: { data: 'setReminder::42' },
+    answerCbQuery: vi.fn(),
+    editMessageText: vi.fn(),
+    reply: vi.fn()
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
+    ctx.editMessageText.mockReset()
+    ctx.reply.mockReset()
   })
 
   it('shows the keyboard returned by buildFrequencyMenu', async () => {
@@ -48,6 +55,20 @@ describe('handleReminderFrequency', () => {
           [{ text: 'Semanal', callback_data: 'saveReminder::42::weekly' }]
         ]
       }
+    })
+  })
+
+  it('edits the message text using the menu text', async () => {
+    Task.findById.mockResolvedValue({ _id: '42', name: 'Task' })
+    buildFrequencyMenu.mockReturnValue({
+      text: 'msg',
+      markup: { reply_markup: { inline_keyboard: [] } }
+    })
+
+    await handleReminderFrequency(ctx)
+
+    expect(ctx.editMessageText).toHaveBeenCalledWith('msg', {
+      reply_markup: { inline_keyboard: [] }
     })
   })
 })

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { saveReminderAction } from '@/actions/reminderAction/saveReminderAction.js'
 import { Task } from '@/models/task.js'
 import { flashReply } from '@/utils/delayUtils/flashReply.js'
+import { safeAnswerCbQuery } from '@/utils/retryUtils/safeAnswerCbQuery.js'
 
 vi.mock('@/models/task.js', () => ({
   Task: { findById: vi.fn() }
@@ -11,13 +12,22 @@ vi.mock('@/utils/delayUtils/flashReply.js', () => ({
   flashReply: vi.fn()
 }))
 
+vi.mock('@/utils/retryUtils/safeAnswerCbQuery.js', () => ({
+  safeAnswerCbQuery: vi.fn()
+}))
+
 describe('saveReminderAction', () => {
-  const ctx = { callbackQuery: { data: 'saveReminder::100::weekly' }, answerCbQuery: vi.fn() }
+  const ctx = {
+    callbackQuery: { data: 'saveReminder::100::weekly' },
+    answerCbQuery: vi.fn(),
+    session: {}
+  }
 
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2024-01-01T00:00:00Z'))
     vi.clearAllMocks()
+    ctx.session = {}
   })
 
   afterEach(() => {
@@ -44,12 +54,14 @@ describe('saveReminderAction', () => {
     )
     expect(task.alertsSent).toEqual([])
     expect(saveMock).toHaveBeenCalled()
-    expect(ctx.answerCbQuery).toHaveBeenCalled()
+    expect(safeAnswerCbQuery).toHaveBeenCalled()
     expect(flashReply).toHaveBeenCalledWith(
       ctx,
       expect.stringContaining('My task'),
       {},
       2500
     )
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.session.menuMessageId).toBeUndefined()
   })
 })

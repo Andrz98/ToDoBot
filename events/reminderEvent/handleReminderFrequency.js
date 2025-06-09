@@ -11,7 +11,7 @@ export const handleReminderFrequency = async (ctx) => {
     return ctx.answerCbQuery('Tarea no encontrada.')
   }
 
-  const { markup } = buildFrequencyMenu()
+  const { text, markup } = buildFrequencyMenu()
   const frequencyOptions = markup.reply_markup.inline_keyboard.map((row) => {
     const button = row[0]
     const value = button.callback_data.replace('add_freq_', '')
@@ -24,6 +24,12 @@ export const handleReminderFrequency = async (ctx) => {
   })
 
   await ctx.answerCbQuery()
+
+  try {
+    await ctx.editMessageText(text, markup)
+  } catch {
+    await ctx.reply(text, markup)
+  }
 
   return safeEditMessageReplyMarkup(ctx, {
     reply_markup: {
