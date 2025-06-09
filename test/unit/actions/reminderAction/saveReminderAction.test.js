@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { saveReminderAction } from '@/actions/reminderAction/saveReminderAction.js'
 import { Task } from '@/models/task.js'
 import { flashReply } from '@/utils/delayUtils/flashReply.js'
+import { safeAnswerCbQuery } from '@/utils/retryUtils/safeAnswerCbQuery.js'
 
 vi.mock('@/models/task.js', () => ({
   Task: { findById: vi.fn() }
@@ -9,6 +10,10 @@ vi.mock('@/models/task.js', () => ({
 
 vi.mock('@/utils/delayUtils/flashReply.js', () => ({
   flashReply: vi.fn()
+}))
+
+vi.mock('@/utils/retryUtils/safeAnswerCbQuery.js', () => ({
+  safeAnswerCbQuery: vi.fn()
 }))
 
 describe('saveReminderAction', () => {
@@ -44,7 +49,7 @@ describe('saveReminderAction', () => {
     )
     expect(task.alertsSent).toEqual([])
     expect(saveMock).toHaveBeenCalled()
-    expect(ctx.answerCbQuery).toHaveBeenCalled()
+    expect(safeAnswerCbQuery).toHaveBeenCalledWith(ctx)
     expect(flashReply).toHaveBeenCalledWith(
       ctx,
       expect.stringContaining('My task'),

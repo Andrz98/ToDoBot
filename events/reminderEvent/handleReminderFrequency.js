@@ -1,5 +1,6 @@
 import { Task } from '../../models/task.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 
 export const handleReminderFrequency = async (ctx) => {
@@ -8,7 +9,7 @@ export const handleReminderFrequency = async (ctx) => {
 
   const task = await Task.findById(taskId)
   if (!task) {
-    return ctx.answerCbQuery('Tarea no encontrada.')
+    return safeAnswerCbQuery(ctx, 'Tarea no encontrada.')
   }
 
   const { markup } = buildFrequencyMenu()
@@ -23,7 +24,7 @@ export const handleReminderFrequency = async (ctx) => {
     ]
   })
 
-  await ctx.answerCbQuery()
+  await safeAnswerCbQuery(ctx)
 
   return safeEditMessageReplyMarkup(ctx, {
     reply_markup: {

@@ -1,5 +1,6 @@
 import { Task } from '../../models/task.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 const addIntervalToNow = (frequency) => {
   const now = new Date()
@@ -26,7 +27,7 @@ export const saveReminderAction = async (ctx) => {
 
   const task = await Task.findById(taskId)
   if (!task) {
-    return ctx.answerCbQuery('Tarea no encontrada.')
+    return safeAnswerCbQuery(ctx, 'Tarea no encontrada.')
   }
 
   task.frequency = frequency
@@ -34,7 +35,7 @@ export const saveReminderAction = async (ctx) => {
   task.alertsSent = [] // Resetea las alertas pasadas
 
   await task.save()
-  await ctx.answerCbQuery()
+  await safeAnswerCbQuery(ctx)
 
   return flashReply(
     ctx,

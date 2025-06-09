@@ -3,6 +3,7 @@ import { handleReminderFrequency } from '@/events/reminderEvent/handleReminderFr
 import { Task } from '@/models/task.js'
 import { buildFrequencyMenu } from '@/helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 import { safeEditMessageReplyMarkup } from '@/utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeAnswerCbQuery } from '@/utils/retryUtils/safeAnswerCbQuery.js'
 
 vi.mock('@/models/task.js', () => ({
   Task: { findById: vi.fn() }
@@ -14,6 +15,10 @@ vi.mock('@/helpers/frequency/flowFrequency/interactiveFlowFrequency.js', () => (
 
 vi.mock('@/utils/retryUtils/safeEditMessageReplyMarkup.js', () => ({
   safeEditMessageReplyMarkup: vi.fn()
+}))
+
+vi.mock('@/utils/retryUtils/safeAnswerCbQuery.js', () => ({
+  safeAnswerCbQuery: vi.fn()
 }))
 
 describe('handleReminderFrequency', () => {
@@ -40,7 +45,7 @@ describe('handleReminderFrequency', () => {
     await handleReminderFrequency(ctx)
 
     expect(buildFrequencyMenu).toHaveBeenCalled()
-    expect(ctx.answerCbQuery).toHaveBeenCalled()
+    expect(safeAnswerCbQuery).toHaveBeenCalledWith(ctx)
     expect(safeEditMessageReplyMarkup).toHaveBeenCalledWith(ctx, {
       reply_markup: {
         inline_keyboard: [
