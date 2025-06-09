@@ -1,6 +1,7 @@
 import { Task } from '../../models/task.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 
 /**
  * Registra los callbacks para completar o cancelar /clear
@@ -27,6 +28,8 @@ export function registerClearActions(bot) {
     // 4) Limpio sesión
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null
+
+    flashReply(ctx, 'Lista restablecida')
 
   })
 
