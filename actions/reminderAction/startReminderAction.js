@@ -1,11 +1,11 @@
 // 📁 actions/reminderAction/startReminderAction.js
 
-import { getActiveTasksByUser } from '../../helpers/taskHelpers/edit/taskSelection.js'
+import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 export const startReminderAction = async (ctx) => {
   const userId = ctx.from.id
-  const tasks = await getActiveTasksByUser(userId)
+  const tasks = await findAllTasks(userId)
 
   if (!tasks.length) {
     return safeReply(
