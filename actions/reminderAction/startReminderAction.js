@@ -2,6 +2,7 @@
 
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { frequencyLabels } from '../../helpers/frequency/frequencyLabels.js'
 
 export const startReminderAction = async (ctx) => {
   ctx.session.flowType = 'reminder'
@@ -17,15 +18,8 @@ export const startReminderAction = async (ctx) => {
   }
 
   const buttons = tasks.map((task) => {
-    const freqMap = {
-      daily: 'Diario',
-      weekly: 'Semanal',
-      monthly: 'Mensual',
-      yearly: 'Anual'
-    }
-
     const label = `${task.name} — ${
-      task.reminderAt ? freqMap[task.frequency] : 'Sin recordatorio'
+      task.reminderAt ? frequencyLabels[task.frequency] : 'Sin recordatorio'
     }`
 
     return [
