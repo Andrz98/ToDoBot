@@ -49,6 +49,11 @@ export async function flowGuard(ctx, next) {
           return next()
         }
         break
+      case 'reminder':
+        if (/^(setReminder|saveReminder)::/.test(cb)) {
+          return next()
+        }
+        break
       case 'timezone':
         // permitir tanto el menú inicial como la confirmación
         if (/^(set_tz_|confirm_tz_)/.test(cb)) {
