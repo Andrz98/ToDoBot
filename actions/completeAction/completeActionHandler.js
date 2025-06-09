@@ -43,8 +43,6 @@ export function registerCompleteActions(bot) {
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
-
-    flashReply(ctx, '👌🏽 Tarea completada')
   })
 
   // 3 Confirma “No”
@@ -53,7 +51,5 @@ export function registerCompleteActions(bot) {
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
-
-    flashReply(ctx, 'Operación cancelada.')
   })
 }

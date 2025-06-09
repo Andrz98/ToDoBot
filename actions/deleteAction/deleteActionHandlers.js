@@ -38,8 +38,6 @@ export function registerDeleteActions(bot) {
     // Limpiamos el flujo
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
-
-    flashReply(ctx, '👌🏽 Tarea eliminada')
   })
 
   // 3) Confirmación “No”
@@ -48,7 +46,5 @@ export function registerDeleteActions(bot) {
     await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
-
-    flashReply(ctx, 'Operación cancelada.')
   })
 }

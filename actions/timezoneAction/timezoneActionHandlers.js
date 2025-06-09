@@ -50,13 +50,9 @@ export function registerTimezoneActions(bot) {
     if (!updatedUser) {
       const msg = '🥸 No estás autorizado para usar este bot.'
       await safeAnswerCbQuery(ctx, msg)
-      flashReply(ctx, msg, {
-        parse_mode: 'HTML'
-      })
       return
     }
     await safeAnswerCbQuery(ctx, '🛫 zona cambiada')
-    flashReply(ctx, '🛫 zona cambiada')
   })
 
   // Paso 2b: confirma “No”
@@ -65,8 +61,5 @@ export function registerTimezoneActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingTz = null
     await safeAnswerCbQuery(ctx, 'Cambio de zona horaria cancelado.')
-    flashReply(ctx, 'Cambio de zona horaria cancelado.', {
-      parse_mode: 'HTML'
-    })
   })
 }
