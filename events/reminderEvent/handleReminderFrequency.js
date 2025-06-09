@@ -11,7 +11,7 @@ export const handleReminderFrequency = async (ctx) => {
     return ctx.answerCbQuery('Tarea no encontrada.')
   }
 
-  const { markup } = buildFrequencyMenu()
+  const { text, markup } = buildFrequencyMenu()
   const frequencyOptions = markup.reply_markup.inline_keyboard.map((row) => {
     const button = row[0]
     const value = button.callback_data.replace('add_freq_', '')
@@ -25,9 +25,23 @@ export const handleReminderFrequency = async (ctx) => {
 
   await ctx.answerCbQuery()
 
-  return safeEditMessageReplyMarkup(ctx, {
-    reply_markup: {
-      inline_keyboard: frequencyOptions
-    }
-  })
+  try {
+    return await ctx.telegram.editMessageText(
+      ctx.chat.id,
+      ctx.callbackQuery.message.message_id,
+      undefined,
+      text,
+      {
+        reply_markup: {
+          inline_keyboard: frequencyOptions
+        }
+      }
+    )
+  } catch {
+    return safeEditMessageReplyMarkup(ctx, {
+      reply_markup: {
+        inline_keyboard: frequencyOptions
+      }
+    })
+  }
 }
