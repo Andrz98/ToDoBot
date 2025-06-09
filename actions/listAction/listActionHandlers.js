@@ -2,6 +2,7 @@ import { Task } from '../../models/task.js'
 import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { flashReply } from '../../utils/delayUtils/flashReply.js'
 
 /**
  * Registra los callbacks para los botones de /list
@@ -28,7 +29,9 @@ export function registerListActions(bot) {
 
     // 4) Responder al callback (quita el spinner)
     await safeAnswerCbQuery(ctx)
-    // 5) Enviar los detalles
+    // 5) Mensaje temporal para el usuario
+    flashReply(ctx, 'Aquí tienes los detalles de la tarea')
+    // 6) Enviar los detalles
     return safeReply(ctx, `${nameLine}${descLine}${dateLine}`, {
       parse_mode: 'HTML'
     })
