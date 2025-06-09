@@ -1,6 +1,5 @@
 // actions/completeAction/completeActionHandlers.js
 import { Task } from '../../models/task.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'

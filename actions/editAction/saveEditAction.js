@@ -11,11 +11,7 @@ export function registerSaveEditAction(bot) {
     const { editing, edits } = ctx.session
     const task = await Task.findById(editing.id)
 
-    const { updated, changes } = updateTaskFields(
-      task,
-      edits,
-      ctx.session.timezone
-    )
+    const { updated } = updateTaskFields(task, edits, ctx.session.timezone)
     let cbText
     if (updated) {
       await task.save()
