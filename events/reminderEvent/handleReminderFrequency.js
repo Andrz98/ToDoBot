@@ -1,5 +1,6 @@
 import { Task } from '../../models/task.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 
 export const handleReminderFrequency = async (ctx) => {
   const callbackData = ctx.callbackQuery.data
@@ -10,12 +11,17 @@ export const handleReminderFrequency = async (ctx) => {
     return ctx.answerCbQuery('Tarea no encontrada.')
   }
 
-  const frequencyOptions = [
-    [{ text: 'Diario', callback_data: `saveReminder::${taskId}::daily` }],
-    [{ text: 'Semanal', callback_data: `saveReminder::${taskId}::weekly` }],
-    [{ text: 'Mensual', callback_data: `saveReminder::${taskId}::monthly` }],
-    [{ text: 'Anual', callback_data: `saveReminder::${taskId}::yearly` }]
-  ]
+  const { markup } = buildFrequencyMenu()
+  const frequencyOptions = markup.reply_markup.inline_keyboard.map((row) => {
+    const button = row[0]
+    const value = button.callback_data.replace('add_freq_', '')
+    return [
+      {
+        text: button.text,
+        callback_data: `saveReminder::${taskId}::${value}`
+      }
+    ]
+  })
 
   await ctx.answerCbQuery()
 
