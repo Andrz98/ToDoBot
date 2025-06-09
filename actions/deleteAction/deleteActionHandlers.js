@@ -34,6 +34,7 @@ export function registerDeleteActions(bot) {
     await Task.findByIdAndDelete(taskId)
 
     await safeAnswerCbQuery(ctx, '👌🏽 Tarea eliminada')
+    await flashReply(ctx, 'Tarea eliminada')
     await safeEditMessageReplyMarkup(ctx)
     // Limpiamos el flujo
     ctx.session.flowType = null
