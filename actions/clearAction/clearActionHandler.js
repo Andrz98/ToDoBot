@@ -1,5 +1,4 @@
 import { Task } from '../../models/task.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 
