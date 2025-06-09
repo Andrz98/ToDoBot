@@ -12,7 +12,11 @@ vi.mock('@/utils/delayUtils/flashReply.js', () => ({
 }))
 
 describe('saveReminderAction', () => {
-  const ctx = { callbackQuery: { data: 'saveReminder::100::weekly' }, answerCbQuery: vi.fn() }
+  const ctx = {
+    callbackQuery: { data: 'saveReminder::100::weekly' },
+    answerCbQuery: vi.fn(),
+    session: { flowType: 'reminder', menuMessageId: 1 }
+  }
 
   beforeEach(() => {
     vi.useFakeTimers()
@@ -51,5 +55,7 @@ describe('saveReminderAction', () => {
       {},
       2500
     )
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.session.menuMessageId).toBeUndefined()
   })
 })

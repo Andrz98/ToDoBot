@@ -36,6 +36,9 @@ export const saveReminderAction = async (ctx) => {
   await task.save()
   await ctx.answerCbQuery()
 
+  ctx.session.flowType = null
+  delete ctx.session.menuMessageId
+
   return flashReply(
     ctx,
     `Se ha configurado el recordatorio para la tarea "${task.name}" con frecuencia "${frequency}".`,
