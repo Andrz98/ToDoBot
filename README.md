@@ -1,27 +1,40 @@
 # TuttoFatto ToDo Bot
 
-TuttoFatto helps you manage tasks directly from Telegram. Only authorized users can interact with the bot's commands.
+Este repositorio implementa un bot de Telegram desarrollado en Node.js para administrar tareas y recordatorios de manera interactiva, orientado a usuarios autorizados. El bot expone un webhook mediante Express y emplea la librería Telegraf para procesar mensajes, comandos y botones inline. Toda la información se persiste en MongoDB a través de Mongoose, y los recordatorios se gestionan de forma automatizada con `node-cron`.
 
-## Features
+## Características principales
 
-- Create new tasks with interactive prompts
-- Edit existing tasks through inline buttons
-- List active tasks and inspect details
-- Mark tasks as completed
-- Delete specific tasks
-- Clear all completed tasks after confirmation
-- Change the bot's timezone setting
-- Receive reminder notifications before a task is due
+- Gestión de tareas: creación, edición, listado, marcado como completadas, eliminación individual y limpieza de tareas finalizadas.
+- Recordatorios automáticos: el bot revisa las tareas pendientes cada minuto y notifica a los usuarios autorizados 72h, 48h, 24h, 7h, 3h y 10 minutos antes del vencimiento.
+- Flujos guiados por menús: los comandos interactivos muestran botones y force replies para solicitar nombre, descripción, fecha, etc.
+- Control de zona horaria: cada usuario puede definir su zona horaria principal (`Europe/Madrid` o `America/Bogota`) para la correcta notificación de recordatorios.
+- Sistema de autorización: solo los usuarios registrados en la colección `AuthorizedUser` pueden ejecutar comandos o interactuar con el bot.
+- Persistencia de sesión: uso de `telegraf-session-local` para conservar el estado de los flujos conversacionales en disco.
+- Pruebas unitarias: incluye tests con [Vitest](https://vitest.dev/) que validan la lógica de controladores y componentes principales.
+- Disponibilidad continua: el bot está configurado para mantenerse siempre activo y responder de forma inmediata, mediante el uso de **UptimeRobot**. UptimeRobot monitoriza el endpoint del webhook, garantizando que el bot no entre en modo inactivo y los usuarios reciban notificaciones y respuestas en tiempo real sin demoras.
 
-## Commands and Flows
+## Limitaciones actuales
 
-- **/start** – Greets the user, checks authorization and shows the available commands.
-- **/add** – Shows a button to begin creating a task. Follow the interactive prompts to provide the name, due date and reminder time.
-- **/edit** – Displays current tasks as inline buttons. Select one to modify its fields.
-- **/list** – Lists all active tasks. Selecting a task reveals more details.
-- **/done** – Presents pending tasks. Choose one to mark it completed.
-- **/delete** – Offers a list of tasks to remove. Pick a task to delete it.
-- **/clear** – Sends a confirmation menu before removing every completed task.
-- **/settimezone** – Allows changing the timezone via menu or argument.
+En este momento, el bot está restringido para el registro de nuevos usuarios. Esta limitación responde a la capacidad de la base de datos utilizada en el entorno actual, que no permite una escalabilidad indefinida. Por tanto, únicamente los usuarios previamente autorizados en la colección `AuthorizedUser` pueden interactuar con los comandos y funcionalidades del bot.
 
-Reminders are sent automatically at 72h, 48h, 24h, 7h, 3h and 10 minutes before each task's due date.
+## Estructura del proyecto
+
+- `app.js`: punto de entrada, configuración de Express y webhook.
+- `config/`: inicialización de Telegraf y conexión a MongoDB.
+- `controllers/`: lógica de los comandos principales.
+- `actions/` y `events/`: manejadores de callbacks y respuestas a eventos.
+- `middlewares/`: control de acceso, rate limiting, sanitización, etc.
+- `models/`: esquemas de Mongoose (`Task`, `AuthorizedUser`, ...).
+- `services/`: planificador y ejecución de recordatorios automáticos.
+- `helpers/` y `utils/`: funciones de apoyo para validaciones, formatos, etc.
+- `test/`: pruebas unitarias con Vitest.
+
+## Requisitos
+
+- Node.js 18 o superior
+- MongoDB accesible mediante la URI definida en `.env`
+- Token válido de bot de Telegram
+
+## Consideraciones
+
+Este bot ha sido diseñado para facilitar la gestión personal de tareas y recordatorios en Telegram con flujos interactivos, máxima privacidad, disponibilidad continua y control granular de acceso. El uso de UptimeRobot permite mantener la instancia operativa y reducir al mínimo los tiempos de espera para los usuarios.
