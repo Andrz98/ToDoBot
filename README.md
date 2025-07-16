@@ -4,6 +4,7 @@ Este repositorio implementa un bot de Telegram desarrollado en Node.js para admi
 
 ## Características principales
 
+- Arquitectura MVC: el proyecto sigue una estructura modular basada en el patrón Modelo-Vista-Controlador, facilitando la mantenibilidad, escalabilidad y separación de responsabilidades.
 - Gestión de tareas: creación, edición, listado, marcado como completadas, eliminación individual y limpieza de tareas finalizadas.
 - Recordatorios automáticos: el bot revisa las tareas pendientes cada minuto y notifica a los usuarios autorizados 72h, 48h, 24h, 7h, 3h y 10 minutos antes del vencimiento.
 - Flujos guiados por menús: los comandos interactivos muestran botones y force replies para solicitar nombre, descripción, fecha, etc.
