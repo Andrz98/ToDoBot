@@ -29,6 +29,54 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 - `helpers/` y `utils/`: funciones de apoyo para validaciones, formatos, etc.
 - `test/`: pruebas unitarias con Vitest.
 
+---
+```
+├── app.js
+├── actions/
+│ ├── addAction/
+│ │ ├── confirmAction.js
+│ │ └── startAddAction.js
+│ └── completeAction/
+│ └── completeActionHandler.js
+├── config/
+│ ├── MongoDB/
+│ │ └── db.js
+│ └── telegraf/
+│ └── telegraf.js
+├── controllers/
+│ ├── taskControllers/
+│ │ ├── addTask.js
+│ │ └── listTask.js
+│ └── timeZoneController/
+│ └── setTimezone.js
+├── middlewares/
+│ ├── access/
+│ │ └── isAuthorizedUser.js
+│ ├── flowControl/
+│ │ └── flowGuard.js
+│ └── secure/
+│ └── sanitizeInput.js
+├── models/
+│ ├── authorizedUser.js
+│ └── task.js
+├── services/
+│ └── schedulers/
+│ └── reminderScheduler.js
+├── test/
+│ └── unit/
+│ ├── actions/
+│ │ └── reminderAction/
+│ │ └── saveReminderAction.test.js
+│ └── controllers/
+│ └── taskController/
+│ └── addTask.test.js
+├── utils/
+│ ├── delayUtils/
+│ │ └── sleep.js
+│ └── logUtils/
+│ └── debugLog.js
+```
+---
 ## Requisitos
 
 - Node.js 18 o superior
