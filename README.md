@@ -81,7 +81,7 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 ## Requisitos
 
 - Node.js
-- MongoDB accesible mediante la URI definida en `.env`
+- MongoDB accesible mediante la URI
 - Token válido de bot de Telegram
 
 ## Consideraciones
