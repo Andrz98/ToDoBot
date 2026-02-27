@@ -26,7 +26,7 @@ import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 // Me aseguro que el token exista
 if (!process.env.TELEGRAM_BOT_TOKEN) {
-  throw new Error('🪧 TELEGRAM_BOT_TOKEN no está definido en el archivo .env')
+  throw new Error('TELEGRAM_BOT_TOKEN no está definido en el archivo .env')
 }
 
 // Crear instancia de bot con keep-alive HTTP

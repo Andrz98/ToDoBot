@@ -25,7 +25,7 @@ export async function flowGuard(ctx, next) {
   // 1.bis) Si el mensaje es un nuevo comando (ej: /add, /edit, /delete...), permitimos que se inicie un nuevo flujo
   if (ctx.message?.text?.startsWith('/')) {
     debugLog(
-      '🟢 [flowGuard] Permitiendo nuevo comando:',
+      ' [flowGuard] Permitiendo nuevo comando:',
       ctx.message.text,
       '| flujo actual:',
       flowType

@@ -3,7 +3,7 @@
  */
 export function registerFlowResetHandler(bot) {
   bot.action('flow_reset', async (ctx) => {
-    await ctx.answerCbQuery('✅ Acción restablecida')
+    await ctx.answerCbQuery(' Acción restablecida')
     // Limpiamos todo el estado de flujo
     ctx.session.flowType = null
     ctx.session.awaiting = null
