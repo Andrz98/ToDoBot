@@ -1,4 +1,4 @@
-import { Task } from '../../models/task.js'
+import { findTask } from '../../helpers/tasks/findTask.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
 
 const addIntervalToNow = (frequency) => {
@@ -24,7 +24,7 @@ export const saveReminderAction = async (ctx) => {
   const callbackData = ctx.callbackQuery.data
   const [, taskId, frequency] = callbackData.split('::')
 
-  const task = await Task.findById(taskId)
+  const task = await findTask(ctx.from.id, { id: taskId })
   if (!task) {
     return ctx.answerCbQuery('Tarea no encontrada.')
   }

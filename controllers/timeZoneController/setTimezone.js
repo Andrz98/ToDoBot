@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { buildTimezoneMenu } from '../../helpers/taskHelpers/timezone/FlowTimezone/interactiveFlowTimezone.js'
+import { ALLOWED_TIMEZONES } from '../../helpers/taskHelpers/timezone/allowedTimezones.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
@@ -14,8 +15,6 @@ export const setTimezone = async (ctx) => {
     const userId = ctx.from.id
     const input = ctx.message.text.replace(/^\/settimezone\s*/i, '').trim()
 
-    const allowedTimezones = ['Europe/Madrid', 'America/Bogota']
-
     // 1) Sin argumento: muestro solo la otra zona
     if (!input) {
       // arranco el flujo timezone
@@ -28,7 +27,7 @@ export const setTimezone = async (ctx) => {
     }
 
     // 2) Validación
-    if (!allowedTimezones.includes(input)) {
+    if (!ALLOWED_TIMEZONES.includes(input)) {
       return safeReply(
         ctx,
         '🌐 Zona horaria no válida. Solo puedes elegir entre:\n' +

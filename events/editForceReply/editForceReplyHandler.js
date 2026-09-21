@@ -13,10 +13,7 @@ import { debugLog } from '../../utils/logUtils/debugLog.js'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx, next) => {
-    debugLog(
-      '📥 [editForceReplyHandler] Recibido mensaje:',
-      ctx.message?.text
-    )
+    debugLog('📥 [editForceReplyHandler] Recibido mensaje:', ctx.message?.text)
 
     // 🔒 Evitar interceptar comandos
     if (ctx.message?.text?.startsWith('/')) {
@@ -45,6 +42,7 @@ export function registerForceReplyHandler(bot) {
       }
 
       const text = ctx.message.text.trim()
+      const tz = await getUserTimezone(ctx.from.id)
       const fields = {}
       let newDate
 
@@ -53,11 +51,10 @@ export function registerForceReplyHandler(bot) {
       } else if (awaiting === 'new_desc') {
         fields.newDescription = text
       } else if (awaiting === 'new_date') {
-        const parsed = detectAndParseDate([text])
+        const parsed = detectAndParseDate([text], tz)
         newDate = parsed.date
 
         if (!newDate && /^\d{1,2}:\d{2}$/.test(text)) {
-          const tz = await getUserTimezone(ctx.from.id)
           const origDT = DateTime.fromJSDate(task.reminderAt, { zone: tz })
           const [h, m] = text.split(':').map((n) => parseInt(n, 10))
           newDate = origDT.set({ hour: h, minute: m }).toJSDate()
@@ -70,7 +67,6 @@ export function registerForceReplyHandler(bot) {
         fields.date = newDate
       }
 
-      const tz = await getUserTimezone(ctx.from.id)
       const { updated, changes } = updateTaskFields(task, fields, tz)
       ctx.session.awaiting = null
 
@@ -94,6 +90,9 @@ export function registerForceReplyHandler(bot) {
         { parse_mode: 'HTML', ...markup }
       )
     } catch (error) {
+      if (error.message === 'PAST_DATE') {
+        return replyMessages.pastDate(ctx)
+      }
       console.error('❌ Error en forceReplyHandler:', error)
       ctx.session.awaiting = null
       ctx.session.editing = null

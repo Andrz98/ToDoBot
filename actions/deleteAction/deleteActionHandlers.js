@@ -1,5 +1,6 @@
 // actions/deleteAction/deleteActionHandlers.js
 import { Task } from '../../models/task.js'
+import { findTask } from '../../helpers/tasks/findTask.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
@@ -13,7 +14,7 @@ export function registerDeleteActions(bot) {
   // 1) Selección de la tarea a eliminar
   bot.action(/^delete_select:(.+)$/, async (ctx) => {
     const taskId = ctx.match[1]
-    const task = await Task.findById(taskId)
+    const task = await findTask(ctx.from.id, { id: taskId })
     if (!task) {
       await safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
       return
@@ -31,7 +32,7 @@ export function registerDeleteActions(bot) {
   // 2) Confirmación “Sí”
   bot.action('delete_confirm:yes', async (ctx) => {
     const taskId = ctx.session.pendingDelete
-    await Task.findByIdAndDelete(taskId)
+    await Task.findOneAndDelete({ _id: taskId, userId: ctx.from.id })
 
     await safeAnswerCbQuery(ctx, '👌🏽 Tarea eliminada')
     await flashReply(ctx, 'Tarea eliminada')

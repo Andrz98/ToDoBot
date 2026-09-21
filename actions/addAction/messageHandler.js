@@ -1,5 +1,6 @@
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 
 export function registerMessageHandler(bot) {
   bot.on('message', async (ctx, next) => {
@@ -9,6 +10,7 @@ export function registerMessageHandler(bot) {
     }
 
     const text = ctx.message.text.trim()
+    const timezone = await getUserTimezone(ctx.from.id)
 
     // 1. Si es respuesta a un force-reply, borramos el prompt original
     const replied = ctx.message.reply_to_message
@@ -36,7 +38,7 @@ export function registerMessageHandler(bot) {
         break
 
       case 'add_date': {
-        const { date } = detectAndParseDate([text], ctx.session.timezone)
+        const { date } = detectAndParseDate([text], timezone)
         if (!date) {
           return ctx.reply('Fecha inválida. Usa el formato DD/MM/YYYY HH:mm.', {
             reply_markup: { force_reply: true }
@@ -54,11 +56,11 @@ export function registerMessageHandler(bot) {
     ctx.session.awaiting = null
 
     // Editamos el menú en el mismo mensaje
-    const { text: menuText, markup } = buildAddMenu(pendingTask)
-    let targetId = menuMessageId
+    const { text: menuText, markup } = buildAddMenu(pendingTask, timezone)
+    const targetId = menuMessageId
 
     if (!targetId) {
-      const newMsg = await ctx.reply(menuText, { parse_mode: 'Markdown', ...markup })
+      const newMsg = await ctx.reply(menuText, markup)
       ctx.session.menuMessageId = newMsg.message_id
       return
     }
@@ -69,10 +71,10 @@ export function registerMessageHandler(bot) {
         targetId,
         null,
         menuText,
-        { parse_mode: 'Markdown', ...markup }
+        markup
       )
     } catch {
-      const newMsg = await ctx.reply(menuText, { parse_mode: 'Markdown', ...markup })
+      const newMsg = await ctx.reply(menuText, markup)
       ctx.session.menuMessageId = newMsg.message_id
     }
   })

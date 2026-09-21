@@ -1,4 +1,4 @@
-import { Task } from '../../models/task.js'
+import { findTask } from '../../helpers/tasks/findTask.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 
@@ -6,7 +6,7 @@ export const handleReminderFrequency = async (ctx) => {
   const callbackData = ctx.callbackQuery.data
   const [, taskId] = callbackData.split('::')
 
-  const task = await Task.findById(taskId)
+  const task = await findTask(ctx.from.id, { id: taskId })
   if (!task) {
     return ctx.answerCbQuery('Tarea no encontrada.')
   }

@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid'
+import { randomUUID } from 'node:crypto'
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
@@ -29,7 +29,7 @@ export const clearTask = async (ctx) => {
     }
 
     // 2. Debo generar un token y guardar la sesión para proteger las tareas del usuario
-    const token = uuid()
+    const token = randomUUID()
     ctx.session.flowTypes = 'clear'
     ctx.session.pendingClearToken = token
 

@@ -6,11 +6,17 @@ import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
+import { ALLOWED_TIMEZONES } from '../../helpers/taskHelpers/timezone/allowedTimezones.js'
 
 export function registerTimezoneActions(bot) {
   // Paso 1: elijo zona y pido confirmación
   bot.action(/^set_tz_(.+)$/, async (ctx) => {
     const tz = ctx.match[1]
+    if (!ALLOWED_TIMEZONES.includes(tz)) {
+      return safeAnswerCbQuery(ctx, 'Zona horaria no válida.', {
+        show_alert: true
+      })
+    }
     debugLog('antes clear:', ctx.session)
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = tz
@@ -33,6 +39,14 @@ export function registerTimezoneActions(bot) {
   bot.action('confirm_tz_yes', async (ctx) => {
     await safeEditMessageReplyMarkup(ctx)
     const tz = ctx.session.pendingTz
+    if (!ALLOWED_TIMEZONES.includes(tz)) {
+      ctx.session.flowType = null
+      return safeAnswerCbQuery(
+        ctx,
+        'La solicitud expiró. Usa /settimezone de nuevo.',
+        { show_alert: true }
+      )
+    }
     const userId = ctx.from.id
 
     const updatedUser = await AuthorizedUser.findOneAndUpdate(

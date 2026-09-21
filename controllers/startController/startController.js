@@ -2,6 +2,7 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
@@ -41,7 +42,7 @@ export const startCommand = async (ctx) => {
     if (authorized) {
       return safeReply(
         ctx,
-        `🛡️ ¡Hola, ${username}!\n` +
+        `🛡️ ¡Hola, ${escapeHtml(username)}!\n` +
           'TuttoFatto está listo para ayudarte.\n\n' +
           tzMessage +
           suggestionMessage +

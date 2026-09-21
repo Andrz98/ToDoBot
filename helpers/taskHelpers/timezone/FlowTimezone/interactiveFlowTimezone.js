@@ -1,4 +1,5 @@
 import { Markup } from 'telegraf'
+import { ALLOWED_TIMEZONES } from '../allowedTimezones.js'
 
 /**
  * Construye el texto y el teclado inline para /settimezone
@@ -7,9 +8,7 @@ import { Markup } from 'telegraf'
 
 export const buildTimezoneMenu = (currentTz) => {
   const text = 'Selecciona tu zona horaria:'
-  const options = ['Europe/Madrid', 'America/Bogota'].filter(
-    (zone) => zone !== currentTz
-  )
+  const options = ALLOWED_TIMEZONES.filter((zone) => zone !== currentTz)
   const inline = Markup.inlineKeyboard(
     options.map((zone) => [Markup.button.callback(zone, `set_tz_${zone}`)]),
     { columns: 1 }

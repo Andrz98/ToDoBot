@@ -1,6 +1,7 @@
 // helpers/delete/interactiveFlowDelete.js
 import { Markup } from 'telegraf'
 import { buildInlineConfirm } from '../../replyConfirm/inlineConfirm.js'
+import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
 
 /**
  * Construye el teclado inline para seleccionar la tarea a eliminar.
@@ -29,7 +30,7 @@ export const buildDeleteMenu = (tasks) => {
 export const buildConfirmDeleteMenu = (task) => {
   const { reply_markup } = buildInlineConfirm('delete_confirm')
   return {
-    text: `¿Seguro que deseas eliminar la tarea:\n\n<b>${task.name}</b>?`,
+    text: `¿Seguro que deseas eliminar la tarea:\n\n<b>${escapeHtml(task.name)}</b>?`,
     reply_markup
   }
 }

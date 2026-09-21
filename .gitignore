@@ -25,3 +25,9 @@ dist-ssr
 dbcopy.js
 user_2.js
 user copy.js
+
+# Estado local del bot y artefactos
+session.json
+.~session.json
+logs.txt
+coverage

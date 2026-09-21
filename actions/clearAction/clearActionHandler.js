@@ -19,7 +19,7 @@ export function registerClearActions(bot) {
 
     // 2) Ejecutar borrado de tareas
     const userId = ctx.from.id
-    const result = await Task.deleteMany({ userId })
+    await Task.deleteMany({ userId })
 
     // 3) Quito spinner y botones
     await safeAnswerCbQuery(ctx, '👌🏽 Tareas eliminadas')
@@ -30,7 +30,6 @@ export function registerClearActions(bot) {
     ctx.session.pendingClearToken = null
 
     flashReply(ctx, 'Lista restablecida')
-
   })
 
   // 2) Confirma “no”

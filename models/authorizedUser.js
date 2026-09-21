@@ -11,4 +11,3 @@ export const AuthorizedUser = mongoose.model(
   'AuthorizedUser',
   authorizedUserSchema
 )
-

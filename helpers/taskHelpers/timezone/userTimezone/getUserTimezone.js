@@ -1,4 +1,5 @@
 import { AuthorizedUser } from '../../../../models/authorizedUser.js'
+import { ALLOWED_TIMEZONES } from '../allowedTimezones.js'
 
 /**
  * Retorna la zona horaria de un usuario autorizado.
@@ -18,8 +19,7 @@ export const getUserTimezone = async (userId) => {
     throw new Error(`User ${userId} not found`)
   }
 
-  const allowedTimezones = ['Europe/Madrid', 'America/Bogota']
   const tz = user.timezone
 
-  return allowedTimezones.includes(tz) ? tz : 'Europe/Madrid'
+  return ALLOWED_TIMEZONES.includes(tz) ? tz : 'Europe/Madrid'
 }

@@ -4,8 +4,6 @@ import js from '@eslint/js' // Configuración base de ESLint
 
 import prettierPlugin from 'eslint-plugin-prettier' // Integración con Prettier
 
-import nodePlugin from 'eslint-plugin-node' // Plugin específico para Node.js
-
 import globals from 'globals' // Definición de variables globales para Node.js
 
 export default [
@@ -37,8 +35,6 @@ export default [
     // 🔹 Plugins utilizados
 
     plugins: {
-      node: nodePlugin, // Reglas específicas para Node.js
-
       prettier: prettierPlugin // Integración con Prettier para formateo automático
     },
 
@@ -68,16 +64,6 @@ export default [
           endOfLine: 'crlf' // Forzar líneas finales con `CRLF` en vez de `LF`
         }
       ],
-
-      // ✅ Reglas para mejorar la calidad del código en Node.js
-
-      'node/no-missing-import': 'off',
-
-      'node/no-unpublished-import': 'off', // 🚀 Permitir importar devDependencies (para herramientas como Jest)
-
-      'node/no-deprecated-api': 'off', // 🔧 Desactivamos esta regla para evitar errores con ESLint 9
-
-      'node/no-unsupported-features/es-syntax': 'off', // ✅ Permitir la sintaxis de ES Modules sin advertencias
 
       // ✅ Estándares de calidad de código
 

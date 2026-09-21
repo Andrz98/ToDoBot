@@ -1,5 +1,7 @@
 // actions/completeAction/completeActionHandlers.js
 import { Task } from '../../models/task.js'
+import { findTask } from '../../helpers/tasks/findTask.js'
+import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -12,7 +14,7 @@ export function registerCompleteActions(bot) {
   // 1) Usuario selecciona la tarea a completar
   bot.action(/^complete_select:(.+)$/, async (ctx) => {
     const taskId = ctx.match[1]
-    const task = await Task.findById(taskId)
+    const task = await findTask(ctx.from.id, { id: taskId })
     if (!task) {
       await safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
       return
@@ -25,7 +27,7 @@ export function registerCompleteActions(bot) {
     await safeAnswerCbQuery(ctx)
     return safeReply(
       ctx,
-      `¿Estás segur@ de marcar como completada la tarea:\n\n<b>${task.name}</b>?`,
+      `¿Estás segur@ de marcar como completada la tarea:\n\n<b>${escapeHtml(task.name)}</b>?`,
       {
         parse_mode: 'HTML',
         ...buildConfirmCompleteMenu(task.name)
@@ -36,7 +38,10 @@ export function registerCompleteActions(bot) {
   // 2 Confirma “Sí”
   bot.action('complete_confirm:yes', async (ctx) => {
     const taskId = ctx.session.pendingComplete
-    await Task.findByIdAndUpdate(taskId, { completed: true })
+    await Task.findOneAndUpdate(
+      { _id: taskId, userId: ctx.from.id },
+      { completed: true }
+    )
 
     await safeAnswerCbQuery(ctx, '👌🏽 Tarea completada')
     await safeEditMessageReplyMarkup(ctx)

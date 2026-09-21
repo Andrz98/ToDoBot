@@ -1,5 +1,6 @@
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 
 const FIELDS = [
   { action: 'add_create', key: null, prompt: null },
@@ -28,8 +29,9 @@ export function registerFieldActions(bot) {
       if (action === 'add_create') {
         // Simplemente mostramos/EDITAMOS el menú
         ctx.session.awaiting = null
-        const { text, markup } = buildAddMenu(ctx.session.pendingTask)
-        let targetId =
+        const timezone = await getUserTimezone(ctx.from.id)
+        const { text, markup } = buildAddMenu(ctx.session.pendingTask, timezone)
+        const targetId =
           ctx.session.menuMessageId ?? ctx.callbackQuery?.message?.message_id
 
         if (!targetId) {
@@ -44,7 +46,7 @@ export function registerFieldActions(bot) {
             targetId,
             null,
             text,
-            { parse_mode: 'Markdown', ...markup }
+            markup
           )
         } catch {
           const newMsg = await ctx.reply(text, markup)

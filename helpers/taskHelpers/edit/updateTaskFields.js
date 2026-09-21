@@ -1,8 +1,5 @@
 import { formatDateEs } from '../date/formatDateEs.js'
-
-// Escapa caracteres especiales para HTML en Telegram
-const escapeHtml = (str) =>
-  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
 
 /**
  * Actualiza los campos de una tarea con los nuevos valores proporcionados
