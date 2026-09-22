@@ -61,7 +61,7 @@ describe('/add: confirmar creación', () => {
     await expect(bot.press('add_confirm', ctx)).resolves.not.toThrow()
 
     expect(ctx.answerCbQuery).toHaveBeenCalledWith(
-      expect.stringContaining('Ya existe'),
+      expect.stringContaining('/clear'),
       { show_alert: true }
     )
     expect(ctx.deleteMessage).not.toHaveBeenCalled()

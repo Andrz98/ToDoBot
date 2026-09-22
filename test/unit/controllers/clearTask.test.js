@@ -20,11 +20,28 @@ describe('/clear', () => {
     ctx = makeCtx({ message: { text: '/clear' } })
   })
 
-  it('genera un token UUID v4 y lo liga a los botones de confirmación', async () => {
+  it('cuenta solo las tareas completadas del usuario', async () => {
+    await clearTask(ctx)
+
+    expect(h.count).toHaveBeenCalledWith({ userId: 7, completed: true })
+  })
+
+  it('pide confirmación indicando cuántas completadas se borrarán (HTML)', async () => {
+    await clearTask(ctx)
+
+    const [text, options] = ctx.reply.mock.calls[0]
+    expect(text).toBe(
+      '❗ Estás a punto de eliminar <b>3</b> tareas completadas. ¿Confirmas?'
+    )
+    expect(options.parse_mode).toBe('HTML')
+  })
+
+  it('abre el flujo "clear" con un token UUID v4 ligado a los botones', async () => {
     await clearTask(ctx)
 
     const token = ctx.session.pendingClearToken
     expect(token).toMatch(UUID_V4)
+    expect(ctx.session.flowType).toBe('clear')
     const callbacks = ctx.reply.mock.calls[0][1].reply_markup.inline_keyboard
       .flat()
       .map((b) => b.callback_data)
@@ -34,13 +51,28 @@ describe('/clear', () => {
     ])
   })
 
-  it('sin tareas no abre confirmación', async () => {
+  it('sin tareas completadas no abre confirmación', async () => {
     h.count.mockResolvedValue(0)
 
     await clearTask(ctx)
 
     expect(ctx.session.pendingClearToken).toBeUndefined()
-    expect(ctx.reply.mock.calls[0][0]).toContain('No tienes tareas')
+    expect(ctx.session.flowType).toBeUndefined()
+    expect(ctx.reply.mock.calls[0][0]).toBe(
+      '🤯 No tienes tareas completadas para eliminar.'
+    )
+  })
+
+  it('debe capturar errores internos y responder con un mensaje genérico', async () => {
+    h.count.mockRejectedValue(new Error('Fallo inesperado'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await clearTask(ctx)
+
+    expect(ctx.reply).toHaveBeenCalledWith(
+      '😵‍💫 Ocurrió un error al iniciar el borrado. Intenta más tarde.',
+      {}
+    )
   })
 
   it('usuario no autorizado: responde y no consulta tareas', async () => {

@@ -109,6 +109,21 @@ describe('reminderScheduler', () => {
     expect(ok.alertsSent).toEqual(['24h'])
   })
 
+  it('con DEBUG=true no registra el nombre de la tarea ni el usuario', async () => {
+    vi.stubEnv('DEBUG', 'true')
+    const captured = []
+    const log = vi.spyOn(console, 'log').mockImplementation((...args) => {
+      captured.push(JSON.stringify(args))
+    })
+
+    await runTick([makeTask(424242, 'NOMBRE-PRIVADO', { _id: 'abc123' })])
+
+    expect(log).toHaveBeenCalled()
+    expect(captured.join(' | ')).not.toContain('NOMBRE-PRIVADO')
+    expect(captured.join(' | ')).not.toContain('424242')
+    vi.unstubAllEnvs()
+  })
+
   it('escapa el HTML del nombre de la tarea en el recordatorio', async () => {
     const task = makeTask(1, 'a <b> & c')
 

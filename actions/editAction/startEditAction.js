@@ -13,7 +13,6 @@ export function registerStartEditAction(bot) {
 
   bot.command('edit', isAuthorizedUser, async (ctx) => {
     debugLog('🟢 [DEBUG] Entró al handler /edit')
-    debugLog('ANTES DE LIMPIAR ctx.session:', ctx.session)
 
     // 🧹 Paso 1: limpiar flujo anterior
     delete ctx.session.awaiting
@@ -25,8 +24,6 @@ export function registerStartEditAction(bot) {
 
     // ✅ Paso 2: marcar nuevo flujo
     ctx.session.flowType = 'edit'
-
-    debugLog('DESPUÉS DE SETEAR flowType:', ctx.session)
 
     try {
       // ⚠️ Paso 3: Validar funcionamiento real del helper
@@ -72,7 +69,7 @@ export function registerStartEditAction(bot) {
         { parse_mode: 'HTML', ...markup }
       )
     } catch {
-      const newMsg = await ctx.reply(text, markup)
+      const newMsg = await ctx.reply(text, { parse_mode: 'HTML', ...markup })
       ctx.session.menuMessageId = newMsg.message_id
     }
   })

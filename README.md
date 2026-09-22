@@ -31,6 +31,7 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 - `test/`: pruebas unitarias con Vitest.
 
 ---
+
 ```
 ├── app.js
 ├── actions/
@@ -77,12 +78,18 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 │ └── logUtils/
 │ └── debugLog.js
 ```
+
 ---
+
 ## Requisitos
 
-- Node.js
+- Node.js 22.12 o superior
 - MongoDB accesible mediante la URI
 - Token válido de bot de Telegram
+- Variables de entorno (ver `.env.example`): `MONGO_URI`, `TELEGRAM_BOT_TOKEN`, `WEBHOOK_DOMAIN`, `TELEGRAM_WEBHOOK_SECRET`, `PORT` y, solo para depurar, `DEBUG`.
+  - `TELEGRAM_WEBHOOK_SECRET` es obligatorio: Telegram lo envía en la cabecera `X-Telegram-Bot-Api-Secret-Token` y el bot rechaza cualquier petición al webhook que no lo lleve.
+  - Con `DEBUG=true` se registran datos de usuario (sesión, mensajes): no lo actives en producción salvo para depurar.
+- UptimeRobot debe monitorizar `GET /`; el webhook solo acepta peticiones `POST` firmadas por Telegram.
 
 ## Consideraciones
 

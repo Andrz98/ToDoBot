@@ -1,4 +1,4 @@
-import 'dotenv/config'
+import '../env.js'
 import { createBot } from './botFactory.js'
 
 import { pingCommand } from '../../controllers/adminControllers/pingController.js'
@@ -29,6 +29,17 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
   throw new Error('TELEGRAM_BOT_TOKEN no está definido en el archivo .env')
 }
 
+// Secret que Telegram enviará en cada petición del webhook (cabecera X-Telegram-Bot-Api-Secret-Token)
+const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET
+if (!webhookSecret) {
+  throw new Error('TELEGRAM_WEBHOOK_SECRET no está definido en el archivo .env')
+}
+if (!/^[A-Za-z0-9_-]{1,256}$/.test(webhookSecret)) {
+  throw new Error(
+    'TELEGRAM_WEBHOOK_SECRET solo admite A-Z, a-z, 0-9, _ y - (1 a 256 caracteres)'
+  )
+}
+
 // Crear instancia de bot con keep-alive HTTP
 const bot = createBot(process.env.TELEGRAM_BOT_TOKEN)
 debugLog('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
@@ -36,15 +47,16 @@ debugLog('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
 // ====================================
 // 🔰 Middlewares
 // ====================================
+// La sesión va primero: rateLimit y flowGuard leen ctx.session
+bot.use(localSessionMiddleware)
 bot.use(rateLimit)
 bot.use(sanitizeInput)
-bot.use(localSessionMiddleware)
 bot.use((ctx, next) => {
   debugLog('🔥 [DEBUG] Antes de flowGuard: ', {
     updateType: ctx.updateType,
     callbackData: ctx.callbackQuery?.data,
-    messageText: ctx.message?.text,
-    session: ctx.session
+    flowType: ctx.session?.flowType,
+    awaiting: ctx.session?.awaiting
   })
   return next()
 })
@@ -86,7 +98,7 @@ registerListActions(bot)
 registerReminderActions(bot)
 
 bot.on('message', async (ctx, next) => {
-  debugLog('🧪 [TRACE] bot.on(message) interceptó:', ctx.message?.text)
+  debugLog('🧪 [TRACE] bot.on(message) interceptó un mensaje')
   return next()
 })
 //  FINALMENTE el .on('message') y forceReplyHandler 🔻
@@ -107,5 +119,15 @@ bot.catch((err, ctx) => {
 // ====================================
 // 🔰 Exportación para app.js (webhook)
 // ====================================
-const webhookCallback = bot.webhookCallback('/telegraf/tuttobot-path-seguro')
+export const WEBHOOK_PATH = '/telegraf/tuttobot-path-seguro'
+const webhookCallback = bot.webhookCallback(WEBHOOK_PATH, {
+  secretToken: webhookSecret
+})
+
+// Registra el webhook en Telegram; a partir de aquí Telegram firma cada petición con el secret
+export const registerWebhook = (domain) =>
+  bot.telegram.setWebhook(`${domain}${WEBHOOK_PATH}`, {
+    secret_token: webhookSecret
+  })
+
 export { bot, webhookCallback }

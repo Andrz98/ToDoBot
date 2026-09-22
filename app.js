@@ -1,10 +1,13 @@
-import express from 'express'
-import 'dotenv/config'
+import './config/env.js'
 import mongoose from 'mongoose'
 
-import { bot, webhookCallback } from './config/telegraf/telegraf.js'
+import {
+  webhookCallback,
+  WEBHOOK_PATH,
+  registerWebhook
+} from './config/telegraf/telegraf.js'
+import { createApp } from './config/express/createApp.js'
 import { startReminderScheduler } from './services/schedulers/reminderScheduler.js'
-import { debugLog } from './utils/logUtils/debugLog.js'
 
 // ====================================
 // 🔰 Verifico .env
@@ -34,31 +37,20 @@ mongoose
     // ======================
     startReminderScheduler()
 
-    // ======================
-    // 🔰 Inicializo Express
-    // ======================
-    const app = express()
+    // ==========================================
+    // 🔰 Inicializo Express (webhook + ruta raíz)
+    // ==========================================
+    const app = createApp({ webhookPath: WEBHOOK_PATH, webhookCallback })
 
-    // =======================
-    // 🔰 Webhook de Telegraf
-    // =======================
-    const path = '/telegraf/tuttobot-path-seguro'
-    app.post(path, express.json(), (req, res, next) => {
-      debugLog('📩 Petición recibida en webhook') // Necesito forzar a render a mostrarme
-      webhookCallback(req, res, next)
-    })
-
-    bot.telegram.setWebhook(`${domain}${path}`)
-    console.info(`🤖 Webhook activo en: ${domain}${path}`)
-
-    // =========================================
-    // 🔰 Ruta raíz para mantener render activo
-    // =========================================
-    app.get('/', (req, res) => {
-      res
-        .status(200)
-        .send('🤖 TuttoFatto está despierto y funcionando correctamente.')
-    })
+    // Sin webhook registrado el bot no recibe nada: mejor caer y que Render reinicie
+    registerWebhook(domain)
+      .then(() => {
+        console.info(`🤖 Webhook activo en: ${domain}${WEBHOOK_PATH}`)
+      })
+      .catch((err) => {
+        console.error('🦽 Error al registrar el webhook:', err.message)
+        process.exit(1)
+      })
 
     // =======================
     // 🔰 Levanto el servidor

@@ -26,7 +26,6 @@ export async function flowGuard(ctx, next) {
   if (ctx.message?.text?.startsWith('/')) {
     debugLog(
       ' [flowGuard] Permitiendo nuevo comando:',
-      ctx.message.text,
       '| flujo actual:',
       flowType
     )
@@ -41,6 +40,7 @@ export async function flowGuard(ctx, next) {
       case 'edit':
       case 'delete':
       case 'complete':
+      case 'clear':
         if (
           flowType === 'edit'
             ? /^(edit_|select_edit_)/.test(cb)
@@ -69,9 +69,7 @@ export async function flowGuard(ctx, next) {
       '🟢 [flowGuard] Permitiendo forceReply. flowType:',
       flowType,
       '| awaiting:',
-      awaiting,
-      '| mensaje:',
-      ctx.message?.text
+      awaiting
     )
 
     return next()
@@ -83,8 +81,6 @@ export async function flowGuard(ctx, next) {
     flowType,
     '| awaiting:',
     awaiting,
-    '| mensaje:',
-    ctx.message?.text,
     '| callback:',
     ctx.callbackQuery?.data
   )

@@ -17,10 +17,9 @@ export function registerTimezoneActions(bot) {
         show_alert: true
       })
     }
-    debugLog('antes clear:', ctx.session)
+    debugLog('🕒 [DEBUG:set_tz] zona elegida:', tz)
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = tz
-    debugLog('después clear:', ctx.session)
     await safeAnswerCbQuery(ctx)
     return safeReply(
       ctx,

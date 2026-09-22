@@ -17,9 +17,9 @@ export function registerClearActions(bot) {
       })
     }
 
-    // 2) Ejecutar borrado de tareas
+    // 2) Ejecutar borrado de las tareas completadas
     const userId = ctx.from.id
-    await Task.deleteMany({ userId })
+    await Task.deleteMany({ userId, completed: true })
 
     // 3) Quito spinner y botones
     await safeAnswerCbQuery(ctx, '👌🏽 Tareas eliminadas')

@@ -34,7 +34,7 @@ export function registerConfirmAction(bot) {
       if (error.code === DUPLICATE_KEY) {
         return safeAnswerCbQuery(
           ctx,
-          'Ya existe una tarea con ese nombre. Usa /add e inténtalo con otro.',
+          'Ya existe una tarea con ese nombre (puede estar completada: /clear las elimina). Usa /add con otro nombre.',
           { show_alert: true }
         )
       }

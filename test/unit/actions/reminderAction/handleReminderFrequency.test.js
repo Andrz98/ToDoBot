@@ -1,0 +1,72 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { handleReminderFrequency } from '@/events/reminderEvent/handleReminderFrequency.js'
+import { findTask } from '@/helpers/tasks/findTask.js'
+import { buildFrequencyMenu } from '@/helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
+import { safeEditMessageReplyMarkup } from '@/utils/retryUtils/safeEditMessageReplyMarkup.js'
+
+vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: vi.fn() }))
+vi.mock(
+  '@/helpers/frequency/flowFrequency/interactiveFlowFrequency.js',
+  () => ({
+    buildFrequencyMenu: vi.fn()
+  })
+)
+vi.mock('@/utils/retryUtils/safeEditMessageReplyMarkup.js', () => ({
+  safeEditMessageReplyMarkup: vi.fn()
+}))
+
+describe('handleReminderFrequency', () => {
+  const ctx = {
+    from: { id: 7 },
+    callbackQuery: {
+      data: 'setReminder::42',
+      message: { message_id: 10 }
+    },
+    chat: { id: 5 },
+    telegram: {
+      editMessageText: vi.fn(() => Promise.reject(new Error('fail')))
+    },
+    answerCbQuery: vi.fn()
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('shows the keyboard returned by buildFrequencyMenu', async () => {
+    findTask.mockResolvedValue({ _id: '42', name: 'Task' })
+    buildFrequencyMenu.mockReturnValue({
+      text: 'texto',
+      markup: {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: 'Diario', callback_data: 'add_freq_daily' }],
+            [{ text: 'Semanal', callback_data: 'add_freq_weekly' }]
+          ]
+        }
+      }
+    })
+
+    await handleReminderFrequency(ctx)
+
+    const expectedMarkup = {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: 'Diario', callback_data: 'saveReminder::42::daily' }],
+          [{ text: 'Semanal', callback_data: 'saveReminder::42::weekly' }]
+        ]
+      }
+    }
+    expect(findTask).toHaveBeenCalledWith(7, { id: '42' })
+    expect(buildFrequencyMenu).toHaveBeenCalled()
+    expect(ctx.answerCbQuery).toHaveBeenCalled()
+    expect(ctx.telegram.editMessageText).toHaveBeenCalledWith(
+      5,
+      10,
+      undefined,
+      'texto',
+      expectedMarkup
+    )
+    expect(safeEditMessageReplyMarkup).toHaveBeenCalledWith(ctx, expectedMarkup)
+  })
+})

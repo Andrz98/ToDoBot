@@ -11,7 +11,7 @@ import { debugLog } from '../../utils/logUtils/debugLog.js'
  * @param {object} ctx - Contexto del bot
  */
 export const startCommand = async (ctx) => {
-  debugLog('ctx.from:', ctx.from)
+  debugLog('🟢 [DEBUG] /start')
   try {
     const username =
       ctx.from?.username ||

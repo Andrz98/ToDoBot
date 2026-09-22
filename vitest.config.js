@@ -4,7 +4,7 @@ import path from 'path'
 export default defineConfig({
   resolve: {
     alias: {
-      '@': path.resolve(__dirname) // apuntando a la carpeta raíz del proyecto
+      '@': path.resolve(import.meta.dirname) // apuntando a la carpeta raíz del proyecto
     }
   },
   test: {
@@ -14,7 +14,10 @@ export default defineConfig({
     // setupFiles: './tests/setup.js',
     coverage: {
       reporter: ['text', 'json', 'html'], // Formatos de reporte
-      exclude: ['node_modules/', 'tests/', 'config/'] // Excluye archivos irrelevantes
+      include: [
+        'app.js',
+        '{actions,config,controllers,events,helpers,middlewares,models,services,utils}/**/*.js'
+      ]
     }
   }
 })

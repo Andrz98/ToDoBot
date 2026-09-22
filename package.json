@@ -6,33 +6,34 @@
   "author": "Andrz98",
   "type": "module",
   "main": "app.js",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
+    "dev": "node --watch app.js",
     "lint": "eslint . --fix",
     "format": "prettier --write .",
-    "logs": "cat logs.txt",
     "test": "vitest",
     "test:coverage": "vitest --coverage"
   },
-  "_moduleAliases": {
-    "@": "toDoBot"
-  },
   "dependencies": {
-    "dotenv": "^16.5.0",
-    "express": "^4.21.2",
+    "dotenv": "^18.0.2",
+    "express": "^5.2.1",
     "luxon": "^3.6.1",
-    "mongoose": "^8.12.1",
-    "node-cron": "^3.0.3",
+    "mongoose": "^9.10.1",
+    "node-cron": "^4.6.0",
     "telegraf": "^4.16.3",
     "telegraf-session-local": "^2.1.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
-    "eslint": "^9.22.0",
-    "eslint-plugin-prettier": "^5.2.3",
-    "globals": "^16.0.0",
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^5.0.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.12.0",
+    "prettier": "^3.5.3",
     "supertest": "^7.1.0",
-    "vitest": "^3.0.9"
+    "vitest": "^5.0.1"
   }
 }

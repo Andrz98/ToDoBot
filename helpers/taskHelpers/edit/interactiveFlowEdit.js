@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { formatDateEs } from '../date/formatDateEs.js'
+import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
 
 /**
  * Construye el texto y el teclado inline para el flujo interactivo de /edit.
@@ -9,10 +10,9 @@ import { formatDateEs } from '../date/formatDateEs.js'
  * @returns {{ text: string, markup: { reply_markup: object } }}
  */
 export const buildEditMenu = (task, timeZone, hasEdits = false) => {
-  const name = task.name
-  const descriptionText = (task.description || '(sin descripción)').replace(
-    /^-+|-+$/g,
-    ''
+  const name = escapeHtml(task.name)
+  const descriptionText = escapeHtml(
+    (task.description || '(sin descripción)').replace(/^-+|-+$/g, '')
   )
   const reminderAt = task.reminderAt
     ? formatDateEs(new Date(task.reminderAt), timeZone)

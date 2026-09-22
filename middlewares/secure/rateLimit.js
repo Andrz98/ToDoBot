@@ -6,6 +6,16 @@ const userActions = new Map()
 const MAX_ACTIONS = 3
 const WINDOW_MS = 7_000
 
+// Barrido de usuarios inactivos: sin él el Map crece con cada usuario distinto que escribe al bot
+setInterval(() => {
+  const now = Date.now()
+  for (const [userId, timestamps] of userActions) {
+    if (timestamps.every((ts) => now - ts >= WINDOW_MS)) {
+      userActions.delete(userId)
+    }
+  }
+}, WINDOW_MS).unref()
+
 export const rateLimit = async (ctx, next) => {
   const userId = ctx.from?.id
   if (!userId) {

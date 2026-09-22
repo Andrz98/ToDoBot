@@ -11,6 +11,7 @@ export function registerFlowResetHandler(bot) {
     ctx.session.pendingDelete = null
     ctx.session.pendingComplete = null
     ctx.session.pendingTz = null
+    ctx.session.pendingClearToken = null
 
     // Quitar inline keyboard
     if (ctx.update.callback_query.message) {

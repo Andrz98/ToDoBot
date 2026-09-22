@@ -13,14 +13,11 @@ import { debugLog } from '../../utils/logUtils/debugLog.js'
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx, next) => {
-    debugLog('📥 [editForceReplyHandler] Recibido mensaje:', ctx.message?.text)
+    debugLog('📥 [editForceReplyHandler] Recibido mensaje')
 
     // 🔒 Evitar interceptar comandos
     if (ctx.message?.text?.startsWith('/')) {
-      debugLog(
-        '⛔️ [editForceReplyHandler] Ignorando comando:',
-        ctx.message.text
-      )
+      debugLog('⛔️ [editForceReplyHandler] Ignorando comando')
       return typeof next === 'function' ? next() : undefined
     }
 

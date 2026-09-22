@@ -19,18 +19,18 @@ export const clearTask = async (ctx) => {
     }
 
     const userId = ctx.from.id
-    const count = await Task.countDocuments({ userId })
+    const count = await Task.countDocuments({ userId, completed: true })
 
-    // 1. caso "sin tareas"
+    // 1. caso "sin tareas completadas"
     if (count === 0) {
-      return safeReply(ctx, '🤯 No tienes tareas activas para eliminar.', {
+      return safeReply(ctx, '🤯 No tienes tareas completadas para eliminar.', {
         parse_mode: 'HTML'
       })
     }
 
     // 2. Debo generar un token y guardar la sesión para proteger las tareas del usuario
     const token = randomUUID()
-    ctx.session.flowTypes = 'clear'
+    ctx.session.flowType = 'clear'
     ctx.session.pendingClearToken = token
 
     // 3Enviar menú de confirmación (confirmClearMenu)

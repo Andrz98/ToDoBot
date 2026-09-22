@@ -45,7 +45,7 @@ const notifyTask = async (task, now) => {
         { parse_mode: 'HTML' }
       )
 
-      debugLog(`🛎️ ${window.label} → ${task.userId}: ${task.name}`)
+      debugLog(`🛎️ ${window.label} → tarea ${task._id}`)
       alerts.push(window.label)
       break
     }

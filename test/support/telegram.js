@@ -4,7 +4,15 @@ import { vi } from 'vitest'
 export const makeFakeBot = () => {
   const actions = []
   const messageHandlers = []
+  const commands = {}
   return {
+    command: (name, ...fns) => {
+      commands[name] = fns
+    },
+    /** Ejecuta el handler final de un comando (sin sus middlewares). */
+    async run(name, ctx) {
+      return commands[name].at(-1)(ctx)
+    },
     action: (trigger, fn) => actions.push({ trigger, fn }),
     on: (_event, fn) => messageHandlers.push(fn),
     /** Simula un mensaje de texto entrante (primer handler de bot.on('message')). */

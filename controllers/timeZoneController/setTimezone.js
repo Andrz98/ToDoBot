@@ -10,7 +10,7 @@ import { debugLog } from '../../utils/logUtils/debugLog.js'
  * Muestra menú o, si recibe argumento, pregunta confirmación.
  */
 export const setTimezone = async (ctx) => {
-  debugLog('🕒 [DEBUG:setTimezone] entrada, sesión:', ctx.session)
+  debugLog('🕒 [DEBUG:setTimezone] entrada')
   try {
     const userId = ctx.from.id
     const input = ctx.message.text.replace(/^\/settimezone\s*/i, '').trim()
