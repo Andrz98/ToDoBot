@@ -22,11 +22,14 @@ describe('/settimezone: botones', () => {
     ctx = makeCtx()
   })
 
-  it('una zona válida pide confirmación', async () => {
+  it('una zona válida pide confirmación en el mismo mensaje', async () => {
     await bot.press('set_tz_America/Bogota', ctx)
 
     expect(ctx.session.pendingTz).toBe('America/Bogota')
-    expect(ctx.reply.mock.calls[0][0]).toContain('America/Bogota')
+    expect(ctx.reply).not.toHaveBeenCalled()
+    expect(ctx.telegram.editMessageText.mock.calls[0][3]).toContain(
+      'America/Bogota'
+    )
   })
 
   it('una zona fuera de la lista blanca se rechaza sin tocar la sesión', async () => {

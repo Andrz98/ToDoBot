@@ -1,43 +1,57 @@
 import { findTask } from '../../helpers/tasks/findTask.js'
-import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
+import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
-import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import {
+  buildTaskListPage,
+  buildTaskDetail
+} from '../../helpers/taskHelpers/list/interactiveFlowList.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { debugLog } from '../../utils/logUtils/debugLog.js'
+import {
+  TTL,
+  scheduleDeletion
+} from '../../utils/telegramUtils/messageLifecycle.js'
+
+// Navegar sustituye el contenido del mismo mensaje; su TTL lo renueva chatCleanup al pulsar
+const showInList = (ctx, { text, reply_markup }) =>
+  ctx
+    .editMessageText(text, { parse_mode: 'HTML', reply_markup })
+    .catch((error) => debugLog('📋 [list] edición omitida:', error?.message))
+
+async function showPage(ctx, page) {
+  const tasks = await findAllTasks(ctx.from.id)
+  if (tasks.length === 0) {
+    await showInList(ctx, {
+      text: '📭 No tienes tareas activas.',
+      reply_markup: { inline_keyboard: [] }
+    })
+    return scheduleDeletion(ctx, ctx.callbackQuery?.message?.message_id, TTL.NOTICE)
+  }
+  return showInList(ctx, buildTaskListPage(tasks, page))
+}
 
 /**
- * Registra los callbacks para los botones de /list
+ * Registra los callbacks del listado de /list (solo lectura).
  * @param {import('telegraf').Telegraf} bot
  */
 export function registerListActions(bot) {
-  // Captura cualquier callback que empiece por "show_task_"
-  bot.action(/^show_task_(.+)$/, async (ctx) => {
-    // 1) Extraer ID de tarea
-    const taskId = ctx.match[1]
-    // 2) Recuperar la tarea, solo si pertenece al usuario que pulsa
-    const task = await findTask(ctx.from.id, { id: taskId })
+  bot.action('list_noop', (ctx) => safeAnswerCbQuery(ctx))
+
+  bot.action(/^list_page_(\d+)$/, async (ctx) => {
+    await safeAnswerCbQuery(ctx)
+    return showPage(ctx, Number(ctx.match[1]))
+  })
+
+  bot.action(/^show_task_([^:]+)(?::(\d+))?$/, async (ctx) => {
+    const page = Number(ctx.match[2] ?? 0)
+    const task = await findTask(ctx.from.id, { id: ctx.match[1] })
     if (!task) {
       await safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
-      return
+      return showPage(ctx, page)
     }
 
-    // 3) Preparar el detalle de la tarea
     const timezone = await getUserTimezone(ctx.from.id)
-    const nameLine = `<b>${escapeHtml(task.name)}</b>`
-    const descLine = task.description
-      ? `\n\n<b>🔸 Descripción:</b>\n${escapeHtml(task.description)}`
-      : ''
-    const dateLine = `\n\n<b>🔹 Fecha:</b> ${formatDateEs(
-      task.reminderAt,
-      timezone
-    )}`
-
-    // 4) Responder al callback con un toast
-    await safeAnswerCbQuery(ctx, 'Aquí tienes los detalles de la tarea')
-
-    // 5) Enviar los detalles completos
-    return safeReply(ctx, `${nameLine}${descLine}${dateLine}`, {
-      parse_mode: 'HTML'
-    })
+    await safeAnswerCbQuery(ctx)
+    return showInList(ctx, buildTaskDetail(task, timezone, page))
   })
 }

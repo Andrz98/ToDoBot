@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../support/telegram.js'
 
 const h = vi.hoisted(() => ({ findById: vi.fn(), tz: vi.fn() }))
@@ -14,6 +14,8 @@ import { registerForceReplyHandler } from '@/events/editForceReply/editForceRepl
 
 const editCtx = (awaiting, text, session = {}) =>
   makeCtx({
+    // Un mensaje de texto no trae callback_query
+    callbackQuery: undefined,
     message: {
       text,
       message_id: 20,
@@ -25,6 +27,7 @@ const editCtx = (awaiting, text, session = {}) =>
       editing: { id: 't1', oldName: 'Pagar luz' },
       edits: {},
       menuMessageId: 10,
+      promptMessageId: 15,
       ...session
     }
   })
@@ -42,7 +45,9 @@ describe('/edit: respuestas de texto', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
     bot = makeFakeBot()
     registerForceReplyHandler(bot)
+    vi.useFakeTimers()
   })
+  afterEach(() => vi.useRealTimers())
 
   it('aplica un nuevo nombre editando el menú en sitio, sin mensajes nuevos', async () => {
     const ctx = editCtx('new_name', 'Pagar gas')
@@ -51,7 +56,9 @@ describe('/edit: respuestas de texto', () => {
 
     expect(task.name).toBe('Pagar gas')
     expect(ctx.session.awaiting).toBeNull()
-    // Borra el prompt de force-reply y la respuesta del usuario
+    // Prompt y respuesta siguen visibles 10 s y después se limpian
+    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(10_000)
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 15)
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 20)
     // Un único mensaje editado, ninguno nuevo
@@ -83,12 +90,14 @@ describe('/edit: respuestas de texto', () => {
     expect(finalText).toContain('No hubo cambios')
   })
 
-  it('una fecha pasada avisa y mantiene el flujo de edición', async () => {
+  it('una fecha pasada vuelve a preguntar y mantiene el flujo de edición', async () => {
     const ctx = editCtx('new_date', '01/01/2000 10:00')
 
     await bot.say(ctx)
 
-    expect(ctx.reply).toHaveBeenCalledWith('⌚ La nueva fecha debe ser futura.')
+    const [text, options] = ctx.reply.mock.calls[0]
+    expect(text).toContain('La nueva fecha debe ser futura')
+    expect(options.reply_markup).toEqual({ force_reply: true })
     expect(ctx.session.editing).toEqual({ id: 't1', oldName: 'Pagar luz' })
     expect(ctx.session.awaiting).toBe('new_date')
     expect(ctx.session.flowType).toBe('edit')
@@ -100,12 +109,12 @@ describe('/edit: respuestas de texto', () => {
 
     await expect(bot.say(ctx)).resolves.not.toThrow()
 
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.'
-    )
-    expect(ctx.session.flowType).toBeNull()
-    expect(ctx.session.editing).toBeNull()
-    expect(ctx.session.awaiting).toBeNull()
-    expect(ctx.session.menuMessageId).toBeNull()
+    const [, messageId, , text] = ctx.telegram.editMessageText.mock.calls[0]
+    expect(messageId).toBe(10)
+    expect(text).toBe('😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.')
+    expect(ctx.session.flowType).toBeUndefined()
+    expect(ctx.session.editing).toBeUndefined()
+    expect(ctx.session.awaiting).toBeUndefined()
+    expect(ctx.session.menuMessageId).toBeUndefined()
   })
 })

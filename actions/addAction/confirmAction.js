@@ -1,9 +1,12 @@
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
-import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
-import { safeDeleteMessage } from '../../utils/telegramUtils/safeDeleteMessage.js'
+import {
+  closeInterface,
+  expireCallback,
+  isLiveInterface
+} from '../../utils/telegramUtils/flowMessages.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
+import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
 import {
   UNAUTHORIZED_TEXT,
   GENERAL_ERROR_TEXT
@@ -12,12 +15,12 @@ import { Task } from '../../models/task.js'
 
 const DUPLICATE_KEY = 11000
 const ADD_DONE_TEXT = '✅ Tarea creada.'
+const ADD_CANCELLED_TEXT = 'Creación cancelada.'
 
 function resetAddSession(ctx) {
   delete ctx.session.flowType
   delete ctx.session.awaiting
   delete ctx.session.pendingTask
-  delete ctx.session.menuMessageId
 }
 
 /**
@@ -38,6 +41,9 @@ export function registerConfirmAction(bot) {
         { show_alert: true }
       )
     }
+    if (!isLiveInterface(ctx)) {
+      return expireCallback(ctx)
+    }
 
     const task = new Task({
       userId: ctx.from.id,
@@ -53,35 +59,34 @@ export function registerConfirmAction(bot) {
       if (error.code === DUPLICATE_KEY) {
         return safeAnswerCbQuery(
           ctx,
-          'Ya existe una tarea con ese nombre (puede estar completada: /clear las elimina). Usa /add con otro nombre.',
+          'Ya existe una tarea con ese nombre (puede estar completada: /clear las elimina). Corrige el nombre.',
           { show_alert: true }
         )
       }
       console.error('❌ Error en add_confirm:', error)
-      await safeEditMessageReplyMarkup(ctx).catch(() => {})
       resetAddSession(ctx)
+      await closeInterface(ctx, GENERAL_ERROR_TEXT)
       return safeAnswerCbQuery(ctx, GENERAL_ERROR_TEXT, { show_alert: true })
     }
 
     await safeAnswerCbQuery(ctx, ADD_DONE_TEXT)
-
-    if (ctx.callbackQuery?.message) {
-      await safeDeleteMessage(
-        ctx,
-        ctx.chat.id,
-        ctx.callbackQuery.message.message_id
-      )
-    }
-
+    const timezone = await getUserTimezone(ctx.from.id).catch(() => undefined)
     resetAddSession(ctx)
-
-    flashReply(ctx, ADD_DONE_TEXT)
+    await closeInterface(
+      ctx,
+      `${ADD_DONE_TEXT}\n\n🔺 ${pendingTask.name}\n🔹 ${formatDateEs(
+        new Date(pendingTask.reminderAt),
+        timezone
+      )}`
+    )
   })
 
   bot.action('add_cancel', async (ctx) => {
-    const cancelledText = 'Creación cancelada.'
-    await safeAnswerCbQuery(ctx, cancelledText)
-    await safeEditMessageText(ctx, cancelledText)
+    if (!isLiveInterface(ctx)) {
+      return expireCallback(ctx)
+    }
+    await safeAnswerCbQuery(ctx, ADD_CANCELLED_TEXT)
     resetAddSession(ctx)
+    await closeInterface(ctx, ADD_CANCELLED_TEXT)
   })
 }

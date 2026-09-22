@@ -4,7 +4,6 @@ import { makeCtx } from '../../../support/telegram.js'
 const h = vi.hoisted(() => ({ findTask: vi.fn(), findById: vi.fn() }))
 vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: h.findTask }))
 vi.mock('@/models/task.js', () => ({ Task: { findById: h.findById } }))
-vi.mock('@/utils/delayUtils/flashReply.js', () => ({ flashReply: vi.fn() }))
 
 import { handleReminderFrequency } from '@/events/reminderEvent/handleReminderFrequency.js'
 import { saveReminderAction } from '@/actions/reminderAction/saveReminderAction.js'

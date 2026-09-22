@@ -1,28 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { makeCtx } from '../../../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ auth: vi.fn(), find: vi.fn(), flash: vi.fn() }))
+const h = vi.hoisted(() => ({ auth: vi.fn(), all: vi.fn() }))
 vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
   isUserAuthorized: h.auth
 }))
-vi.mock('@/models/task.js', () => ({ Task: { find: h.find } }))
-vi.mock('@/utils/delayUtils/flashReply.js', () => ({ flashReply: h.flash }))
+vi.mock('@/helpers/tasks/findAllTasks.js', () => ({ findAllTasks: h.all }))
 
 import { listTasks } from '@/controllers/taskControllers/listTask.js'
 
-const sortReturning = (tasks) => ({ sort: vi.fn().mockResolvedValue(tasks) })
+const TEN_MINUTES = 10 * 60_000
 
 describe('listTasks', () => {
   let ctx
   beforeEach(() => {
+    vi.useFakeTimers()
     h.auth.mockReset().mockResolvedValue(true)
-    h.find.mockReset()
-    h.flash.mockReset()
+    h.all.mockReset()
     ctx = makeCtx({ from: { id: 12345 }, message: { text: '/list' } })
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
+  afterEach(() => vi.useRealTimers())
 
-  // Parte 1: Debe rechazar si el usuario no está autorizado
   it('debe rechazar si el usuario no esta autorizado', async () => {
     h.auth.mockResolvedValue(false)
 
@@ -31,51 +30,67 @@ describe('listTasks', () => {
     expect(ctx.reply).toHaveBeenCalledWith(
       '🥸 Debes estar autorizado para usar este bot.'
     )
-    expect(h.find).not.toHaveBeenCalled()
+    expect(h.all).not.toHaveBeenCalled()
   })
 
-  // Parte 2: Debe mostrar un mensaje si el usuario no tiene tareas activas
-  it('debe responder que no hay tareas activas en /list', async () => {
-    h.find.mockReturnValue(sortReturning([]))
+  it('sin tareas activas avisa con un mensaje temporal', async () => {
+    h.all.mockResolvedValue([])
 
     await listTasks(ctx)
 
-    expect(h.find).toHaveBeenCalledWith({ userId: 12345, completed: false })
-    expect(ctx.reply).toHaveBeenCalledWith('📭 No tienes tareas activas.', {
-      parse_mode: 'HTML'
-    })
+    expect(h.all).toHaveBeenCalledWith(12345)
+    expect(ctx.reply).toHaveBeenCalledWith('📭 No tienes tareas activas.', {})
+    await vi.advanceTimersByTimeAsync(10_000)
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 6)
   })
 
-  // Parte 3: Debe mostrar tareas si existen
-  it('debe listar las tareas si existen en /list', async () => {
-    h.find.mockReturnValue(
-      sortReturning([
-        { _id: 'a1', name: 'Comprar pan' },
-        { _id: 'b2', name: 'Comprar ordenador' }
-      ])
-    )
+  it('lista las tareas en un único mensaje, sin avisos previos', async () => {
+    h.all.mockResolvedValue([
+      { _id: 'a1', name: 'Comprar pan' },
+      { _id: 'b2', name: 'Comprar ordenador' }
+    ])
 
     await listTasks(ctx)
 
-    expect(h.flash).toHaveBeenCalledWith(ctx, 'Lista de tareas')
-    expect(ctx.reply).toHaveBeenCalledWith(
-      'Selecciona una tarea para ver sus detalles:',
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '1. Comprar pan', callback_data: 'show_task_a1' }],
-            [{ text: '2. Comprar ordenador', callback_data: 'show_task_b2' }]
-          ]
+    expect(ctx.reply).toHaveBeenCalledTimes(1)
+    const [text, options] = ctx.reply.mock.calls[0]
+    expect(text).toContain('Mis tareas (2)')
+    expect(options.reply_markup.inline_keyboard).toEqual([
+      [{ text: '1. Comprar pan', callback_data: 'show_task_a1:0', hide: false }],
+      [
+        {
+          text: '2. Comprar ordenador',
+          callback_data: 'show_task_b2:0',
+          hide: false
         }
-      }
-    )
+      ]
+    ])
+    expect(ctx.session.listMessageId).toBe(6)
   })
 
-  // Parte 4: Muestro un error genérico si algo falla
+  it('el listado permanece 10 minutos y después se limpia', async () => {
+    h.all.mockResolvedValue([{ _id: 'a1', name: 'Comprar pan' }])
+
+    await listTasks(ctx)
+
+    await vi.advanceTimersByTimeAsync(TEN_MINUTES - 1)
+    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 6)
+  })
+
+  it('repetir /list sustituye el listado anterior en vez de acumularlo', async () => {
+    h.all.mockResolvedValue([{ _id: 'a1', name: 'Comprar pan' }])
+    ctx.session.listMessageId = 3
+
+    await listTasks(ctx)
+
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 3)
+    expect(ctx.session.listMessageId).toBe(6)
+  })
+
   it('debe capturar errores internos y responder con un mensaje genérico', async () => {
-    h.find.mockImplementation(() => {
-      throw new Error('Fallo inesperado')
-    })
+    h.all.mockRejectedValue(new Error('Fallo inesperado'))
 
     await listTasks(ctx)
 

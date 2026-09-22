@@ -1,130 +1,84 @@
-import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
-import { Task } from '../../models/task.js'
-import { updateTaskFields } from '../../helpers/taskHelpers/edit/updateTaskFields.js'
-import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
-import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
-import { safeDeleteMessage } from '../../utils/telegramUtils/safeDeleteMessage.js'
 import { DateTime } from 'luxon'
+import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
+import { GENERAL_ERROR_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
+import {
+  applyEdit,
+  resetEditSession
+} from '../../actions/editAction/editMenu.js'
+import {
+  askInput,
+  consumeInput,
+  closeInterface
+} from '../../utils/telegramUtils/flowMessages.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
+const INVALID_DATE_PROMPT =
+  '🤯 El formato de fecha no es válido. Usa DD/MM/AAAA HH:mm, o solo HH:mm para cambiar la hora.'
+const PAST_DATE_PROMPT = '⌚ La nueva fecha debe ser futura. Escribe otra:'
+
+/** Solo HH:mm: conserva el día de la tarea y cambia la hora. */
+const parseEditDate = (text, task, timezone) => {
+  const { date } = detectAndParseDate([text], timezone)
+  if (date) {
+    return date
+  }
+  if (!/^\d{1,2}:\d{2}$/.test(text)) {
+    return null
+  }
+  const [hour, minute] = text.split(':').map(Number)
+  const dt = DateTime.fromJSDate(new Date(task.reminderAt), {
+    zone: timezone
+  }).set({ hour, minute })
+  return dt.isValid ? dt.toJSDate() : null
+}
+
+const fieldsFor = (awaiting, text) => (task, timezone) => {
+  switch (awaiting) {
+    case 'new_name':
+      return { newName: text }
+    case 'new_desc':
+      return { newDescription: text }
+    case 'new_date': {
+      const date = parseEditDate(text, task, timezone)
+      return date ? { date } : null
+    }
+    default:
+      return null
+  }
+}
+
 /**
- * Maneja las respuestas forzadas tras pulsar un botón de edición.
- * Edita el mensaje del menú en sitio en vez de acumular mensajes nuevos
- * (mismo estándar que actions/addAction/messageHandler.js para /add).
+ * Respuestas de texto del flujo /edit. El cambio se refleja editando el menú;
+ * la pregunta y la respuesta se limpian unos segundos después.
  * @param {import('telegraf').Telegraf} bot
  */
 export function registerForceReplyHandler(bot) {
   bot.on('message', async (ctx, next) => {
     debugLog('📥 [editForceReplyHandler] Recibido mensaje')
 
-    // 🔒 Evitar interceptar comandos
     if (ctx.message?.text?.startsWith('/')) {
-      debugLog('⛔️ [editForceReplyHandler] Ignorando comando')
+      return typeof next === 'function' ? next() : undefined
+    }
+    if (!ctx.session?.awaiting || !ctx.session.editing) {
       return typeof next === 'function' ? next() : undefined
     }
 
-    // 🔁 Ignorar si no hay flujo activo
-    if (!ctx.session || !ctx.session.awaiting || !ctx.session.editing) {
-      debugLog(
-        '🔁 [editForceReplyHandler] No hay flujo activo. Liberando flujo.'
-      )
-      return typeof next === 'function' ? next() : undefined
-    }
-
-    const { awaiting, editing, edits = {}, menuMessageId } = ctx.session
-
-    // Borramos el prompt de force-reply y la respuesta del usuario:
-    // el resultado se refleja editando el menú, no acumulando mensajes
-    const replied = ctx.message.reply_to_message
-    if (replied?.message_id) {
-      await safeDeleteMessage(ctx, ctx.chat.id, replied.message_id)
-    }
-    await safeDeleteMessage(ctx, ctx.chat.id, ctx.message.message_id)
+    const { awaiting } = ctx.session
+    const text = ctx.message.text.trim()
+    consumeInput(ctx)
 
     try {
-      const task = await Task.findById(editing.id)
-      if (!task) {
-        ctx.session = {}
-        return replyMessages.taskNotFound(ctx, editing.oldName)
-      }
-
-      const text = ctx.message.text.trim()
-      const tz = await getUserTimezone(ctx.from.id)
-      const fields = {}
-      let newDate
-
-      if (awaiting === 'new_name') {
-        fields.newName = text
-      } else if (awaiting === 'new_desc') {
-        fields.newDescription = text
-      } else if (awaiting === 'new_date') {
-        const parsed = detectAndParseDate([text], tz)
-        newDate = parsed.date
-
-        if (!newDate && /^\d{1,2}:\d{2}$/.test(text)) {
-          const origDT = DateTime.fromJSDate(task.reminderAt, { zone: tz })
-          const [h, m] = text.split(':').map((n) => parseInt(n, 10))
-          newDate = origDT.set({ hour: h, minute: m }).toJSDate()
-        }
-
-        if (!newDate) {
-          return replyMessages.invalidDateFormat(ctx)
-        }
-
-        fields.date = newDate
-      }
-
-      const { updated, changes } = updateTaskFields(task, fields, tz)
-      ctx.session.awaiting = null
-
-      let banner
-      let hasEdits
-      if (updated) {
-        ctx.session.edits = { ...edits, ...fields }
-        hasEdits = true
-        banner = `Cambio aplicado:\n${changes.join('\n')}`
-      } else {
-        hasEdits = Object.keys(edits).length > 0
-        banner = 'ℹ️ No hubo cambios.'
-      }
-
-      const { text: fieldSummary, markup } = buildEditMenu(task, tz, hasEdits)
-      const finalText =
-        `${banner}\n\n${fieldSummary}\n\n` +
-        'Selecciona otro campo o pulsa "Guardar" para finalizar.'
-      const extra = { parse_mode: 'HTML', ...markup }
-
-      const targetId = menuMessageId ?? ctx.callbackQuery?.message?.message_id
-      if (!targetId) {
-        const newMsg = await ctx.reply(finalText, extra)
-        ctx.session.menuMessageId = newMsg.message_id
-        return
-      }
-
-      try {
-        await ctx.telegram.editMessageText(
-          ctx.chat.id,
-          targetId,
-          null,
-          finalText,
-          extra
-        )
-      } catch {
-        const newMsg = await ctx.reply(finalText, extra)
-        ctx.session.menuMessageId = newMsg.message_id
+      const valid = await applyEdit(ctx, fieldsFor(awaiting, text))
+      if (!valid) {
+        return askInput(ctx, INVALID_DATE_PROMPT)
       }
     } catch (error) {
       if (error.message === 'PAST_DATE') {
-        return replyMessages.pastDate(ctx)
+        return askInput(ctx, PAST_DATE_PROMPT)
       }
       console.error('❌ Error en forceReplyHandler:', error)
-      ctx.session.awaiting = null
-      ctx.session.editing = null
-      ctx.session.flowType = null
-      ctx.session.edits = null
-      ctx.session.menuMessageId = null
-      return replyMessages.generalError(ctx)
+      resetEditSession(ctx)
+      return closeInterface(ctx, GENERAL_ERROR_TEXT)
     }
   })
 }

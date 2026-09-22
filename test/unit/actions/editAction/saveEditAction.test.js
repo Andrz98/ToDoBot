@@ -36,7 +36,7 @@ describe('/edit: guardar (edit_save)', () => {
     registerSaveEditAction(bot)
   })
 
-  it('guarda los cambios, borra el menú y limpia la sesión', async () => {
+  it('guarda los cambios, resume el resultado en el menú y limpia la sesión', async () => {
     const ctx = editCtx({ newName: 'Pagar gas' })
 
     await bot.press('edit_save', ctx)
@@ -44,7 +44,10 @@ describe('/edit: guardar (edit_save)', () => {
     expect(task.name).toBe('Pagar gas')
     expect(task.save).toHaveBeenCalled()
     expect(ctx.answerCbQuery).toHaveBeenCalledWith('👌🏽 Tarea editada', {})
-    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 5)
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      expect.stringContaining('Pagar gas'),
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
+    )
     expect(ctx.session.flowType).toBeUndefined()
     expect(ctx.session.editing).toBeUndefined()
   })
@@ -64,7 +67,10 @@ describe('/edit: guardar (edit_save)', () => {
 
     await expect(bot.press('edit_save', ctx)).resolves.not.toThrow()
 
-    expect(ctx.reply).toHaveBeenCalledWith(expect.stringContaining('Pagar luz'))
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      expect.stringContaining('Pagar luz'),
+      expect.anything()
+    )
     expect(ctx.session.flowType).toBeUndefined()
   })
 

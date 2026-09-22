@@ -37,7 +37,7 @@ describe('completeTask', () => {
     expect(h.all).toHaveBeenCalledWith(12345)
     expect(ctx.reply).toHaveBeenCalledWith(
       '📭 No tienes tareas pendientes para completar.',
-      { parse_mode: 'HTML' }
+      {}
     )
   })
 
@@ -57,7 +57,8 @@ describe('completeTask', () => {
         .map(({ text, callback_data }) => ({ text, callback_data }))
     ).toEqual([
       { text: 'Comprar pan', callback_data: 'complete_select:a1' },
-      { text: 'Pagar luz', callback_data: 'complete_select:b2' }
+      { text: 'Pagar luz', callback_data: 'complete_select:b2' },
+      { text: '✖️ Cancelar', callback_data: 'complete_cancel' }
     ])
     expect(ctx.session.flowType).toBe('complete')
   })

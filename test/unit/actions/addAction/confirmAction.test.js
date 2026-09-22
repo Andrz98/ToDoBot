@@ -3,7 +3,10 @@ import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
 const h = vi.hoisted(() => ({ Task: vi.fn(), save: vi.fn(), auth: vi.fn() }))
 vi.mock('@/models/task.js', () => ({ Task: h.Task }))
-vi.mock('@/utils/delayUtils/flashReply.js', () => ({ flashReply: vi.fn() }))
+vi.mock(
+  '@/helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js',
+  () => ({ getUserTimezone: vi.fn().mockResolvedValue('Europe/Madrid') })
+)
 vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
   isUserAuthorized: h.auth
 }))
@@ -27,12 +30,12 @@ describe('/add: confirmar creación', () => {
       session: {
         flowType: 'add',
         pendingTask: { name: 'Pagar luz', reminderAt: REMINDER },
-        menuMessageId: 10
+        menuMessageId: 5
       }
     })
   })
 
-  it('guarda la tarea, borra el menú y limpia la sesión', async () => {
+  it('guarda la tarea, resume el resultado en el menú y limpia la sesión', async () => {
     await bot.press('add_confirm', ctx)
 
     expect(h.Task).toHaveBeenCalledWith({
@@ -43,7 +46,10 @@ describe('/add: confirmar creación', () => {
       reminderAt: REMINDER
     })
     expect(h.save).toHaveBeenCalled()
-    expect(ctx.telegram.deleteMessage).toHaveBeenCalled()
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      expect.stringContaining('Pagar luz'),
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
+    )
     expect(ctx.session.flowType).toBeUndefined()
     expect(ctx.session.pendingTask).toBeUndefined()
   })
@@ -69,7 +75,7 @@ describe('/add: confirmar creación', () => {
       expect.stringContaining('/clear'),
       { show_alert: true }
     )
-    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+    expect(ctx.editMessageText).not.toHaveBeenCalled()
     expect(ctx.session.pendingTask).toEqual({
       name: 'Pagar luz',
       reminderAt: REMINDER
@@ -81,7 +87,6 @@ describe('/add: confirmar creación', () => {
 
     await expect(bot.press('add_confirm', ctx)).resolves.not.toThrow()
 
-    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
     expect(ctx.answerCbQuery).toHaveBeenCalledWith(
       '😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.',
       { show_alert: true }

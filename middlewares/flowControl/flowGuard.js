@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
+import { replyInterface } from '../../utils/telegramUtils/messageLifecycle.js'
 
 /**
  * Evita usar comandos mientras haya un flujo pendiente (/add, /edit, /delete, /complete, /timezone…).
@@ -35,9 +36,9 @@ export async function flowGuard(ctx, next) {
 
   // 2) Permitir callbacks inline según cada flujo
   if (ctx.callbackQuery) {
-    // show_task_* es de solo lectura (detalle de una tarea desde /list):
-    // nunca interfiere con ningún flujo, así que siempre se permite
-    if (/^show_task_/.test(cb)) {
+    // El listado de /list (show_task_*, list_*) es de solo lectura, y los
+    // botones del menú principal (menu_*) equivalen a comandos: siempre se permiten
+    if (/^(show_task_|list_|menu_)/.test(cb)) {
       return next()
     }
 
@@ -56,7 +57,7 @@ export async function flowGuard(ctx, next) {
         }
         break
       case 'reminder':
-        if (/^(setReminder|saveReminder)::/.test(cb)) {
+        if (/^((setReminder|saveReminder)::|reminder_)/.test(cb)) {
           return next()
         }
         break
@@ -91,7 +92,8 @@ export async function flowGuard(ctx, next) {
     ctx.callbackQuery?.data
   )
 
-  return ctx.reply(
+  return replyInterface(
+    ctx,
     `🚧 Tienes una acción “/${flowType}” pendiente. Por favor, pulsa el botón "Restablecer acción" o termina el flujo.`,
     {
       parse_mode: 'HTML',

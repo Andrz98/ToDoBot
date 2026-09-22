@@ -43,7 +43,12 @@ describe('buildEditMenu', () => {
         .markup.reply_markup.inline_keyboard.flat()
         .map((b) => b.text)
 
-    expect(labels(false)).toEqual(['Nombre', 'Descripción', 'Fecha'])
+    expect(labels(false)).toEqual([
+      'Nombre',
+      'Descripción',
+      'Fecha',
+      '✖️ Cancelar'
+    ])
     expect(labels(true)).toContain('Guardar')
   })
 })

@@ -11,6 +11,7 @@ import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
 import { localSessionMiddleware } from '../../middlewares/session/localSession.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
+import { chatCleanup } from '../../middlewares/chatCleanup/chatCleanup.js'
 
 import { registerEditActions } from '../../actions/editAction/index.js'
 import { registerForceReplyHandler } from '../../events/editForceReply/editForceReplyHandler.js'
@@ -49,6 +50,8 @@ debugLog('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
 // ====================================
 // La sesión va primero: rateLimit y flowGuard leen ctx.session
 bot.use(localSessionMiddleware)
+// Envuelve todo lo demás: renueva interfaces al pulsarlas y limpia comandos ya procesados
+bot.use(chatCleanup)
 bot.use(rateLimit)
 bot.use(sanitizeInput)
 bot.use((ctx, next) => {

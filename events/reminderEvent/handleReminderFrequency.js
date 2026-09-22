@@ -1,54 +1,36 @@
+import { Markup } from 'telegraf'
 import { findTask } from '../../helpers/tasks/findTask.js'
-import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
 import { GENERAL_ERROR_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
+import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
+import { renderInterface } from '../../utils/telegramUtils/flowMessages.js'
 
+/** /reminder, paso 2: botonera de periodicidad sobre el mismo mensaje. */
 export const handleReminderFrequency = async (ctx) => {
   try {
-    const callbackData = ctx.callbackQuery.data
-    const [, taskId] = callbackData.split('::')
+    const [, taskId] = ctx.callbackQuery.data.split('::')
 
     const task = await findTask(ctx.from.id, { id: taskId })
     if (!task) {
-      return ctx.answerCbQuery('Tarea no encontrada.')
+      return safeAnswerCbQuery(ctx, 'Tarea no encontrada.', { show_alert: true })
     }
 
-    const { text, markup } = buildFrequencyMenu()
-    const frequencyOptions = markup.reply_markup.inline_keyboard.map((row) => {
-      const button = row[0]
-      const value = button.callback_data.replace('add_freq_', '')
-      return [
-        {
-          text: button.text,
-          callback_data: `saveReminder::${taskId}::${value}`
-        }
-      ]
+    ctx.session.flowType = 'reminder'
+    const { text, markup } = buildFrequencyMenu(
+      (value) => `saveReminder::${taskId}::${value}`,
+      task.frequency,
+      [[Markup.button.callback('✖️ Cancelar', 'reminder_cancel')]]
+    )
+
+    await safeAnswerCbQuery(ctx)
+    return renderInterface(ctx, `<b>${escapeHtml(task.name)}</b>\n\n${text}`, {
+      parse_mode: 'HTML',
+      ...markup
     })
-
-    await ctx.answerCbQuery()
-
-    try {
-      return await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        ctx.callbackQuery.message.message_id,
-        undefined,
-        text,
-        {
-          reply_markup: {
-            inline_keyboard: frequencyOptions
-          }
-        }
-      )
-    } catch {
-      return safeEditMessageReplyMarkup(ctx, {
-        reply_markup: {
-          inline_keyboard: frequencyOptions
-        }
-      })
-    }
   } catch (error) {
     console.error('❌ Error en handleReminderFrequency:', error)
     ctx.session.flowType = null
-    return ctx.answerCbQuery(GENERAL_ERROR_TEXT, { show_alert: true })
+    return safeAnswerCbQuery(ctx, GENERAL_ERROR_TEXT, { show_alert: true })
   }
 }

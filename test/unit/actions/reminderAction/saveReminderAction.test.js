@@ -1,19 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { saveReminderAction } from '@/actions/reminderAction/saveReminderAction.js'
 import { findTask } from '@/helpers/tasks/findTask.js'
-import { flashReply } from '@/utils/delayUtils/flashReply.js'
 
 vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: vi.fn() }))
-vi.mock('@/utils/delayUtils/flashReply.js', () => ({
-  flashReply: vi.fn()
-}))
 
 describe('saveReminderAction', () => {
   const ctx = {
     from: { id: 7 },
-    callbackQuery: { data: 'saveReminder::100::weekly' },
+    chat: { id: 99 },
+    callbackQuery: {
+      data: 'saveReminder::100::weekly',
+      message: { message_id: 1 }
+    },
     answerCbQuery: vi.fn(),
-    editMessageReplyMarkup: vi.fn().mockResolvedValue(true),
+    editMessageText: vi.fn().mockResolvedValue(true),
+    telegram: { deleteMessage: vi.fn().mockResolvedValue(true) },
     session: {}
   }
 
@@ -51,15 +52,16 @@ describe('saveReminderAction', () => {
     expect(task.alertsSent).toEqual([])
     expect(saveMock).toHaveBeenCalled()
     expect(ctx.answerCbQuery).toHaveBeenCalled()
-    expect(flashReply).toHaveBeenCalledWith(
-      ctx,
+    // El teclado de frecuencia se sustituye por el resultado (ya no es pulsable)
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
       expect.stringContaining('My task'),
-      {},
-      2500
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
     )
+    expect(ctx.editMessageText.mock.calls[0][0]).toContain('Semanal')
     expect(ctx.session.flowType).toBeNull()
     expect(ctx.session.menuMessageId).toBeUndefined()
-    expect(ctx.editMessageReplyMarkup).toHaveBeenCalled()
+    await vi.advanceTimersByTimeAsync(10_000)
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 1)
   })
 
   it('error externo simulado al guardar: limpia flowType en vez de dejarlo colgado', async () => {

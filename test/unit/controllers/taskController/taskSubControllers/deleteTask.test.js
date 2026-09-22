@@ -37,7 +37,7 @@ describe('deleteTask', () => {
     expect(h.all).toHaveBeenCalledWith(12345)
     expect(ctx.reply).toHaveBeenCalledWith(
       '📭 No tienes tareas pendientes para eliminar.',
-      { parse_mode: 'HTML' }
+      {}
     )
   })
 
@@ -57,7 +57,8 @@ describe('deleteTask', () => {
         .map(({ text, callback_data }) => ({ text, callback_data }))
     ).toEqual([
       { text: 'Comprar pan', callback_data: 'delete_select:a1' },
-      { text: 'Pagar luz', callback_data: 'delete_select:b2' }
+      { text: 'Pagar luz', callback_data: 'delete_select:b2' },
+      { text: '✖️ Cancelar', callback_data: 'delete_cancel' }
     ])
     expect(ctx.session.flowType).toBe('delete')
   })

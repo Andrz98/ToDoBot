@@ -1,4 +1,5 @@
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { replyTemporary } from '../../utils/telegramUtils/messageLifecycle.js'
 
 /**
  * Comando /ping - Respuesta rápida sin restricciones
@@ -7,7 +8,7 @@ import { safeReply } from '../../utils/retryUtils/safeReply.js'
  */
 export const pingCommand = async (ctx) => {
   try {
-    return safeReply(ctx, '🏓 Pong! El bot está funcionando.')
+    return replyTemporary(ctx, '🏓 Pong! El bot está funcionando.')
   } catch (error) {
     console.error('❌ Error en /ping:', error.message)
     return safeReply(ctx, '😵‍💫 Error inesperado al procesar /ping.')

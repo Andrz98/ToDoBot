@@ -1,6 +1,5 @@
 import { Markup } from 'telegraf'
-import { safeReply } from '../../utils/retryUtils/safeReply.js'
-import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
+import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 import { AuthorizedUser } from '../../models/authorizedUser.js'
@@ -26,7 +25,7 @@ export function registerTimezoneActions(bot) {
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = tz
     await safeAnswerCbQuery(ctx)
-    return safeReply(
+    return renderInterface(
       ctx,
       `¿Estás segur@ de cambiar tu zona horaria a <b>${tz}</b>?`,
       {
@@ -75,7 +74,7 @@ export function registerTimezoneActions(bot) {
 
       const doneText = `✅ Zona horaria actualizada a ${tz}.`
       await safeAnswerCbQuery(ctx, doneText)
-      return safeEditMessageText(ctx, doneText)
+      return closeInterface(ctx, doneText)
     } catch (error) {
       console.error('❌ Error en confirm_tz_yes:', error)
       ctx.session.flowType = null
@@ -89,6 +88,6 @@ export function registerTimezoneActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingTz = null
     await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

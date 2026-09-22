@@ -1,10 +1,20 @@
+import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
+import {
+  discardFlowMessages,
+  closeInterface
+} from '../../utils/telegramUtils/flowMessages.js'
+
+const RESET_TEXT = 'Flujo restablecido. Ya puedes usar comandos normalmente.'
+
 /**
  * Registra el callback `flow_reset` para limpiar cualquier flujo activo
  */
 export function registerFlowResetHandler(bot) {
   bot.action('flow_reset', async (ctx) => {
-    await ctx.answerCbQuery(' Acción restablecida')
-    // Limpiamos todo el estado de flujo
+    await safeAnswerCbQuery(ctx, 'Acción restablecida')
+    // La interfaz y el prompt del flujo abandonado ya no sirven: fuera ahora
+    await discardFlowMessages(ctx)
+
     ctx.session.flowType = null
     ctx.session.awaiting = null
     ctx.session.editing = null
@@ -14,13 +24,8 @@ export function registerFlowResetHandler(bot) {
     ctx.session.pendingComplete = null
     ctx.session.pendingTz = null
     ctx.session.pendingClearToken = null
-    ctx.session.menuMessageId = null
     ctx.session.timezone = null
 
-    // Quitar inline keyboard
-    if (ctx.update.callback_query.message) {
-      await ctx.editMessageReplyMarkup({})
-    }
-    return ctx.reply('Flujo restablecido. Ya puedes usar comandos normalmente.')
+    return closeInterface(ctx, RESET_TEXT)
   })
 }

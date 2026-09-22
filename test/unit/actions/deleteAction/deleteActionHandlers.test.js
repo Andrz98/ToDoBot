@@ -53,12 +53,15 @@ describe('flujo /delete', () => {
     expect(ctx.session.pendingDelete).toBeUndefined()
   })
 
-  it('escapa el HTML del nombre en la confirmación', async () => {
+  it('pide confirmación en el mismo mensaje, con el nombre escapado', async () => {
     h.findTask.mockResolvedValue({ name: 'a<b>&' })
 
     await bot.press('delete_select:abc123', ctx)
 
-    expect(ctx.reply.mock.calls[0][0]).toContain('<b>a&lt;b&gt;&amp;</b>')
+    expect(ctx.reply).not.toHaveBeenCalled()
+    const [, messageId, , text] = ctx.telegram.editMessageText.mock.calls[0]
+    expect(messageId).toBe(5)
+    expect(text).toContain('<b>a&lt;b&gt;&amp;</b>')
   })
 
   it('al confirmar, borra solo si la tarea es del usuario y resuelve el mensaje en sitio', async () => {

@@ -1,21 +1,28 @@
 import { Markup } from 'telegraf'
 import { frequencyLabels } from '../frequencyLabels.js'
 
+export const isValidFrequency = (value) =>
+  Object.hasOwn(frequencyLabels, value)
+
 /**
- * Construye texto y teclado inline para la clasificación de periodicidad.
+ * Botonera de periodicidad. Marca la opción actual.
+ * @param {(value: string) => string} callbackFor – callback_data de cada opción
+ * @param {string} [current] – periodicidad actual
+ * @param {Array<Array<object>>} [extraRows] – filas finales (volver, cancelar…)
  * @returns {{ text: string, markup: { reply_markup: Object } }}
  */
-export const buildFrequencyMenu = () => {
-  const text = '¿Con qué periodicidad quieres esta tarea?'
-  const options = Object.entries(frequencyLabels).map(([value, label]) => ({
-    label,
-    value
-  }))
-  const inline = Markup.inlineKeyboard(
-    options.map((o) => [
-      Markup.button.callback(o.label, `add_freq_${o.value}`)
-    ]),
-    { columns: 1 }
-  )
-  return { text, markup: { reply_markup: inline.reply_markup } }
+export const buildFrequencyMenu = (callbackFor, current, extraRows = []) => {
+  const text = '🔁 ¿Con qué periodicidad quieres esta tarea?'
+  const rows = Object.entries(frequencyLabels).map(([value, label]) => [
+    Markup.button.callback(
+      value === current ? `✅ ${label}` : label,
+      callbackFor(value)
+    )
+  ])
+  return {
+    text,
+    markup: {
+      reply_markup: Markup.inlineKeyboard([...rows, ...extraRows]).reply_markup
+    }
+  }
 }

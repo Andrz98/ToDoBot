@@ -3,6 +3,7 @@ import { buildTimezoneMenu } from '../../helpers/taskHelpers/timezone/FlowTimezo
 import { ALLOWED_TIMEZONES } from '../../helpers/taskHelpers/timezone/allowedTimezones.js'
 import { AuthorizedUser } from '../../models/authorizedUser.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { openInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
@@ -13,7 +14,7 @@ export const setTimezone = async (ctx) => {
   debugLog('🕒 [DEBUG:setTimezone] entrada')
   try {
     const userId = ctx.from.id
-    const input = ctx.message.text.replace(/^\/settimezone\s*/i, '').trim()
+    const input = (ctx.message?.text ?? '').replace(/^\/settimezone\s*/i, '').trim()
 
     // 1) Sin argumento: muestro solo la otra zona
     if (!input) {
@@ -23,7 +24,7 @@ export const setTimezone = async (ctx) => {
       const user = await AuthorizedUser.findOne({ userId })
       const current = user?.timezone
       const { text, markup } = buildTimezoneMenu(current)
-      return safeReply(ctx, text, { parse_mode: 'HTML', ...markup })
+      return openInterface(ctx, text, { parse_mode: 'HTML', ...markup })
     }
 
     // 2) Validación
@@ -40,7 +41,7 @@ export const setTimezone = async (ctx) => {
     // 3) Inicio confirmación: guardo en sesión y pregunto
     ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = input
-    return safeReply(
+    return openInterface(
       ctx,
       `¿Estás segur@ de cambiar tu zona horaria a <b>${input}</b>?`,
       {

@@ -27,13 +27,14 @@ export const buildEditMenu = (task, timeZone, hasEdits = false) => {
   const buttons = [
     Markup.button.callback('Nombre', 'edit_name'),
     Markup.button.callback('Descripción', 'edit_desc'),
-    Markup.button.callback('Fecha', 'edit_date')
+    Markup.button.callback('Fecha', 'edit_cal')
   ]
 
   // Solo añado “Guardar” si hay cambios pendientes
   if (hasEdits) {
     buttons.push(Markup.button.callback('Guardar', 'edit_save'))
   }
+  buttons.push(Markup.button.callback('✖️ Cancelar', 'edit_cancel'))
 
   const keyboard = Markup.inlineKeyboard(
     // Convierto cada botón en fila de un solo botón

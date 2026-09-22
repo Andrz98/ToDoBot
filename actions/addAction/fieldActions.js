@@ -1,76 +1,61 @@
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
+import { registerDatePicker } from '../datePickerAction/registerDatePicker.js'
+import {
+  askInput,
+  renderInterface,
+  expireCallback,
+  isLiveInterface
+} from '../../utils/telegramUtils/flowMessages.js'
 
-const FIELDS = [
-  { action: 'add_create', key: null, prompt: null },
-  {
-    action: 'add_field_name',
-    key: 'add_name',
-    prompt: 'Por favor, ingresa el *nombre* de la tarea:'
-  },
-  {
-    action: 'add_field_desc',
+const PROMPTS = {
+  add_field_name: { key: 'add_name', text: '🔺 Escribe el nombre de la tarea:' },
+  add_field_desc: {
     key: 'add_desc',
-    prompt: 'Ingresa la _descripción_ de la tarea (opcional):'
+    text: '🔸 Escribe la descripción de la tarea (opcional):'
   },
-  {
-    action: 'add_field_date',
+  add_datetext: {
     key: 'add_date',
-    prompt: 'Ingresa la fecha de la tarea (ej. DD/MM/YYYY HH:mm):'
+    text: '🔹 Escribe la fecha (DD/MM/AAAA HH:mm, "mañana"…):'
   }
-]
+}
+
+export const isAddActive = (ctx) =>
+  ctx.session?.flowType === 'add' && Boolean(ctx.session.pendingTask)
+
+/** Pinta el menú de /add con lo introducido hasta ahora. */
+export async function showAddMenu(ctx) {
+  ctx.session.awaiting = null
+  const timezone = await getUserTimezone(ctx.from.id)
+  const { text, markup } = buildAddMenu(ctx.session.pendingTask, timezone)
+  return renderInterface(ctx, text, markup)
+}
+
+async function askField(ctx, action) {
+  const { key, text } = PROMPTS[action]
+  ctx.session.awaiting = key
+  return askInput(ctx, text)
+}
 
 export function registerFieldActions(bot) {
-  for (const { action, key, prompt } of FIELDS) {
+  for (const action of ['add_field_name', 'add_field_desc']) {
     bot.action(action, async (ctx) => {
-      await safeAnswerCbQuery(ctx)
-
-      if (action === 'add_create') {
-        // Simplemente mostramos/EDITAMOS el menú
-        ctx.session.awaiting = null
-        const timezone = await getUserTimezone(ctx.from.id)
-        const { text, markup } = buildAddMenu(ctx.session.pendingTask, timezone)
-
-        // El usuario está interactuando con el mensaje que realmente pulsó:
-        // si difiere del que teníamos trackeado (p.ej. un /add abandonado y
-        // reiniciado), ese mensaje pasa a ser la fuente de verdad.
-        const tappedId = ctx.callbackQuery?.message?.message_id
-        if (
-          tappedId &&
-          ctx.session.menuMessageId &&
-          tappedId !== ctx.session.menuMessageId
-        ) {
-          ctx.session.menuMessageId = tappedId
-        }
-        const targetId = ctx.session.menuMessageId ?? tappedId
-
-        if (!targetId) {
-          const newMsg = await ctx.reply(text, markup)
-          ctx.session.menuMessageId = newMsg.message_id
-          return
-        }
-
-        try {
-          await ctx.telegram.editMessageText(
-            ctx.chat.id,
-            targetId,
-            null,
-            text,
-            markup
-          )
-        } catch {
-          const newMsg = await ctx.reply(text, markup)
-          ctx.session.menuMessageId = newMsg.message_id
-        }
-      } else {
-        // Entramos en modo force-reply para rellenar este campo
-        ctx.session.awaiting = key
-        return ctx.reply(prompt, {
-          parse_mode: 'Markdown',
-          reply_markup: { force_reply: true }
-        })
+      if (!isAddActive(ctx) || !isLiveInterface(ctx)) {
+        return expireCallback(ctx)
       }
+      await safeAnswerCbQuery(ctx)
+      return askField(ctx, action)
     })
   }
+
+  registerDatePicker(bot, 'add', {
+    isActive: isAddActive,
+    onPicked: (ctx, date) => {
+      ctx.session.pendingTask.reminderAt = date
+      return showAddMenu(ctx)
+    },
+    onBack: showAddMenu,
+    onTextFallback: (ctx) => askField(ctx, 'add_datetext')
+  })
 }

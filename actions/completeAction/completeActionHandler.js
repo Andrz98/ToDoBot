@@ -3,9 +3,8 @@ import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
-import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
+import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import {
   UNAUTHORIZED_TEXT,
@@ -33,7 +32,7 @@ export function registerCompleteActions(bot) {
     ctx.session.pendingComplete = taskId
 
     await safeAnswerCbQuery(ctx)
-    return safeReply(
+    return renderInterface(
       ctx,
       `¿Estás segur@ de marcar como completada la tarea:\n\n<b>${escapeHtml(task.name)}</b>?`,
       {
@@ -41,6 +40,13 @@ export function registerCompleteActions(bot) {
         ...buildConfirmCompleteMenu()
       }
     )
+  })
+
+  bot.action('complete_cancel', async (ctx) => {
+    ctx.session.flowType = null
+    ctx.session.pendingComplete = null
+    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
   })
 
   // 2) Confirma "Sí"
@@ -66,7 +72,7 @@ export function registerCompleteActions(bot) {
       ctx.session.flowType = null
       ctx.session.pendingComplete = null
       await safeAnswerCbQuery(ctx, COMPLETE_DONE_TEXT)
-      return safeEditMessageText(ctx, COMPLETE_DONE_TEXT)
+      return closeInterface(ctx, COMPLETE_DONE_TEXT)
     } catch (error) {
       console.error('❌ Error en complete_confirm:yes:', error)
       ctx.session.flowType = null
@@ -80,6 +86,6 @@ export function registerCompleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
     await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

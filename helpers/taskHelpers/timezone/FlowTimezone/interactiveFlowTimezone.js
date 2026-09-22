@@ -10,7 +10,10 @@ export const buildTimezoneMenu = (currentTz) => {
   const text = 'Selecciona tu zona horaria:'
   const options = ALLOWED_TIMEZONES.filter((zone) => zone !== currentTz)
   const inline = Markup.inlineKeyboard(
-    options.map((zone) => [Markup.button.callback(zone, `set_tz_${zone}`)]),
+    [
+      ...options.map((zone) => [Markup.button.callback(zone, `set_tz_${zone}`)]),
+      [Markup.button.callback('✖️ Cancelar', 'confirm_tz_no')]
+    ],
     { columns: 1 }
   )
   return { text, markup: { reply_markup: inline.reply_markup } }

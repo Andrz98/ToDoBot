@@ -1,7 +1,9 @@
 // 📁 actions/reminderAction/startReminderAction.js
 
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
-import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { Markup } from 'telegraf'
+import { replyEmptyState } from '../../helpers/menu/mainMenu.js'
+import { openInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { frequencyLabels } from '../../helpers/frequency/frequencyLabels.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 
@@ -14,7 +16,7 @@ export const startReminderAction = async (ctx) => {
 
     if (!tasks.length) {
       ctx.session.flowType = null
-      return safeReply(
+      return replyEmptyState(
         ctx,
         '📭 No tienes tareas activas para configurar recordatorios.'
       )
@@ -33,11 +35,15 @@ export const startReminderAction = async (ctx) => {
       ]
     })
 
-    return await ctx.reply(
+    return await openInterface(
+      ctx,
       'Selecciona una tarea para configurar su recordatorio:',
       {
         reply_markup: {
-          inline_keyboard: buttons
+          inline_keyboard: [
+            ...buttons,
+            [Markup.button.callback('✖️ Cancelar', 'reminder_cancel')]
+          ]
         }
       }
     )

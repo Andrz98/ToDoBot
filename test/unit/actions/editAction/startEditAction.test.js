@@ -31,7 +31,7 @@ describe('/edit: selección de tarea', () => {
     h.keyboard.mockReset()
     bot = makeFakeBot()
     registerStartEditAction(bot)
-    ctx = makeCtx({ session: { menuMessageId: 10 } })
+    ctx = makeCtx({ session: { menuMessageId: 5 } })
   })
 
   it('edita el mensaje con el menú en HTML y el nombre escapado', async () => {
@@ -55,16 +55,33 @@ describe('/edit: selección de tarea', () => {
     expect(ctx.session.menuMessageId).toBe(6)
   })
 
-  it('/edit limpia el flujo anterior y muestra el selector', async () => {
+  it('/edit limpia el flujo anterior y muestra el selector en su lugar', async () => {
     h.keyboard.mockResolvedValue({ reply_markup: { inline_keyboard: [] } })
-    ctx.session = { pendingTask: { name: 'x' }, awaiting: 'add_name' }
+    ctx.session = {
+      pendingTask: { name: 'x' },
+      awaiting: 'add_name',
+      menuMessageId: 3,
+      promptMessageId: 4
+    }
 
     await bot.run('edit', ctx)
 
     expect(ctx.session.flowType).toBe('edit')
     expect(ctx.session.pendingTask).toBeUndefined()
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 3)
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 4)
     expect(ctx.reply.mock.calls[0][0]).toBe(
       'Selecciona la tarea que quieres editar:'
     )
+    expect(ctx.session.menuMessageId).toBe(6)
+  })
+
+  it('/edit sin tareas avisa y no deja un flujo colgado', async () => {
+    h.keyboard.mockResolvedValue(null)
+
+    await bot.run('edit', ctx)
+
+    expect(ctx.reply.mock.calls[0][0]).toContain('No tienes tareas activas')
+    expect(ctx.session.flowType).toBeUndefined()
   })
 })

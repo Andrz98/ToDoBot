@@ -2,9 +2,8 @@
 import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
-import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
+import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import {
   UNAUTHORIZED_TEXT,
@@ -34,7 +33,14 @@ export function registerDeleteActions(bot) {
 
     await safeAnswerCbQuery(ctx)
     const { text, reply_markup } = buildConfirmDeleteMenu(task)
-    return safeReply(ctx, text, { parse_mode: 'HTML', reply_markup })
+    return renderInterface(ctx, text, { parse_mode: 'HTML', reply_markup })
+  })
+
+  bot.action('delete_cancel', async (ctx) => {
+    ctx.session.flowType = null
+    ctx.session.pendingDelete = null
+    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
   })
 
   // 2) Confirmación "Sí"
@@ -58,7 +64,7 @@ export function registerDeleteActions(bot) {
       ctx.session.flowType = null
       ctx.session.pendingDelete = null
       await safeAnswerCbQuery(ctx, DELETE_DONE_TEXT)
-      return safeEditMessageText(ctx, DELETE_DONE_TEXT)
+      return closeInterface(ctx, DELETE_DONE_TEXT)
     } catch (error) {
       console.error('❌ Error en delete_confirm:yes:', error)
       ctx.session.flowType = null
@@ -72,6 +78,6 @@ export function registerDeleteActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
     await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

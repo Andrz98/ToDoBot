@@ -1,4 +1,5 @@
 // middlewares/secure/rateLimit.js
+import { replyTemporary } from '../../utils/telegramUtils/messageLifecycle.js'
 
 const userActions = new Map()
 
@@ -48,7 +49,8 @@ export const rateLimit = async (ctx, next) => {
   const recent = timestamps.filter((ts) => now - ts < WINDOW_MS)
 
   if (recent.length >= MAX_ACTIONS) {
-    return ctx.reply(
+    return replyTemporary(
+      ctx,
       `😮 Has enviado más de ${MAX_ACTIONS} acciones en ${WINDOW_MS / 1000} s. Por favor, espera antes de continuar.`,
       { parse_mode: 'HTML' }
     )

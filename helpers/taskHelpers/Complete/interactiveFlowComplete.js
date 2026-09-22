@@ -15,7 +15,7 @@ export const buildCompleteMenu = (tasks) => {
   return {
     reply_markup: Markup.inlineKeyboard(
       // Cada fila con un botón
-      buttons.map((btn) => [btn]),
+      [...buttons.map((btn) => [btn]), [Markup.button.callback('✖️ Cancelar', 'complete_cancel')]],
       { columns: 1 }
     ).reply_markup
   }

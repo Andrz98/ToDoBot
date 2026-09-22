@@ -1,6 +1,6 @@
 import { Task } from '../../models/task.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
+import { closeInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import {
   UNAUTHORIZED_TEXT,
@@ -38,7 +38,7 @@ export function registerClearActions(bot) {
       ctx.session.pendingClearToken = null
 
       await safeAnswerCbQuery(ctx, CLEAR_DONE_TEXT)
-      return safeEditMessageText(ctx, CLEAR_DONE_TEXT)
+      return closeInterface(ctx, CLEAR_DONE_TEXT)
     } catch (error) {
       console.error('❌ Error en clear_confirm:yes:', error)
       ctx.session.flowType = null
@@ -52,6 +52,6 @@ export function registerClearActions(bot) {
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null
     await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

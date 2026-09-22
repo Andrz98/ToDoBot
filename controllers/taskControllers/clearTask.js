@@ -7,6 +7,11 @@ import {
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildConfirmClearMenu } from '../../helpers/taskHelpers/clear/interactiveFlowClear.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { replyTemporary } from '../../utils/telegramUtils/messageLifecycle.js'
+import {
+  openInterface,
+  discardFlowMessages
+} from '../../utils/telegramUtils/flowMessages.js'
 
 /**
  * Controlador para manejar /clear y /confirmclear
@@ -25,7 +30,7 @@ export const clearTask = async (ctx) => {
     }
 
     const userId = ctx.from.id
-    const isConfirmShortcut = ctx.message.text
+    const isConfirmShortcut = (ctx.message?.text ?? '')
       .trim()
       .toLowerCase()
       .startsWith('/confirmclear')
@@ -38,16 +43,15 @@ export const clearTask = async (ctx) => {
       await Task.deleteMany({ userId, completed: true })
       ctx.session.flowType = null
       ctx.session.pendingClearToken = null
-      return safeReply(ctx, CLEAR_DONE_TEXT)
+      await discardFlowMessages(ctx)
+      return replyTemporary(ctx, CLEAR_DONE_TEXT)
     }
 
     const count = await Task.countDocuments({ userId, completed: true })
 
     // 1. caso "sin tareas completadas"
     if (count === 0) {
-      return safeReply(ctx, '📭 No tienes tareas completadas para eliminar.', {
-        parse_mode: 'HTML'
-      })
+      return replyTemporary(ctx, '📭 No tienes tareas completadas para eliminar.')
     }
 
     // 2. Debo generar un token y guardar la sesión para proteger las tareas del usuario
@@ -57,7 +61,7 @@ export const clearTask = async (ctx) => {
 
     // 3Enviar menú de confirmación (confirmClearMenu)
     const { text, reply_markup } = buildConfirmClearMenu(count, token)
-    return safeReply(ctx, text, { parse_mode: 'HTML', reply_markup })
+    return openInterface(ctx, text, { parse_mode: 'HTML', reply_markup })
   } catch (error) {
     console.error('😵‍💫 Error en clearTask:', error)
     return safeReply(

@@ -3,6 +3,8 @@ import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { replyEmptyState } from '../../helpers/menu/mainMenu.js'
+import { openInterface } from '../../utils/telegramUtils/flowMessages.js'
 
 /**
  * Controlador para eliminar una tarea específica /delete
@@ -21,15 +23,13 @@ export const deleteTask = async (ctx) => {
     const userId = ctx.from.id
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
-      return safeReply(ctx, '📭 No tienes tareas pendientes para eliminar.', {
-        parse_mode: 'HTML'
-      })
+      return replyEmptyState(ctx, '📭 No tienes tareas pendientes para eliminar.')
     }
 
     // Autocuramos flowType obsoleto de otro flujo abandonado
     ctx.session.flowType = 'delete'
 
-    return safeReply(
+    return openInterface(
       ctx,
       'Selecciona la tarea que deseas eliminar:',
       buildDeleteMenu(tasks)

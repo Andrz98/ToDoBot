@@ -3,7 +3,7 @@ import { makeFakeBot, makeCtx } from '../../support/telegram.js'
 import { registerFlowResetHandler } from '@/events/middlewareEventFlowReset/flowReset.js'
 
 describe('flow_reset', () => {
-  it('limpia todo el estado de flujo, incluido el token de /clear', async () => {
+  it('limpia todo el estado de flujo, incluido el token de /clear, y sus mensajes', async () => {
     const bot = makeFakeBot()
     registerFlowResetHandler(bot)
     const ctx = makeCtx({
@@ -19,6 +19,7 @@ describe('flow_reset', () => {
         pendingTz: 'America/Bogota',
         pendingClearToken: 'tok',
         menuMessageId: 10,
+        promptMessageId: 11,
         timezone: 'Europe/Madrid'
       }
     })
@@ -35,8 +36,13 @@ describe('flow_reset', () => {
       pendingComplete: null,
       pendingTz: null,
       pendingClearToken: null,
-      menuMessageId: null,
       timezone: null
     })
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 10)
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 11)
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      expect.stringContaining('Flujo restablecido'),
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
+    )
   })
 })

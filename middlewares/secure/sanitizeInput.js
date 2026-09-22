@@ -1,3 +1,5 @@
+import { replyTemporary } from '../../utils/telegramUtils/messageLifecycle.js'
+
 /**
  * Middleware para sanitizar el input del usuario
  */
@@ -14,7 +16,8 @@ export const sanitizeInput = async (ctx, next) => {
     const text = incomingText.trim()
 
     if (text.length === 0 || DANGEROUS_TAG.test(text)) {
-      return ctx.reply(
+      return replyTemporary(
+        ctx,
         '🫸🏽 Entrada inválida. Inténtalo de nuevo con texto válido.'
       )
     }

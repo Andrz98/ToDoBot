@@ -2,6 +2,14 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import {
+  deleteNow,
+  replyInterface
+} from '../../utils/telegramUtils/messageLifecycle.js'
+import {
+  buildMainMenuKeyboard,
+  buildCommandHelp
+} from '../../helpers/menu/mainMenu.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 import { UNAUTHORIZED_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
@@ -36,38 +44,24 @@ export const startCommand = async (ctx) => {
 
     const userTimezone = await getUserTimezone(ctx.from.id)
 
-    // Mensaje de zona horaria actual
     const tzMessage =
       userTimezone === 'Europe/Madrid'
-        ? '🌐 Actualmente estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.\n\n'
-        : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>\n\n`
+        ? '🌐 Estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.'
+        : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>.`
 
-    // Sugerencia para cambiar de zona, con cierre de etiqueta </b>
-    let suggestionMessage
-    if (userTimezone === 'Europe/Madrid') {
-      suggestionMessage =
-        '🛫 Si quieres otro huso horario, usa: <b>/settimezone</b> y pulsa la zona que te convenga.\n\n'
-    } else {
-      suggestionMessage =
-        '🛫 Si prefieres la zona por defecto, usa: <b>/settimezone Europe/Madrid</b>\n\n'
-    }
-
-    return safeReply(
+    // Un único menú vivo: repetir /start sustituye al anterior
+    await deleteNow(ctx, ctx.session.startMessageId)
+    const msg = await replyInterface(
       ctx,
       `🛡️ ¡Hola, ${escapeHtml(username)}!\n` +
         'TuttoFatto está listo para ayudarte.\n\n' +
-        tzMessage +
-        suggestionMessage +
-        'Estos son los comandos disponibles:\n' +
-        '/settimezone - Cambiar zona horaria\n' +
-        '/add         - Añadir nueva tarea\n' +
-        '/list        - Ver tareas activas\n' +
-        '/done        - Marcar tarea como completada\n' +
-        '/delete      - Eliminar tarea\n' +
-        '/edit        - Editar tarea existente\n' +
-        '/clear       - Eliminar tareas completadas\n',
-      { parse_mode: 'HTML' }
+        `${tzMessage}\n\n` +
+        '¿Qué quieres hacer? Pulsa un botón o usa un comando:\n' +
+        buildCommandHelp(),
+      { parse_mode: 'HTML', ...buildMainMenuKeyboard() }
     )
+    ctx.session.startMessageId = msg?.message_id
+    return msg
   } catch (error) {
     console.error(`😵‍💫 Error en /start: ${error.message}`)
     return safeReply(

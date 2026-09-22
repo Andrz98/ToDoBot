@@ -1,76 +1,52 @@
+import { Markup } from 'telegraf'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { registerTaskSelector } from '../../helpers/tasks/taskSelector.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
-import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
-// 🔧 Este helper lo vamos a comprobar en pasos siguientes
 import { getTaskSelectionKeyboard } from '../../helpers/taskHelpers/edit/taskSelection.js'
-import { debugLog } from '../../utils/logUtils/debugLog.js'
+import {
+  openInterface,
+  discardFlowMessages,
+  expireCallback,
+  isLiveInterface
+} from '../../utils/telegramUtils/flowMessages.js'
+import { replyTemporary } from '../../utils/telegramUtils/messageLifecycle.js'
+import { resetEditSession, renderEditMenu } from './editMenu.js'
+import { replyEmptyState } from '../../helpers/menu/mainMenu.js'
 
-debugLog('🧪 Archivo startEditAction.js fue cargado')
+export async function startEdit(ctx) {
+  delete ctx.session.pendingTask
+  resetEditSession(ctx)
+
+  try {
+    const keyboard = await getTaskSelectionKeyboard(ctx.from.id, 'select_edit')
+    if (!keyboard) {
+      await discardFlowMessages(ctx)
+      return replyEmptyState(ctx, '📭 No tienes tareas activas para editar.')
+    }
+
+    ctx.session.flowType = 'edit'
+    keyboard.reply_markup.inline_keyboard.push([
+      Markup.button.callback('✖️ Cancelar', 'edit_cancel')
+    ])
+    await openInterface(ctx, 'Selecciona la tarea que quieres editar:', keyboard)
+  } catch (error) {
+    console.error('❌ Error en /edit:', error)
+    delete ctx.session.flowType
+    return replyTemporary(ctx, 'Ocurrió un error al intentar mostrar tus tareas.')
+  }
+}
 
 export function registerStartEditAction(bot) {
-  debugLog('🧪 registerStartEditAction() fue invocado')
+  bot.command('edit', isAuthorizedUser, startEdit)
 
-  bot.command('edit', isAuthorizedUser, async (ctx) => {
-    debugLog('🟢 [DEBUG] Entró al handler /edit')
-
-    // 🧹 Paso 1: limpiar flujo anterior
-    delete ctx.session.awaiting
-    delete ctx.session.pendingTask
-    delete ctx.session.menuMessageId
-    delete ctx.session.editing
-    delete ctx.session.edits
-    delete ctx.session.timezone
-
-    // ✅ Paso 2: marcar nuevo flujo
-    ctx.session.flowType = 'edit'
-
-    try {
-      // ⚠️ Paso 3: Validar funcionamiento real del helper
-      const keyboard = await getTaskSelectionKeyboard(
-        ctx.from.id,
-        'select_edit'
-      )
-
-      if (!keyboard || !keyboard.reply_markup) {
-        console.error(
-          '❌ [getTaskSelectionKeyboard] No devolvió un teclado válido'
-        )
-        return ctx.reply('⚠️ Error: No se pudo generar el selector de tareas.')
-      }
-
-      // ✅ Paso 4: mostrar mensaje con teclado
-      const msg = await ctx.reply(
-        'Selecciona la tarea que quieres editar:',
-        keyboard
-      )
-      ctx.session.menuMessageId = msg.message_id
-    } catch (error) {
-      console.error('❌ Error en /edit:', error)
-      return ctx.reply('Ocurrió un error al intentar mostrar tus tareas.')
-    }
-  })
-
-  // ✅ Flujo cuando el usuario elige una tarea para editar
   registerTaskSelector(bot, 'select_edit', async (ctx, task) => {
+    if (!isLiveInterface(ctx)) {
+      return expireCallback(ctx)
+    }
     ctx.session.flowType = 'edit'
     ctx.session.editing = { id: task._id, oldName: task.name }
     ctx.session.edits = {}
-    ctx.session.awaiting = null
     ctx.session.timezone = await getUserTimezone(ctx.from.id)
-
-    const { text, markup } = buildEditMenu(task, ctx.session.timezone, false)
-    try {
-      await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        ctx.session.menuMessageId,
-        null,
-        text,
-        { parse_mode: 'HTML', ...markup }
-      )
-    } catch {
-      const newMsg = await ctx.reply(text, { parse_mode: 'HTML', ...markup })
-      ctx.session.menuMessageId = newMsg.message_id
-    }
+    return renderEditMenu(ctx, task, ctx.session.timezone)
   })
 }

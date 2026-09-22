@@ -1,6 +1,10 @@
 import { findTask } from '../../helpers/tasks/findTask.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
-import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { closeInterface } from '../../utils/telegramUtils/flowMessages.js'
+import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import { frequencyLabels } from '../../helpers/frequency/frequencyLabels.js'
+import { isValidFrequency } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
+import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
+import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { GENERAL_ERROR_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 const addIntervalToNow = (frequency) => {
@@ -25,6 +29,9 @@ const addIntervalToNow = (frequency) => {
 export const saveReminderAction = async (ctx) => {
   const callbackData = ctx.callbackQuery.data
   const [, taskId, frequency] = callbackData.split('::')
+  if (!isValidFrequency(frequency)) {
+    return ctx.answerCbQuery('Periodicidad no válida.', { show_alert: true })
+  }
 
   const task = await findTask(ctx.from.id, { id: taskId })
   if (!task) {
@@ -38,18 +45,17 @@ export const saveReminderAction = async (ctx) => {
 
     await task.save()
     await ctx.answerCbQuery()
-    // Quitamos el teclado de frecuencia: ya cumplió su función y no debe
-    // quedar pulsable (re-ejecutaría el guardado con otra frecuencia)
-    await safeEditMessageReplyMarkup(ctx)
-
     ctx.session.flowType = null
-    delete ctx.session.menuMessageId
 
-    return flashReply(
+    // Sustituye el teclado de frecuencia por el resultado: ya no debe quedar
+    // pulsable (re-ejecutaría el guardado con otra frecuencia)
+    const timezone = await getUserTimezone(ctx.from.id).catch(() => undefined)
+    return closeInterface(
       ctx,
-      `Se ha configurado el recordatorio para la tarea "${task.name}" con frecuencia "${frequency}".`,
-      {},
-      2500
+      `🔔 Recordatorio de <b>${escapeHtml(task.name)}</b>: ${frequencyLabels[frequency]}.
+` +
+        `Próximo aviso: ${formatDateEs(task.reminderAt, timezone)}`,
+      { parse_mode: 'HTML' }
     )
   } catch (error) {
     console.error('❌ Error en saveReminderAction:', error)

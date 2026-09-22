@@ -27,7 +27,6 @@ vi.mock('@/helpers/taskHelpers/edit/taskSelection.js', () => ({
 vi.mock('@/middlewares/access/isAuthorizedUser.js', () => ({
   isAuthorizedUser: (_ctx, next) => next()
 }))
-vi.mock('@/utils/delayUtils/flashReply.js', () => ({ flashReply: vi.fn() }))
 
 import { flowGuard } from '@/middlewares/flowControl/flowGuard.js'
 import { startCommand } from '@/controllers/startController/startController.js'
