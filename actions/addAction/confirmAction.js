@@ -12,6 +12,7 @@ import {
   GENERAL_ERROR_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { Task } from '../../models/task.js'
+import { DEFAULT_FREQUENCY } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 
 const DUPLICATE_KEY = 11000
 const ADD_DONE_TEXT = '✅ Tarea creada.'
@@ -49,7 +50,7 @@ export function registerConfirmAction(bot) {
       userId: ctx.from.id,
       name: pendingTask.name,
       description: pendingTask.description || '(sin descripción)',
-      frequency: 'daily',
+      frequency: pendingTask.frequency ?? DEFAULT_FREQUENCY,
       reminderAt: pendingTask.reminderAt
     })
 

@@ -3,6 +3,10 @@ import { saveReminderAction } from '@/actions/reminderAction/saveReminderAction.
 import { findTask } from '@/helpers/tasks/findTask.js'
 
 vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: vi.fn() }))
+vi.mock(
+  '@/helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js',
+  () => ({ getUserTimezone: vi.fn().mockResolvedValue('Europe/Madrid') })
+)
 
 describe('saveReminderAction', () => {
   const ctx = {

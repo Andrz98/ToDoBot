@@ -33,14 +33,18 @@ describe('listTasks', () => {
     expect(h.all).not.toHaveBeenCalled()
   })
 
-  it('sin tareas activas avisa con un mensaje temporal', async () => {
+  it('sin tareas activas avisa, ofrece crear una y se limpia', async () => {
     h.all.mockResolvedValue([])
 
     await listTasks(ctx)
 
     expect(h.all).toHaveBeenCalledWith(12345)
-    expect(ctx.reply).toHaveBeenCalledWith('📭 No tienes tareas activas.', {})
-    await vi.advanceTimersByTimeAsync(10_000)
+    const [text, extra] = ctx.reply.mock.calls[0]
+    expect(text).toBe('📭 No tienes tareas activas.')
+    expect(extra.reply_markup.inline_keyboard[0][0].callback_data).toBe(
+      'menu_add'
+    )
+    await vi.advanceTimersByTimeAsync(TEN_MINUTES)
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 6)
   })
 
@@ -56,7 +60,9 @@ describe('listTasks', () => {
     const [text, options] = ctx.reply.mock.calls[0]
     expect(text).toContain('Mis tareas (2)')
     expect(options.reply_markup.inline_keyboard).toEqual([
-      [{ text: '1. Comprar pan', callback_data: 'show_task_a1:0', hide: false }],
+      [
+        { text: '1. Comprar pan', callback_data: 'show_task_a1:0', hide: false }
+      ],
       [
         {
           text: '2. Comprar ordenador',

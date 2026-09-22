@@ -21,7 +21,7 @@ describe('startCommand', () => {
   })
 
   // Parte 1: Debe responder con un mensaje de bienvenida
-  it('responde con un mensaje de bienvenida', async () => {
+  it('responde con la bienvenida, /reminder incluido, y el menú de botones', async () => {
     const mockReply = vi.fn()
     const mockCtx = {
       from: { id: 123, username: 'andres:dev' },
@@ -30,9 +30,13 @@ describe('startCommand', () => {
 
     await startCommand(mockCtx)
 
-    expect(mockReply).toHaveBeenCalledWith(expect.stringContaining('Hola'), {
-      parse_mode: 'HTML'
-    })
+    const [text, extra] = mockReply.mock.calls[0]
+    expect(text).toContain('Hola')
+    expect(text).toContain('/reminder')
+    expect(extra.parse_mode).toBe('HTML')
+    expect(
+      extra.reply_markup.inline_keyboard.flat().map((b) => b.callback_data)
+    ).toContain('menu_reminder')
   })
 
   it('escapa el HTML del nombre del usuario (parse_mode HTML)', async () => {

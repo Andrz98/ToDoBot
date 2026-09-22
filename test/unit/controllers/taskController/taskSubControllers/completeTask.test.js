@@ -35,9 +35,11 @@ describe('completeTask', () => {
     await completeTask(ctx)
 
     expect(h.all).toHaveBeenCalledWith(12345)
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '📭 No tienes tareas pendientes para completar.',
-      {}
+    const [text, extra] = ctx.reply.mock.calls[0]
+    expect(text).toBe('📭 No tienes tareas pendientes para completar.')
+    // Nunca un callejón sin salida: atajo para crear una tarea
+    expect(extra.reply_markup.inline_keyboard[0][0].callback_data).toBe(
+      'menu_add'
     )
   })
 

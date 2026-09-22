@@ -1,6 +1,9 @@
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
-import { askInput, consumeInput } from '../../utils/telegramUtils/flowMessages.js'
+import {
+  askInput,
+  consumeInput
+} from '../../utils/telegramUtils/flowMessages.js'
 import { showAddMenu } from './fieldActions.js'
 
 const FIELD_OF = { add_name: 'name', add_desc: 'description' }
@@ -8,7 +11,13 @@ const FIELD_OF = { add_name: 'name', add_desc: 'description' }
 export function registerMessageHandler(bot) {
   bot.on('message', async (ctx, next) => {
     const { flowType, awaiting, pendingTask } = ctx.session
-    if (flowType !== 'add' || !awaiting || !ctx.message?.text) {
+    // Un comando escrito a mitad de flujo es un comando, no la respuesta al prompt
+    if (
+      flowType !== 'add' ||
+      !awaiting ||
+      !ctx.message?.text ||
+      ctx.message.text.startsWith('/')
+    ) {
       return typeof next === 'function' ? next() : undefined
     }
 

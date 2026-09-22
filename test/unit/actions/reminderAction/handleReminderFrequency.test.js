@@ -1,81 +1,66 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { handleReminderFrequency } from '@/events/reminderEvent/handleReminderFrequency.js'
-import { findTask } from '@/helpers/tasks/findTask.js'
-import { buildFrequencyMenu } from '@/helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
-import { safeEditMessageReplyMarkup } from '@/utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { makeCtx } from '../../../support/telegram.js'
 
-vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: vi.fn() }))
-vi.mock(
-  '@/helpers/frequency/flowFrequency/interactiveFlowFrequency.js',
-  () => ({
-    buildFrequencyMenu: vi.fn()
-  })
-)
-vi.mock('@/utils/retryUtils/safeEditMessageReplyMarkup.js', () => ({
-  safeEditMessageReplyMarkup: vi.fn()
-}))
+const h = vi.hoisted(() => ({ findTask: vi.fn() }))
+vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: h.findTask }))
+
+import { handleReminderFrequency } from '@/events/reminderEvent/handleReminderFrequency.js'
 
 describe('handleReminderFrequency', () => {
-  const ctx = {
-    from: { id: 7 },
-    callbackQuery: {
-      data: 'setReminder::42',
-      message: { message_id: 10 }
-    },
-    chat: { id: 5 },
-    telegram: {
-      editMessageText: vi.fn(() => Promise.reject(new Error('fail')))
-    },
-    answerCbQuery: vi.fn(),
-    session: {}
-  }
-
+  let ctx
   beforeEach(() => {
-    vi.clearAllMocks()
-    ctx.session = {}
+    h.findTask.mockReset()
     vi.spyOn(console, 'error').mockImplementation(() => {})
+    ctx = makeCtx({
+      callbackQuery: { data: 'setReminder::42', message: { message_id: 10 } },
+      session: { flowType: 'reminder', menuMessageId: 10 }
+    })
   })
 
-  it('shows the keyboard returned by buildFrequencyMenu', async () => {
-    findTask.mockResolvedValue({ _id: '42', name: 'Task' })
-    buildFrequencyMenu.mockReturnValue({
-      text: 'texto',
-      markup: {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: 'Diario', callback_data: 'add_freq_daily' }],
-            [{ text: 'Semanal', callback_data: 'add_freq_weekly' }]
-          ]
-        }
-      }
+  it('muestra la botonera de periodicidad en el mismo mensaje, marcando la actual', async () => {
+    h.findTask.mockResolvedValue({
+      _id: '42',
+      name: 'Task',
+      frequency: 'weekly'
     })
 
     await handleReminderFrequency(ctx)
 
-    const expectedMarkup = {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: 'Diario', callback_data: 'saveReminder::42::daily' }],
-          [{ text: 'Semanal', callback_data: 'saveReminder::42::weekly' }]
-        ]
-      }
-    }
-    expect(findTask).toHaveBeenCalledWith(7, { id: '42' })
-    expect(buildFrequencyMenu).toHaveBeenCalled()
-    expect(ctx.answerCbQuery).toHaveBeenCalled()
-    expect(ctx.telegram.editMessageText).toHaveBeenCalledWith(
-      5,
-      10,
-      undefined,
-      'texto',
-      expectedMarkup
-    )
-    expect(safeEditMessageReplyMarkup).toHaveBeenCalledWith(ctx, expectedMarkup)
+    expect(h.findTask).toHaveBeenCalledWith(7, { id: '42' })
+    const [, messageId, , text, extra] =
+      ctx.telegram.editMessageText.mock.calls[0]
+    expect(messageId).toBe(10)
+    expect(text).toContain('periodicidad')
+    expect(
+      extra.reply_markup.inline_keyboard
+        .flat()
+        .map((b) => [b.text, b.callback_data])
+    ).toEqual([
+      ['Diario', 'saveReminder::42::daily'],
+      ['✅ Semanal', 'saveReminder::42::weekly'],
+      ['Mensual', 'saveReminder::42::monthly'],
+      ['Anual', 'saveReminder::42::yearly'],
+      ['✖️ Cancelar', 'reminder_cancel']
+    ])
+    expect(ctx.reply).not.toHaveBeenCalled()
+  })
+
+  it('si no puede editar, envía la botonera en un mensaje nuevo (nunca la pierde)', async () => {
+    h.findTask.mockResolvedValue({
+      _id: '42',
+      name: 'Task',
+      frequency: 'daily'
+    })
+    ctx.telegram.editMessageText.mockRejectedValue(new Error('cannot edit'))
+
+    await handleReminderFrequency(ctx)
+
+    const [, extra] = ctx.reply.mock.calls[0]
+    expect(extra.reply_markup.inline_keyboard).toHaveLength(5)
   })
 
   it('error externo simulado: limpia flowType en vez de dejarlo colgado', async () => {
-    ctx.session.flowType = 'reminder'
-    findTask.mockRejectedValue(new Error('Fallo de Mongo'))
+    h.findTask.mockRejectedValue(new Error('Fallo de Mongo'))
 
     await expect(handleReminderFrequency(ctx)).resolves.not.toThrow()
 

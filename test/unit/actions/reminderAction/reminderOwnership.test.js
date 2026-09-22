@@ -4,6 +4,10 @@ import { makeCtx } from '../../../support/telegram.js'
 const h = vi.hoisted(() => ({ findTask: vi.fn(), findById: vi.fn() }))
 vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: h.findTask }))
 vi.mock('@/models/task.js', () => ({ Task: { findById: h.findById } }))
+vi.mock(
+  '@/helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js',
+  () => ({ getUserTimezone: vi.fn().mockResolvedValue('Europe/Madrid') })
+)
 
 import { handleReminderFrequency } from '@/events/reminderEvent/handleReminderFrequency.js'
 import { saveReminderAction } from '@/actions/reminderAction/saveReminderAction.js'
@@ -33,7 +37,9 @@ describe('recordatorios: solo sobre tareas propias', () => {
 
     await handleReminderFrequency(ctx)
 
-    expect(ctx.answerCbQuery).toHaveBeenCalledWith('Tarea no encontrada.')
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith('Tarea no encontrada.', {
+      show_alert: true
+    })
     expect(ctx.telegram.editMessageText).not.toHaveBeenCalled()
   })
 

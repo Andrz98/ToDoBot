@@ -9,7 +9,9 @@ vi.mock('@/helpers/tasks/findAllTasks.js', () => ({
 describe('startReminderAction', () => {
   const ctx = {
     from: { id: 1 },
+    chat: { id: 5 },
     reply: vi.fn(() => ({ message_id: 99 })),
+    telegram: { deleteMessage: vi.fn().mockResolvedValue(true) },
     session: {}
   }
 
@@ -38,6 +40,13 @@ describe('startReminderAction', () => {
                 text: 'Task 2 \u2014 Sin recordatorio',
                 callback_data: 'setReminder::2'
               }
+            ],
+            [
+              {
+                text: '✖️ Cancelar',
+                callback_data: 'reminder_cancel',
+                hide: false
+              }
             ]
           ]
         }
@@ -46,14 +55,17 @@ describe('startReminderAction', () => {
     expect(ctx.session.flowType).toBe('reminder')
   })
 
-  it('sin tareas activas: avisa y libera el flowType', async () => {
+  it('sin tareas activas: avisa con atajo a crear una y libera el flowType', async () => {
     findAllTasks.mockResolvedValue([])
 
     await startReminderAction(ctx)
 
-    expect(ctx.reply).toHaveBeenCalledWith(
-      '📭 No tienes tareas activas para configurar recordatorios.',
-      {}
+    const [text, extra] = ctx.reply.mock.calls[0]
+    expect(text).toBe(
+      '📭 No tienes tareas activas para configurar recordatorios.'
+    )
+    expect(extra.reply_markup.inline_keyboard[0][0].callback_data).toBe(
+      'menu_add'
     )
     expect(ctx.session.flowType).toBeNull()
   })

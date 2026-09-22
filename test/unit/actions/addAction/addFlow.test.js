@@ -232,3 +232,39 @@ describe('/add: botón "Cancelar" (add_cancel)', () => {
     vi.useRealTimers()
   })
 })
+
+describe('/add: periodicidad con botones', () => {
+  it('abre la botonera en el menú y guarda la elección', async () => {
+    h.tz.mockReset().mockResolvedValue('Europe/Madrid')
+    const bot = makeFakeBot()
+    registerFieldActions(bot)
+    const ctx = makeCtx({
+      session: { flowType: 'add', pendingTask: {}, menuMessageId: 5 }
+    })
+
+    await bot.press('add_freq', ctx)
+    const [, id, , , options] = ctx.telegram.editMessageText.mock.calls[0]
+    expect(id).toBe(5)
+    expect(
+      options.reply_markup.inline_keyboard.flat().map((b) => b.callback_data)
+    ).toContain('add_freq_weekly')
+
+    await bot.press('add_freq_weekly', ctx)
+    expect(ctx.session.pendingTask.frequency).toBe('weekly')
+    expect(ctx.telegram.editMessageText.mock.calls[1][3]).toContain(
+      'Periodicidad: Semanal'
+    )
+  })
+
+  it('ignora una periodicidad inventada', async () => {
+    const bot = makeFakeBot()
+    registerFieldActions(bot)
+    const ctx = makeCtx({
+      session: { flowType: 'add', pendingTask: {}, menuMessageId: 5 }
+    })
+
+    await bot.press('add_freq_hourly', ctx)
+
+    expect(ctx.session.pendingTask.frequency).toBeUndefined()
+  })
+})

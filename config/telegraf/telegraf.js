@@ -23,6 +23,10 @@ import { registerDeleteActions } from '../../actions/deleteAction/deleteActionHa
 import { registerClearActions } from '../../actions/clearAction/clearActionHandler.js'
 import { registerAddAction } from '../../actions/addAction/index.js'
 import { registerReminderActions } from '../../actions/reminderAction/index.js'
+import { startReminderAction } from '../../actions/reminderAction/startReminderAction.js'
+import { startAdd } from '../../actions/addAction/startAddAction.js'
+import { startEdit } from '../../actions/editAction/startEditAction.js'
+import { registerMainMenu } from '../../actions/menuAction/registerMainMenu.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 // Me aseguro que el token exista
@@ -99,6 +103,17 @@ registerClearActions(bot)
 registerTimezoneActions(bot)
 registerListActions(bot)
 registerReminderActions(bot)
+// Botones del menú de /start: mismos handlers que los comandos escritos
+registerMainMenu(bot, {
+  add: startAdd,
+  list: taskController.listTasks,
+  done: taskController.completeTask,
+  edit: startEdit,
+  reminder: startReminderAction,
+  delete: taskController.deleteTask,
+  clear: taskController.clearTask,
+  settimezone: setTimezone
+})
 
 bot.on('message', async (ctx, next) => {
   debugLog('🧪 [TRACE] bot.on(message) interceptó un mensaje')

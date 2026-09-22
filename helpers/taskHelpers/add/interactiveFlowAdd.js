@@ -1,5 +1,8 @@
 import { Markup } from 'telegraf'
 import { formatDateEs } from '../../../helpers/taskHelpers/date/formatDateEs.js'
+import { frequencyLabels } from '../../frequency/frequencyLabels.js'
+
+export const DEFAULT_FREQUENCY = 'daily'
 
 /**
  * Interfaz única del flujo /add: resume lo ya introducido y permite completar
@@ -10,6 +13,7 @@ import { formatDateEs } from '../../../helpers/taskHelpers/date/formatDateEs.js'
  */
 export function buildAddMenu(pendingTask = {}, timezone = 'Europe/Madrid') {
   const { name, description, reminderAt } = pendingTask
+  const frequency = frequencyLabels[pendingTask.frequency ?? DEFAULT_FREQUENCY]
   const date = reminderAt
     ? formatDateEs(new Date(reminderAt), timezone || 'Europe/Madrid')
     : null
@@ -20,6 +24,7 @@ export function buildAddMenu(pendingTask = {}, timezone = 'Europe/Madrid') {
     `🔺 Nombre: ${name ?? '—'}`,
     `🔸 Descripción: ${description ?? '—'}`,
     `🔹 Fecha: ${date ?? '—'}`,
+    `🔁 Periodicidad: ${frequency}`,
     '',
     name && date
       ? 'Revisa los datos y confirma, o corrige algún campo.'
@@ -28,17 +33,25 @@ export function buildAddMenu(pendingTask = {}, timezone = 'Europe/Madrid') {
 
   const label = (filled, text) => `${filled ? '✏️' : '➕'} ${text}`
   const keyboard = [
-    [Markup.button.callback(label(name, 'Nombre (obligatorio)'), 'add_field_name')],
+    [
+      Markup.button.callback(
+        label(name, 'Nombre (obligatorio)'),
+        'add_field_name'
+      )
+    ],
     [
       Markup.button.callback(
         label(description, 'Descripción (opcional)'),
         'add_field_desc'
       )
     ],
-    [Markup.button.callback(label(date, 'Fecha (obligatorio)'), 'add_cal')]
+    [Markup.button.callback(label(date, 'Fecha (obligatorio)'), 'add_cal')],
+    [Markup.button.callback(`🔁 Periodicidad: ${frequency}`, 'add_freq')]
   ]
   if (name && date) {
-    keyboard.push([Markup.button.callback('✅ Confirmar creación', 'add_confirm')])
+    keyboard.push([
+      Markup.button.callback('✅ Confirmar creación', 'add_confirm')
+    ])
   }
   keyboard.push([Markup.button.callback('✖️ Cancelar', 'add_cancel')])
 

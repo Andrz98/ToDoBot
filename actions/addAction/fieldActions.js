@@ -1,7 +1,13 @@
 import { buildAddMenu } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
+import { Markup } from 'telegraf'
 import { registerDatePicker } from '../datePickerAction/registerDatePicker.js'
+import {
+  buildFrequencyMenu,
+  isValidFrequency
+} from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
+import { DEFAULT_FREQUENCY } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 import {
   askInput,
   renderInterface,
@@ -10,7 +16,10 @@ import {
 } from '../../utils/telegramUtils/flowMessages.js'
 
 const PROMPTS = {
-  add_field_name: { key: 'add_name', text: '🔺 Escribe el nombre de la tarea:' },
+  add_field_name: {
+    key: 'add_name',
+    text: '🔺 Escribe el nombre de la tarea:'
+  },
   add_field_desc: {
     key: 'add_desc',
     text: '🔸 Escribe la descripción de la tarea (opcional):'
@@ -48,6 +57,36 @@ export function registerFieldActions(bot) {
       return askField(ctx, action)
     })
   }
+
+  const guard = (handler) => async (ctx) => {
+    if (!isAddActive(ctx) || !isLiveInterface(ctx)) {
+      return expireCallback(ctx)
+    }
+    await safeAnswerCbQuery(ctx)
+    return handler(ctx)
+  }
+
+  bot.action(
+    'add_freq',
+    guard((ctx) => {
+      const { text, markup } = buildFrequencyMenu(
+        (value) => `add_freq_${value}`,
+        ctx.session.pendingTask.frequency ?? DEFAULT_FREQUENCY,
+        [[Markup.button.callback('↩️ Volver', 'add_back')]]
+      )
+      return renderInterface(ctx, text, markup)
+    })
+  )
+
+  bot.action(
+    /^add_freq_(\w+)$/,
+    guard((ctx) => {
+      if (isValidFrequency(ctx.match[1])) {
+        ctx.session.pendingTask.frequency = ctx.match[1]
+      }
+      return showAddMenu(ctx)
+    })
+  )
 
   registerDatePicker(bot, 'add', {
     isActive: isAddActive,

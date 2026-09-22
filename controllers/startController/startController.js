@@ -50,7 +50,7 @@ export const startCommand = async (ctx) => {
         : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>.`
 
     // Un único menú vivo: repetir /start sustituye al anterior
-    await deleteNow(ctx, ctx.session.startMessageId)
+    await deleteNow(ctx, ctx.session?.startMessageId)
     const msg = await replyInterface(
       ctx,
       `🛡️ ¡Hola, ${escapeHtml(username)}!\n` +
@@ -60,7 +60,9 @@ export const startCommand = async (ctx) => {
         buildCommandHelp(),
       { parse_mode: 'HTML', ...buildMainMenuKeyboard() }
     )
-    ctx.session.startMessageId = msg?.message_id
+    if (ctx.session) {
+      ctx.session.startMessageId = msg?.message_id
+    }
     return msg
   } catch (error) {
     console.error(`😵‍💫 Error en /start: ${error.message}`)
