@@ -35,6 +35,12 @@ export async function flowGuard(ctx, next) {
 
   // 2) Permitir callbacks inline según cada flujo
   if (ctx.callbackQuery) {
+    // show_task_* es de solo lectura (detalle de una tarea desde /list):
+    // nunca interfiere con ningún flujo, así que siempre se permite
+    if (/^show_task_/.test(cb)) {
+      return next()
+    }
+
     switch (flowType) {
       case 'add':
       case 'edit':

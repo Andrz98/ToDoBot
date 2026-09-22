@@ -1,11 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { makeCtx } from '../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ auth: vi.fn(), count: vi.fn() }))
+const h = vi.hoisted(() => ({
+  auth: vi.fn(),
+  count: vi.fn(),
+  deleteMany: vi.fn()
+}))
 vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
   isUserAuthorized: h.auth
 }))
-vi.mock('@/models/task.js', () => ({ Task: { countDocuments: h.count } }))
+vi.mock('@/models/task.js', () => ({
+  Task: { countDocuments: h.count, deleteMany: h.deleteMany }
+}))
 
 import { clearTask } from '@/controllers/taskControllers/clearTask.js'
 
@@ -17,6 +23,7 @@ describe('/clear', () => {
   beforeEach(() => {
     h.auth.mockReset().mockResolvedValue(true)
     h.count.mockReset().mockResolvedValue(3)
+    h.deleteMany.mockReset().mockResolvedValue({ deletedCount: 3 })
     ctx = makeCtx({ message: { text: '/clear' } })
   })
 
@@ -59,7 +66,7 @@ describe('/clear', () => {
     expect(ctx.session.pendingClearToken).toBeUndefined()
     expect(ctx.session.flowType).toBeUndefined()
     expect(ctx.reply.mock.calls[0][0]).toBe(
-      '🤯 No tienes tareas completadas para eliminar.'
+      '📭 No tienes tareas completadas para eliminar.'
     )
   })
 
@@ -84,5 +91,33 @@ describe('/clear', () => {
     expect(ctx.reply).toHaveBeenCalledWith(
       '🥸 Debes estar autorizado para usar este bot.'
     )
+  })
+
+  describe('/confirmclear', () => {
+    it('con una confirmación de /clear ya pendiente: borra directo, sin volver a preguntar', async () => {
+      ctx.session = { flowType: 'clear', pendingClearToken: 'tok-1' }
+      ctx.message.text = '/confirmclear'
+
+      await clearTask(ctx)
+
+      expect(h.count).not.toHaveBeenCalled()
+      expect(h.deleteMany).toHaveBeenCalledWith({
+        userId: 7,
+        completed: true
+      })
+      expect(ctx.reply).toHaveBeenCalledWith('✅ Tareas eliminadas.', {})
+      expect(ctx.session.flowType).toBeNull()
+      expect(ctx.session.pendingClearToken).toBeNull()
+    })
+
+    it('sin ninguna confirmación pendiente: se comporta igual que /clear', async () => {
+      ctx.message.text = '/confirmclear'
+
+      await clearTask(ctx)
+
+      expect(h.deleteMany).not.toHaveBeenCalled()
+      expect(h.count).toHaveBeenCalledWith({ userId: 7, completed: true })
+      expect(ctx.session.flowType).toBe('clear')
+    })
   })
 })

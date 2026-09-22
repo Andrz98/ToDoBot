@@ -38,6 +38,7 @@ export const setTimezone = async (ctx) => {
     }
 
     // 3) Inicio confirmación: guardo en sesión y pregunto
+    ctx.session.flowType = 'timezone'
     ctx.session.pendingTz = input
     return safeReply(
       ctx,

@@ -1,12 +1,17 @@
 import { Markup } from 'telegraf'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
-import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 import { AuthorizedUser } from '../../models/authorizedUser.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 import { ALLOWED_TIMEZONES } from '../../helpers/taskHelpers/timezone/allowedTimezones.js'
+import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import {
+  UNAUTHORIZED_TEXT,
+  GENERAL_ERROR_TEXT,
+  OPERATION_CANCELLED_TEXT
+} from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export function registerTimezoneActions(bot) {
   // Paso 1: elijo zona y pido confirmación
@@ -34,9 +39,14 @@ export function registerTimezoneActions(bot) {
     )
   })
 
-  // Paso 2a: confirma “Sí”
+  // Paso 2a: confirma "Sí"
   bot.action('confirm_tz_yes', async (ctx) => {
-    await safeEditMessageReplyMarkup(ctx)
+    if (!(await isUserAuthorized(ctx))) {
+      ctx.session.flowType = null
+      ctx.session.pendingTz = null
+      return safeAnswerCbQuery(ctx, UNAUTHORIZED_TEXT, { show_alert: true })
+    }
+
     const tz = ctx.session.pendingTz
     if (!ALLOWED_TIMEZONES.includes(tz)) {
       ctx.session.flowType = null
@@ -46,34 +56,39 @@ export function registerTimezoneActions(bot) {
         { show_alert: true }
       )
     }
-    const userId = ctx.from.id
 
-    const updatedUser = await AuthorizedUser.findOneAndUpdate(
-      { userId },
-      { timezone: tz },
-      { new: true }
-    )
-    // grabo también en sesión para uso futuro
-    ctx.session.timezone = tz
+    try {
+      const userId = ctx.from.id
+      const updatedUser = await AuthorizedUser.findOneAndUpdate(
+        { userId },
+        { timezone: tz },
+        { new: true }
+      )
 
-    // fin del flujo
-    ctx.session.flowType = null
-    ctx.session.pendingTz = null
+      ctx.session.flowType = null
+      ctx.session.pendingTz = null
 
-    if (!updatedUser) {
-      const msg = '🥸 No estás autorizado para usar este bot.'
-      await safeAnswerCbQuery(ctx, msg)
-      return
+      if (!updatedUser) {
+        // El usuario dejó de estar autorizado entre el chequeo y la escritura
+        return safeAnswerCbQuery(ctx, UNAUTHORIZED_TEXT, { show_alert: true })
+      }
+
+      const doneText = `✅ Zona horaria actualizada a ${tz}.`
+      await safeAnswerCbQuery(ctx, doneText)
+      return safeEditMessageText(ctx, doneText)
+    } catch (error) {
+      console.error('❌ Error en confirm_tz_yes:', error)
+      ctx.session.flowType = null
+      ctx.session.pendingTz = null
+      return safeAnswerCbQuery(ctx, GENERAL_ERROR_TEXT, { show_alert: true })
     }
-    await safeAnswerCbQuery(ctx, '🛫 zona cambiada')
-    flashReply(ctx, 'Zona cambiada')
   })
 
-  // Paso 2b: confirma “No”
+  // Paso 2b: confirma "No"
   bot.action('confirm_tz_no', async (ctx) => {
-    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingTz = null
-    await safeAnswerCbQuery(ctx, 'Cambio de zona horaria cancelado.')
+    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

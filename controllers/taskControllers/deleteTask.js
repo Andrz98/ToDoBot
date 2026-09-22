@@ -21,10 +21,13 @@ export const deleteTask = async (ctx) => {
     const userId = ctx.from.id
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
-      return safeReply(ctx, 'No tienes tareas pendientes para eliminar.', {
+      return safeReply(ctx, '📭 No tienes tareas pendientes para eliminar.', {
         parse_mode: 'HTML'
       })
     }
+
+    // Autocuramos flowType obsoleto de otro flujo abandonado
+    ctx.session.flowType = 'delete'
 
     return safeReply(
       ctx,

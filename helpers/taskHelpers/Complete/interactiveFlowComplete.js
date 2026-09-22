@@ -25,6 +25,5 @@ export const buildCompleteMenu = (tasks) => {
  * Construye el teclado inline de confirmación (Sí/No).
  * @returns {{ reply_markup: object }}
  */
-export const buildConfirmCompleteMenu = () => {
-  return buildInlineConfirm('complete_confirm')
-}
+export const buildConfirmCompleteMenu = () =>
+  buildInlineConfirm('complete_confirm')

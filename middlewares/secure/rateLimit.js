@@ -2,8 +2,8 @@
 
 const userActions = new Map()
 
-// Permitir hasta 3 acciones cada 7 000 ms (7 s)
-const MAX_ACTIONS = 3
+// Permitir hasta 5 acciones cada 7 000 ms (7 s)
+const MAX_ACTIONS = 5
 const WINDOW_MS = 7_000
 
 // Barrido de usuarios inactivos: sin él el Map crece con cada usuario distinto que escribe al bot

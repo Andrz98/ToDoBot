@@ -36,7 +36,7 @@ describe('completeTask', () => {
 
     expect(h.all).toHaveBeenCalledWith(12345)
     expect(ctx.reply).toHaveBeenCalledWith(
-      'No tienes tareas pendientes para completar.',
+      '📭 No tienes tareas pendientes para completar.',
       { parse_mode: 'HTML' }
     )
   })
@@ -59,6 +59,16 @@ describe('completeTask', () => {
       { text: 'Comprar pan', callback_data: 'complete_select:a1' },
       { text: 'Pagar luz', callback_data: 'complete_select:b2' }
     ])
+    expect(ctx.session.flowType).toBe('complete')
+  })
+
+  it('autocura un flowType obsoleto de otro flujo abandonado', async () => {
+    ctx.session.flowType = 'add'
+    h.all.mockResolvedValue([{ _id: 'a1', name: 'Comprar pan' }])
+
+    await completeTask(ctx)
+
+    expect(ctx.session.flowType).toBe('complete')
   })
 
   it('debe capturar errores internos y responder con un mensaje genérico', async () => {

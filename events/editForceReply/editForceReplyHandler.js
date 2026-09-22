@@ -4,11 +4,14 @@ import { updateTaskFields } from '../../helpers/taskHelpers/edit/updateTaskField
 import { detectAndParseDate } from '../../helpers/taskHelpers/date/detectAndParseDate.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildEditMenu } from '../../helpers/taskHelpers/edit/interactiveFlowEdit.js'
+import { safeDeleteMessage } from '../../utils/telegramUtils/safeDeleteMessage.js'
 import { DateTime } from 'luxon'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 
 /**
  * Maneja las respuestas forzadas tras pulsar un botón de edición.
+ * Edita el mensaje del menú en sitio en vez de acumular mensajes nuevos
+ * (mismo estándar que actions/addAction/messageHandler.js para /add).
  * @param {import('telegraf').Telegraf} bot
  */
 export function registerForceReplyHandler(bot) {
@@ -29,7 +32,15 @@ export function registerForceReplyHandler(bot) {
       return typeof next === 'function' ? next() : undefined
     }
 
-    const { awaiting, editing, edits = {} } = ctx.session
+    const { awaiting, editing, edits = {}, menuMessageId } = ctx.session
+
+    // Borramos el prompt de force-reply y la respuesta del usuario:
+    // el resultado se refleja editando el menú, no acumulando mensajes
+    const replied = ctx.message.reply_to_message
+    if (replied?.message_id) {
+      await safeDeleteMessage(ctx, ctx.chat.id, replied.message_id)
+    }
+    await safeDeleteMessage(ctx, ctx.chat.id, ctx.message.message_id)
 
     try {
       const task = await Task.findById(editing.id)
@@ -67,25 +78,42 @@ export function registerForceReplyHandler(bot) {
       const { updated, changes } = updateTaskFields(task, fields, tz)
       ctx.session.awaiting = null
 
-      if (!updated) {
-        const hasEdits = Object.keys(edits).length > 0
-        const { markup } = buildEditMenu(task, tz, hasEdits)
-        return await ctx.reply(
-          'No hubo cambios. Selecciona otro campo o pulsa "Guardar" para finalizar.',
-          { parse_mode: 'HTML', ...markup }
-        )
+      let banner
+      let hasEdits
+      if (updated) {
+        ctx.session.edits = { ...edits, ...fields }
+        hasEdits = true
+        banner = `Cambio aplicado:\n${changes.join('\n')}`
+      } else {
+        hasEdits = Object.keys(edits).length > 0
+        banner = 'ℹ️ No hubo cambios.'
       }
 
-      ctx.session.edits = { ...edits, ...fields }
-      const summary = changes.join('\n')
+      const { text: fieldSummary, markup } = buildEditMenu(task, tz, hasEdits)
+      const finalText =
+        `${banner}\n\n${fieldSummary}\n\n` +
+        'Selecciona otro campo o pulsa "Guardar" para finalizar.'
+      const extra = { parse_mode: 'HTML', ...markup }
 
-      await ctx.reply(`Cambio aplicado:\n${summary}`, { parse_mode: 'HTML' })
+      const targetId = menuMessageId ?? ctx.callbackQuery?.message?.message_id
+      if (!targetId) {
+        const newMsg = await ctx.reply(finalText, extra)
+        ctx.session.menuMessageId = newMsg.message_id
+        return
+      }
 
-      const { markup } = buildEditMenu(task, tz, true)
-      return await ctx.reply(
-        'Selecciona otro campo o pulsa "Guardar" para finalizar.',
-        { parse_mode: 'HTML', ...markup }
-      )
+      try {
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          targetId,
+          null,
+          finalText,
+          extra
+        )
+      } catch {
+        const newMsg = await ctx.reply(finalText, extra)
+        ctx.session.menuMessageId = newMsg.message_id
+      }
     } catch (error) {
       if (error.message === 'PAST_DATE') {
         return replyMessages.pastDate(ctx)
@@ -95,6 +123,7 @@ export function registerForceReplyHandler(bot) {
       ctx.session.editing = null
       ctx.session.flowType = null
       ctx.session.edits = null
+      ctx.session.menuMessageId = null
       return replyMessages.generalError(ctx)
     }
   })

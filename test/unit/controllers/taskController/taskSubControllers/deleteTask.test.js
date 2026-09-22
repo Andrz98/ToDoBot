@@ -36,7 +36,7 @@ describe('deleteTask', () => {
 
     expect(h.all).toHaveBeenCalledWith(12345)
     expect(ctx.reply).toHaveBeenCalledWith(
-      'No tienes tareas pendientes para eliminar.',
+      '📭 No tienes tareas pendientes para eliminar.',
       { parse_mode: 'HTML' }
     )
   })
@@ -59,6 +59,16 @@ describe('deleteTask', () => {
       { text: 'Comprar pan', callback_data: 'delete_select:a1' },
       { text: 'Pagar luz', callback_data: 'delete_select:b2' }
     ])
+    expect(ctx.session.flowType).toBe('delete')
+  })
+
+  it('autocura un flowType obsoleto de otro flujo abandonado', async () => {
+    ctx.session.flowType = 'add'
+    h.all.mockResolvedValue([{ _id: 'a1', name: 'Comprar pan' }])
+
+    await deleteTask(ctx)
+
+    expect(ctx.session.flowType).toBe('delete')
   })
 
   it('debe capturar errores internos y responder con un mensaje genérico', async () => {

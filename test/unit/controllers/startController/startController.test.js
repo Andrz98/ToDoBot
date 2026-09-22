@@ -54,16 +54,27 @@ describe('startCommand', () => {
 
     await startCommand(mockCtx)
 
-    expect(mockCtx.reply.mock.calls[0][0]).toContain('No estás autorizad')
+    expect(mockCtx.reply.mock.calls[0][0]).toContain('Debes estar autorizado')
+    expect(h.tz).not.toHaveBeenCalled()
+  })
+
+  it('sin ctx.from (no autorizado): no revienta, responde el mensaje de no autorizado', async () => {
+    h.auth.mockResolvedValue(false)
+    const mockCtx = { from: null, reply: vi.fn() }
+
+    await expect(startCommand(mockCtx)).resolves.not.toThrow()
+    expect(mockCtx.reply.mock.calls[0][0]).toContain('Debes estar autorizado')
+    expect(h.tz).not.toHaveBeenCalled()
   })
 
   // Parte 2: Maneja los errores sin romper el bot
   it('maneja los errores sin romper el bot', async () => {
-    const mockCtx = { from: null, reply: vi.fn() }
+    h.tz.mockRejectedValue(new Error('boom'))
+    const mockCtx = { from: { id: 1 }, reply: vi.fn() }
 
     await expect(startCommand(mockCtx)).resolves.not.toThrow()
     expect(mockCtx.reply).toHaveBeenCalledWith(
-      '😵 Ocurrieron problemas al procesar el comando. Inténtalo más tarde.',
+      '😵‍💫 Ocurrieron problemas al procesar el comando. Inténtalo más tarde.',
       { parse_mode: 'HTML' }
     )
   })

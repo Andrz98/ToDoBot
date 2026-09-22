@@ -5,7 +5,15 @@ import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
+import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import {
+  UNAUTHORIZED_TEXT,
+  GENERAL_ERROR_TEXT,
+  OPERATION_CANCELLED_TEXT
+} from '../../helpers/replyMessages/genericReplyMessages.js'
+
+const COMPLETE_DONE_TEXT = '✅ Tarea completada.'
 
 /**
  * Registra los callbacks para el flujo de completar tareas.
@@ -30,30 +38,48 @@ export function registerCompleteActions(bot) {
       `¿Estás segur@ de marcar como completada la tarea:\n\n<b>${escapeHtml(task.name)}</b>?`,
       {
         parse_mode: 'HTML',
-        ...buildConfirmCompleteMenu(task.name)
+        ...buildConfirmCompleteMenu()
       }
     )
   })
 
-  // 2 Confirma “Sí”
+  // 2) Confirma "Sí"
   bot.action('complete_confirm:yes', async (ctx) => {
-    const taskId = ctx.session.pendingComplete
-    await Task.findOneAndUpdate(
-      { _id: taskId, userId: ctx.from.id },
-      { completed: true }
-    )
+    if (!(await isUserAuthorized(ctx))) {
+      ctx.session.flowType = null
+      ctx.session.pendingComplete = null
+      return safeAnswerCbQuery(ctx, UNAUTHORIZED_TEXT, { show_alert: true })
+    }
 
-    await safeAnswerCbQuery(ctx, '👌🏽 Tarea completada')
-    await safeEditMessageReplyMarkup(ctx)
-    ctx.session.flowType = null
-    ctx.session.pendingComplete = null
+    const taskId = ctx.session.pendingComplete
+    if (!taskId) {
+      return safeAnswerCbQuery(ctx, 'Esta acción ya fue procesada o expiró.', {
+        show_alert: true
+      })
+    }
+
+    try {
+      await Task.findOneAndUpdate(
+        { _id: taskId, userId: ctx.from.id },
+        { completed: true }
+      )
+      ctx.session.flowType = null
+      ctx.session.pendingComplete = null
+      await safeAnswerCbQuery(ctx, COMPLETE_DONE_TEXT)
+      return safeEditMessageText(ctx, COMPLETE_DONE_TEXT)
+    } catch (error) {
+      console.error('❌ Error en complete_confirm:yes:', error)
+      ctx.session.flowType = null
+      ctx.session.pendingComplete = null
+      return safeAnswerCbQuery(ctx, GENERAL_ERROR_TEXT, { show_alert: true })
+    }
   })
 
-  // 3 Confirma “No”
+  // 3) Confirma "No"
   bot.action('complete_confirm:no', async (ctx) => {
-    await safeAnswerCbQuery(ctx, 'Operación cancelada.')
-    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
+    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

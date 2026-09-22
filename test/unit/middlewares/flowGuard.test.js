@@ -39,6 +39,15 @@ describe('flowGuard', () => {
     expect(ctx.reply).not.toHaveBeenCalled()
   })
 
+  it('show_task_* nunca se bloquea, sea cual sea el flujo activo', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'delete' },
+      { callbackQuery: { data: 'show_task_abc' } }
+    )
+    expect(next).toHaveBeenCalled()
+    expect(ctx.reply).not.toHaveBeenCalled()
+  })
+
   it('bloquea callbacks ajenos al flujo activo', async () => {
     const { ctx, next } = await run(
       { flowType: 'delete' },

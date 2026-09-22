@@ -52,6 +52,9 @@ export function buildAddMenu(pendingTask = {}, timezone = 'Europe/Madrid') {
     keyboard.push([Markup.button.callback('Confirmar creación', 'add_confirm')])
   }
 
+  // Salida explícita: el flujo Add es el único sin forma de cancelar
+  keyboard.push([Markup.button.callback('Cancelar', 'add_cancel')])
+
   const text = summary + 'Selecciona el campo que deseas completar:'
   const inline = Markup.inlineKeyboard(keyboard, { columns: 1 })
 

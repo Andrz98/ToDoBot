@@ -27,7 +27,7 @@ export const listTasks = async (ctx) => {
 
     // 2.1 Si no hay tareas, informo al usuario
     if (tasks.length === 0) {
-      return safeReply(ctx, 'No tienes tareas activas.', {
+      return safeReply(ctx, '📭 No tienes tareas activas.', {
         parse_mode: 'HTML'
       })
     }

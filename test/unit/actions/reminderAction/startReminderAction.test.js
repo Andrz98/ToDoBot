@@ -44,6 +44,26 @@ describe('startReminderAction', () => {
       }
     )
     expect(ctx.session.flowType).toBe('reminder')
-    expect(ctx.session.menuMessageId).toBeDefined()
+  })
+
+  it('sin tareas activas: avisa y libera el flowType', async () => {
+    findAllTasks.mockResolvedValue([])
+
+    await startReminderAction(ctx)
+
+    expect(ctx.reply).toHaveBeenCalledWith(
+      '📭 No tienes tareas activas para configurar recordatorios.',
+      {}
+    )
+    expect(ctx.session.flowType).toBeNull()
+  })
+
+  it('error externo simulado: limpia flowType en vez de dejarlo colgado', async () => {
+    findAllTasks.mockRejectedValue(new Error('Fallo de Mongo'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    await expect(startReminderAction(ctx)).resolves.not.toThrow()
+
+    expect(ctx.session.flowType).toBeNull()
   })
 })

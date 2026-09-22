@@ -1,4 +1,5 @@
 import { safeReply } from '../retryUtils/safeReply.js'
+import { safeDeleteMessage } from '../telegramUtils/safeDeleteMessage.js'
 
 /**
  * Sends a temporary reply that is deleted after a delay.
@@ -10,12 +11,8 @@ import { safeReply } from '../retryUtils/safeReply.js'
  */
 export const flashReply = async (ctx, text, opts = {}, ms = 1500) => {
   const msg = await safeReply(ctx, text, opts)
-  setTimeout(async () => {
-    try {
-      await ctx.telegram.deleteMessage(ctx.chat.id, msg.message_id)
-    } catch {
-      // ignore deletion errors
-    }
+  setTimeout(() => {
+    safeDeleteMessage(ctx, ctx.chat.id, msg.message_id)
   }, ms)
   return msg
 }

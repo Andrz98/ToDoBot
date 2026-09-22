@@ -18,10 +18,13 @@ export const completeTask = async (ctx) => {
     const userId = ctx.from.id
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
-      return safeReply(ctx, 'No tienes tareas pendientes para completar.', {
+      return safeReply(ctx, '📭 No tienes tareas pendientes para completar.', {
         parse_mode: 'HTML'
       })
     }
+
+    // Autocuramos flowType obsoleto de otro flujo abandonado
+    ctx.session.flowType = 'complete'
 
     // Muestro el botón de selección
     return safeReply(

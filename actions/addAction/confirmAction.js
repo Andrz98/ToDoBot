@@ -1,16 +1,35 @@
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
 import { flashReply } from '../../utils/delayUtils/flashReply.js'
+import { safeDeleteMessage } from '../../utils/telegramUtils/safeDeleteMessage.js'
+import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import {
+  UNAUTHORIZED_TEXT,
+  GENERAL_ERROR_TEXT
+} from '../../helpers/replyMessages/genericReplyMessages.js'
 import { Task } from '../../models/task.js'
 
 const DUPLICATE_KEY = 11000
+const ADD_DONE_TEXT = '✅ Tarea creada.'
+
+function resetAddSession(ctx) {
+  delete ctx.session.flowType
+  delete ctx.session.awaiting
+  delete ctx.session.pendingTask
+  delete ctx.session.menuMessageId
+}
 
 /**
- * Cuando el usuario pulsa “Confirmar creación”
+ * Cuando el usuario pulsa "Confirmar creación"
  * Guardamos la tarea y salimos del flujo.
  */
 export function registerConfirmAction(bot) {
   bot.action('add_confirm', async (ctx) => {
+    if (!(await isUserAuthorized(ctx))) {
+      return safeAnswerCbQuery(ctx, UNAUTHORIZED_TEXT, { show_alert: true })
+    }
+
     const { pendingTask } = ctx.session
     if (!pendingTask?.name || !pendingTask?.reminderAt) {
       return safeAnswerCbQuery(
@@ -38,22 +57,31 @@ export function registerConfirmAction(bot) {
           { show_alert: true }
         )
       }
-      throw error
+      console.error('❌ Error en add_confirm:', error)
+      await safeEditMessageReplyMarkup(ctx).catch(() => {})
+      resetAddSession(ctx)
+      return safeAnswerCbQuery(ctx, GENERAL_ERROR_TEXT, { show_alert: true })
     }
 
-    await safeAnswerCbQuery(ctx, '👌🏽 Tarea creada')
-    await safeEditMessageReplyMarkup(ctx)
+    await safeAnswerCbQuery(ctx, ADD_DONE_TEXT)
 
     if (ctx.callbackQuery?.message) {
-      await ctx.deleteMessage().catch(() => {})
+      await safeDeleteMessage(
+        ctx,
+        ctx.chat.id,
+        ctx.callbackQuery.message.message_id
+      )
     }
 
-    // Limpiamos la sesión
-    delete ctx.session.flowType
-    delete ctx.session.awaiting
-    delete ctx.session.pendingTask
-    delete ctx.session.menuMessageId
+    resetAddSession(ctx)
 
-    flashReply(ctx, '👌🏽 Tarea creada')
+    flashReply(ctx, ADD_DONE_TEXT)
+  })
+
+  bot.action('add_cancel', async (ctx) => {
+    const cancelledText = 'Creación cancelada.'
+    await safeAnswerCbQuery(ctx, cancelledText)
+    await safeEditMessageText(ctx, cancelledText)
+    resetAddSession(ctx)
   })
 }

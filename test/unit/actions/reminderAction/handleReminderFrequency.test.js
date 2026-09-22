@@ -26,11 +26,14 @@ describe('handleReminderFrequency', () => {
     telegram: {
       editMessageText: vi.fn(() => Promise.reject(new Error('fail')))
     },
-    answerCbQuery: vi.fn()
+    answerCbQuery: vi.fn(),
+    session: {}
   }
 
   beforeEach(() => {
     vi.clearAllMocks()
+    ctx.session = {}
+    vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   it('shows the keyboard returned by buildFrequencyMenu', async () => {
@@ -68,5 +71,18 @@ describe('handleReminderFrequency', () => {
       expectedMarkup
     )
     expect(safeEditMessageReplyMarkup).toHaveBeenCalledWith(ctx, expectedMarkup)
+  })
+
+  it('error externo simulado: limpia flowType en vez de dejarlo colgado', async () => {
+    ctx.session.flowType = 'reminder'
+    findTask.mockRejectedValue(new Error('Fallo de Mongo'))
+
+    await expect(handleReminderFrequency(ctx)).resolves.not.toThrow()
+
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      '😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.',
+      { show_alert: true }
+    )
   })
 })

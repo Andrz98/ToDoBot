@@ -1,14 +1,20 @@
 import { randomUUID } from 'node:crypto'
 import { Task } from '../../models/task.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
-import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
+import {
+  replyMessages,
+  CLEAR_DONE_TEXT
+} from '../../helpers/replyMessages/genericReplyMessages.js'
 import { buildConfirmClearMenu } from '../../helpers/taskHelpers/clear/interactiveFlowClear.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 
 /**
  * Controlador para manejar /clear y /confirmclear
  *
- * Separar lógica de /clear y /confirmclear para facilitar el mantenimiento (más adelante)
+ * /clear: cuenta las tareas completadas y pide confirmación con botones.
+ * /confirmclear: si ya hay una confirmación de /clear pendiente y válida,
+ * ejecuta el borrado directamente (atajo sin botones). Si no hay ninguna
+ * pendiente, se comporta igual que /clear.
  * @param {object} ctx - Objeto de contexto proporcionado por telegraf
  */
 export const clearTask = async (ctx) => {
@@ -19,11 +25,27 @@ export const clearTask = async (ctx) => {
     }
 
     const userId = ctx.from.id
+    const isConfirmShortcut = ctx.message.text
+      .trim()
+      .toLowerCase()
+      .startsWith('/confirmclear')
+
+    if (
+      isConfirmShortcut &&
+      ctx.session.flowType === 'clear' &&
+      ctx.session.pendingClearToken
+    ) {
+      await Task.deleteMany({ userId, completed: true })
+      ctx.session.flowType = null
+      ctx.session.pendingClearToken = null
+      return safeReply(ctx, CLEAR_DONE_TEXT)
+    }
+
     const count = await Task.countDocuments({ userId, completed: true })
 
     // 1. caso "sin tareas completadas"
     if (count === 0) {
-      return safeReply(ctx, '🤯 No tienes tareas completadas para eliminar.', {
+      return safeReply(ctx, '📭 No tienes tareas completadas para eliminar.', {
         parse_mode: 'HTML'
       })
     }

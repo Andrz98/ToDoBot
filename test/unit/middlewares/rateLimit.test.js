@@ -27,9 +27,9 @@ describe('rateLimit', () => {
     vi.restoreAllMocks()
   })
 
-  it('permite 3 acciones en la ventana y bloquea la 4ª', async () => {
+  it('permite 5 acciones en la ventana y bloquea la 6ª', async () => {
     const rateLimit = await load()
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       expect(await act(rateLimit, ctxFor(1))).toHaveBeenCalled()
     }
 
@@ -37,12 +37,12 @@ describe('rateLimit', () => {
     const next = await act(rateLimit, ctx)
 
     expect(next).not.toHaveBeenCalled()
-    expect(ctx.reply.mock.calls[0][0]).toContain('más de 3 acciones en 7 s')
+    expect(ctx.reply.mock.calls[0][0]).toContain('más de 5 acciones en 7 s')
   })
 
   it('vuelve a permitir cuando pasa la ventana de 7 s', async () => {
     const rateLimit = await load()
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       await act(rateLimit, ctxFor(1))
     }
     vi.advanceTimersByTime(7001)
@@ -52,7 +52,7 @@ describe('rateLimit', () => {
 
   it('cuenta por usuario', async () => {
     const rateLimit = await load()
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 5; i++) {
       await act(rateLimit, ctxFor(1))
     }
 

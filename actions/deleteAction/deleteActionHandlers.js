@@ -1,11 +1,19 @@
 // actions/deleteAction/deleteActionHandlers.js
 import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
-import { flashReply } from '../../utils/delayUtils/flashReply.js'
 import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
-import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
+import { safeEditMessageText } from '../../utils/retryUtils/safeEditMessageText.js'
+import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import {
+  UNAUTHORIZED_TEXT,
+  GENERAL_ERROR_TEXT,
+  OPERATION_CANCELLED_TEXT
+} from '../../helpers/replyMessages/genericReplyMessages.js'
+
+const DELETE_DONE_TEXT = '✅ Tarea eliminada.'
+
 /**
  * Registra los callbacks para el flujo de eliminación de tareas.
  * @param {import('telegraf').Telegraf} bot
@@ -29,24 +37,41 @@ export function registerDeleteActions(bot) {
     return safeReply(ctx, text, { parse_mode: 'HTML', reply_markup })
   })
 
-  // 2) Confirmación “Sí”
+  // 2) Confirmación "Sí"
   bot.action('delete_confirm:yes', async (ctx) => {
-    const taskId = ctx.session.pendingDelete
-    await Task.findOneAndDelete({ _id: taskId, userId: ctx.from.id })
+    if (!(await isUserAuthorized(ctx))) {
+      ctx.session.flowType = null
+      ctx.session.pendingDelete = null
+      return safeAnswerCbQuery(ctx, UNAUTHORIZED_TEXT, { show_alert: true })
+    }
 
-    await safeAnswerCbQuery(ctx, '👌🏽 Tarea eliminada')
-    await flashReply(ctx, 'Tarea eliminada')
-    await safeEditMessageReplyMarkup(ctx)
-    // Limpiamos el flujo
-    ctx.session.flowType = null
-    ctx.session.pendingDelete = null
+    const taskId = ctx.session.pendingDelete
+    if (!taskId) {
+      // Doble-tap: la sesión ya se resolvió o expiró
+      return safeAnswerCbQuery(ctx, 'Esta acción ya fue procesada o expiró.', {
+        show_alert: true
+      })
+    }
+
+    try {
+      await Task.findOneAndDelete({ _id: taskId, userId: ctx.from.id })
+      ctx.session.flowType = null
+      ctx.session.pendingDelete = null
+      await safeAnswerCbQuery(ctx, DELETE_DONE_TEXT)
+      return safeEditMessageText(ctx, DELETE_DONE_TEXT)
+    } catch (error) {
+      console.error('❌ Error en delete_confirm:yes:', error)
+      ctx.session.flowType = null
+      ctx.session.pendingDelete = null
+      return safeAnswerCbQuery(ctx, GENERAL_ERROR_TEXT, { show_alert: true })
+    }
   })
 
-  // 3) Confirmación “No”
+  // 3) Confirmación "No"
   bot.action('delete_confirm:no', async (ctx) => {
-    await safeAnswerCbQuery(ctx, 'Operación cancelada.')
-    await safeEditMessageReplyMarkup(ctx)
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
+    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    return safeEditMessageText(ctx, OPERATION_CANCELLED_TEXT)
   })
 }

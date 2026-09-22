@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ tz: vi.fn() }))
+const h = vi.hoisted(() => ({ tz: vi.fn(), auth: vi.fn() }))
 vi.mock(
   '@/helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js',
   () => ({
     getUserTimezone: h.tz
   })
 )
+vi.mock('@/models/task.js', () => ({ Task: vi.fn() }))
+vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
+  isUserAuthorized: h.auth
+}))
 
 import { registerMessageHandler } from '@/actions/addAction/messageHandler.js'
 import { registerFieldActions } from '@/actions/addAction/fieldActions.js'
+import { registerConfirmAction } from '@/actions/addAction/confirmAction.js'
 
 const addCtx = (awaiting, text, session = {}) =>
   makeCtx({
@@ -92,5 +97,50 @@ describe('/add: botón "Crear tarea" (add_create)', () => {
     const [, , , text, options] = ctx.telegram.editMessageText.mock.calls[0]
     expect(options).not.toHaveProperty('parse_mode')
     expect(text).toContain('10:00') // 15:00Z en Bogotá; en Madrid serían las 16:00
+  })
+
+  it('un /add abandonado y reiniciado: el botón viejo pasa a ser la fuente de verdad', async () => {
+    h.tz.mockReset().mockResolvedValue('Europe/Madrid')
+    const bot = makeFakeBot()
+    registerFieldActions(bot)
+    // El mensaje viejo (id 5, el que devuelve makeCtx por defecto en
+    // callbackQuery.message) es el que se pulsa, pero la sesión trackea
+    // uno más nuevo (99) de un /add posterior
+    const ctx = makeCtx({
+      session: { pendingTask: {}, menuMessageId: 99 }
+    })
+
+    await bot.press('add_create', ctx)
+
+    expect(ctx.session.menuMessageId).toBe(5)
+    const [, messageId] = ctx.telegram.editMessageText.mock.calls[0]
+    expect(messageId).toBe(5)
+  })
+})
+
+describe('/add: botón "Cancelar" (add_cancel)', () => {
+  it('limpia la sesión y resuelve el mensaje en sitio', async () => {
+    h.auth.mockReset().mockResolvedValue(true)
+    const bot = makeFakeBot()
+    registerConfirmAction(bot)
+    const ctx = makeCtx({
+      session: {
+        flowType: 'add',
+        pendingTask: { name: 'a' },
+        awaiting: 'add_name',
+        menuMessageId: 10
+      }
+    })
+
+    await bot.press('add_cancel', ctx)
+
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      'Creación cancelada.',
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
+    )
+    expect(ctx.session.flowType).toBeUndefined()
+    expect(ctx.session.pendingTask).toBeUndefined()
+    expect(ctx.session.awaiting).toBeUndefined()
+    expect(ctx.session.menuMessageId).toBeUndefined()
   })
 })

@@ -1,47 +1,54 @@
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { safeEditMessageReplyMarkup } from '../../utils/retryUtils/safeEditMessageReplyMarkup.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
+import { GENERAL_ERROR_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export const handleReminderFrequency = async (ctx) => {
-  const callbackData = ctx.callbackQuery.data
-  const [, taskId] = callbackData.split('::')
-
-  const task = await findTask(ctx.from.id, { id: taskId })
-  if (!task) {
-    return ctx.answerCbQuery('Tarea no encontrada.')
-  }
-
-  const { text, markup } = buildFrequencyMenu()
-  const frequencyOptions = markup.reply_markup.inline_keyboard.map((row) => {
-    const button = row[0]
-    const value = button.callback_data.replace('add_freq_', '')
-    return [
-      {
-        text: button.text,
-        callback_data: `saveReminder::${taskId}::${value}`
-      }
-    ]
-  })
-
-  await ctx.answerCbQuery()
-
   try {
-    return await ctx.telegram.editMessageText(
-      ctx.chat.id,
-      ctx.callbackQuery.message.message_id,
-      undefined,
-      text,
-      {
+    const callbackData = ctx.callbackQuery.data
+    const [, taskId] = callbackData.split('::')
+
+    const task = await findTask(ctx.from.id, { id: taskId })
+    if (!task) {
+      return ctx.answerCbQuery('Tarea no encontrada.')
+    }
+
+    const { text, markup } = buildFrequencyMenu()
+    const frequencyOptions = markup.reply_markup.inline_keyboard.map((row) => {
+      const button = row[0]
+      const value = button.callback_data.replace('add_freq_', '')
+      return [
+        {
+          text: button.text,
+          callback_data: `saveReminder::${taskId}::${value}`
+        }
+      ]
+    })
+
+    await ctx.answerCbQuery()
+
+    try {
+      return await ctx.telegram.editMessageText(
+        ctx.chat.id,
+        ctx.callbackQuery.message.message_id,
+        undefined,
+        text,
+        {
+          reply_markup: {
+            inline_keyboard: frequencyOptions
+          }
+        }
+      )
+    } catch {
+      return safeEditMessageReplyMarkup(ctx, {
         reply_markup: {
           inline_keyboard: frequencyOptions
         }
-      }
-    )
-  } catch {
-    return safeEditMessageReplyMarkup(ctx, {
-      reply_markup: {
-        inline_keyboard: frequencyOptions
-      }
-    })
+      })
+    }
+  } catch (error) {
+    console.error('❌ Error en handleReminderFrequency:', error)
+    ctx.session.flowType = null
+    return ctx.answerCbQuery(GENERAL_ERROR_TEXT, { show_alert: true })
   }
 }

@@ -45,7 +45,7 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 │ └── telegraf.js
 ├── controllers/
 │ ├── taskControllers/
-│ │ ├── addTask.js
+│ │ ├── deleteTask.js
 │ │ └── listTask.js
 │ └── timeZoneController/
 │ └── setTimezone.js
@@ -69,7 +69,7 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 │ │ └── saveReminderAction.test.js
 │ └── controllers/
 │ └── taskController/
-│ └── addTask.test.js
+│ └── deleteTask.test.js
 ├── utils/
 │ ├── delayUtils/
 │ │ └── sleep.js

@@ -31,8 +31,19 @@ export function registerFieldActions(bot) {
         ctx.session.awaiting = null
         const timezone = await getUserTimezone(ctx.from.id)
         const { text, markup } = buildAddMenu(ctx.session.pendingTask, timezone)
-        const targetId =
-          ctx.session.menuMessageId ?? ctx.callbackQuery?.message?.message_id
+
+        // El usuario está interactuando con el mensaje que realmente pulsó:
+        // si difiere del que teníamos trackeado (p.ej. un /add abandonado y
+        // reiniciado), ese mensaje pasa a ser la fuente de verdad.
+        const tappedId = ctx.callbackQuery?.message?.message_id
+        if (
+          tappedId &&
+          ctx.session.menuMessageId &&
+          tappedId !== ctx.session.menuMessageId
+        ) {
+          ctx.session.menuMessageId = tappedId
+        }
+        const targetId = ctx.session.menuMessageId ?? tappedId
 
         if (!targetId) {
           const newMsg = await ctx.reply(text, markup)

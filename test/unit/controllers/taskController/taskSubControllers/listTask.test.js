@@ -41,7 +41,7 @@ describe('listTasks', () => {
     await listTasks(ctx)
 
     expect(h.find).toHaveBeenCalledWith({ userId: 12345, completed: false })
-    expect(ctx.reply).toHaveBeenCalledWith('No tienes tareas activas.', {
+    expect(ctx.reply).toHaveBeenCalledWith('📭 No tienes tareas activas.', {
       parse_mode: 'HTML'
     })
   })

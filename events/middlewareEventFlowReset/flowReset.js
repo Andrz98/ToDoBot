@@ -8,10 +8,14 @@ export function registerFlowResetHandler(bot) {
     ctx.session.flowType = null
     ctx.session.awaiting = null
     ctx.session.editing = null
+    ctx.session.edits = null
+    ctx.session.pendingTask = null
     ctx.session.pendingDelete = null
     ctx.session.pendingComplete = null
     ctx.session.pendingTz = null
     ctx.session.pendingClearToken = null
+    ctx.session.menuMessageId = null
+    ctx.session.timezone = null
 
     // Quitar inline keyboard
     if (ctx.update.callback_query.message) {

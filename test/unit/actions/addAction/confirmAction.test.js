@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ Task: vi.fn(), save: vi.fn() }))
+const h = vi.hoisted(() => ({ Task: vi.fn(), save: vi.fn(), auth: vi.fn() }))
 vi.mock('@/models/task.js', () => ({ Task: h.Task }))
 vi.mock('@/utils/delayUtils/flashReply.js', () => ({ flashReply: vi.fn() }))
+vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
+  isUserAuthorized: h.auth
+}))
 
 import { registerConfirmAction } from '@/actions/addAction/confirmAction.js'
 
@@ -16,6 +19,8 @@ describe('/add: confirmar creación', () => {
     h.Task.mockReset().mockImplementation(function (data) {
       return { ...data, save: h.save }
     })
+    h.auth.mockReset().mockResolvedValue(true)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     bot = makeFakeBot()
     registerConfirmAction(bot)
     ctx = makeCtx({
@@ -38,7 +43,7 @@ describe('/add: confirmar creación', () => {
       reminderAt: REMINDER
     })
     expect(h.save).toHaveBeenCalled()
-    expect(ctx.deleteMessage).toHaveBeenCalled()
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalled()
     expect(ctx.session.flowType).toBeUndefined()
     expect(ctx.session.pendingTask).toBeUndefined()
   })
@@ -64,17 +69,36 @@ describe('/add: confirmar creación', () => {
       expect.stringContaining('/clear'),
       { show_alert: true }
     )
-    expect(ctx.deleteMessage).not.toHaveBeenCalled()
+    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
     expect(ctx.session.pendingTask).toEqual({
       name: 'Pagar luz',
       reminderAt: REMINDER
     })
   })
 
-  it('un error de guardado inesperado se propaga a bot.catch', async () => {
+  it('un error de guardado inesperado limpia la sesión en vez de dejarla colgada', async () => {
     h.save.mockRejectedValue(new Error('db caída'))
 
-    await expect(bot.press('add_confirm', ctx)).rejects.toThrow('db caída')
-    expect(ctx.deleteMessage).not.toHaveBeenCalled()
+    await expect(bot.press('add_confirm', ctx)).resolves.not.toThrow()
+
+    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      '😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.',
+      { show_alert: true }
+    )
+    expect(ctx.session.flowType).toBeUndefined()
+    expect(ctx.session.pendingTask).toBeUndefined()
+  })
+
+  it('usuario desautorizado a mitad de flujo: no crea la tarea', async () => {
+    h.auth.mockResolvedValue(false)
+
+    await bot.press('add_confirm', ctx)
+
+    expect(h.Task).not.toHaveBeenCalled()
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      '🥸 Debes estar autorizado para usar este bot.',
+      { show_alert: true }
+    )
   })
 })

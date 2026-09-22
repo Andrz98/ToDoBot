@@ -47,6 +47,7 @@ export const makeCtx = (overrides = {}) => ({
   reply: vi.fn().mockResolvedValue({ message_id: 6 }),
   answerCbQuery: vi.fn().mockResolvedValue(true),
   editMessageReplyMarkup: vi.fn().mockResolvedValue(true),
+  editMessageText: vi.fn().mockResolvedValue(true),
   deleteMessage: vi.fn().mockResolvedValue(true),
   telegram: {
     editMessageText: vi.fn().mockResolvedValue(true),

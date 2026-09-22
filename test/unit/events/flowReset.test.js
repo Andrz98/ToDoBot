@@ -12,10 +12,14 @@ describe('flow_reset', () => {
         flowType: 'clear',
         awaiting: 'new_name',
         editing: { id: '1' },
+        edits: { newName: 'x' },
+        pendingTask: { name: 'y' },
         pendingDelete: 'a',
         pendingComplete: 'b',
         pendingTz: 'America/Bogota',
-        pendingClearToken: 'tok'
+        pendingClearToken: 'tok',
+        menuMessageId: 10,
+        timezone: 'Europe/Madrid'
       }
     })
 
@@ -25,10 +29,14 @@ describe('flow_reset', () => {
       flowType: null,
       awaiting: null,
       editing: null,
+      edits: null,
+      pendingTask: null,
       pendingDelete: null,
       pendingComplete: null,
       pendingTz: null,
-      pendingClearToken: null
+      pendingClearToken: null,
+      menuMessageId: null,
+      timezone: null
     })
   })
 })

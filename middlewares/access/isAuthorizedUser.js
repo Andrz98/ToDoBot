@@ -1,4 +1,5 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
+import { UNAUTHORIZED_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export async function isAuthorizedUser(ctx, next) {
   let authorized
@@ -10,7 +11,7 @@ export async function isAuthorizedUser(ctx, next) {
   }
 
   if (!authorized) {
-    return ctx.reply('🥸 Debes estar autorizado para usar este bot.')
+    return ctx.reply(UNAUTHORIZED_TEXT)
   }
   return next()
 }

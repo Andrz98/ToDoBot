@@ -111,7 +111,7 @@ bot.catch((err, ctx) => {
   console.error('😵‍💫 Error interno del bot:', err)
   if (ctx?.reply) {
     return ctx.reply(
-      '😵 Ocurrió un error inesperado. Intenta nuevamente más tarde.'
+      '😵‍💫 Ocurrió un error inesperado. Intenta nuevamente más tarde.'
     )
   }
 })

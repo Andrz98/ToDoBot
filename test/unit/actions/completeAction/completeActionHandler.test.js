@@ -5,7 +5,8 @@ const h = vi.hoisted(() => ({
   findTask: vi.fn(),
   findById: vi.fn(),
   findByIdAndUpdate: vi.fn(),
-  findOneAndUpdate: vi.fn()
+  findOneAndUpdate: vi.fn(),
+  auth: vi.fn()
 }))
 vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: h.findTask }))
 vi.mock('@/models/task.js', () => ({
@@ -15,6 +16,9 @@ vi.mock('@/models/task.js', () => ({
     findOneAndUpdate: h.findOneAndUpdate
   }
 }))
+vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
+  isUserAuthorized: h.auth
+}))
 
 import { registerCompleteActions } from '@/actions/completeAction/completeActionHandler.js'
 
@@ -23,6 +27,8 @@ describe('flujo /done', () => {
   beforeEach(() => {
     Object.values(h).forEach((fn) => fn.mockReset())
     h.findTask.mockResolvedValue({ name: 'Pagar luz' })
+    h.auth.mockResolvedValue(true)
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     bot = makeFakeBot()
     ctx = makeCtx()
     registerCompleteActions(bot)
@@ -55,7 +61,7 @@ describe('flujo /done', () => {
     expect(ctx.reply.mock.calls[0][0]).toContain('<b>a&lt;b&gt;&amp;</b>')
   })
 
-  it('al confirmar, completa solo si la tarea es del usuario', async () => {
+  it('al confirmar, completa solo si la tarea es del usuario y resuelve el mensaje en sitio', async () => {
     ctx.session.pendingComplete = 'abc123'
 
     await bot.press('complete_confirm:yes', ctx)
@@ -65,5 +71,68 @@ describe('flujo /done', () => {
       { completed: true }
     )
     expect(h.findByIdAndUpdate).not.toHaveBeenCalled()
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith('✅ Tarea completada.', {})
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      '✅ Tarea completada.',
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
+    )
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.session.pendingComplete).toBeNull()
+  })
+
+  it('cancelar resuelve el mensaje en sitio y limpia la sesión', async () => {
+    ctx.session.pendingComplete = 'abc123'
+
+    await bot.press('complete_confirm:no', ctx)
+
+    expect(h.findOneAndUpdate).not.toHaveBeenCalled()
+    expect(ctx.editMessageText).toHaveBeenCalledWith(
+      'Operación cancelada.',
+      expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
+    )
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.session.pendingComplete).toBeNull()
+  })
+
+  it('doble-tap: la segunda confirmación no vuelve a completar', async () => {
+    ctx.session.pendingComplete = 'abc123'
+    await bot.press('complete_confirm:yes', ctx)
+    h.findOneAndUpdate.mockClear()
+
+    await bot.press('complete_confirm:yes', ctx)
+
+    expect(h.findOneAndUpdate).not.toHaveBeenCalled()
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      'Esta acción ya fue procesada o expiró.',
+      { show_alert: true }
+    )
+  })
+
+  it('usuario desautorizado a mitad de flujo: no completa', async () => {
+    h.auth.mockResolvedValue(false)
+    ctx.session.pendingComplete = 'abc123'
+
+    await bot.press('complete_confirm:yes', ctx)
+
+    expect(h.findOneAndUpdate).not.toHaveBeenCalled()
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      '🥸 Debes estar autorizado para usar este bot.',
+      { show_alert: true }
+    )
+    expect(ctx.session.flowType).toBeNull()
+  })
+
+  it('error de BD al completar: limpia la sesión en vez de dejarla colgada', async () => {
+    ctx.session.pendingComplete = 'abc123'
+    h.findOneAndUpdate.mockRejectedValue(new Error('Fallo de Mongo'))
+
+    await bot.press('complete_confirm:yes', ctx)
+
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      '😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.',
+      { show_alert: true }
+    )
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.session.pendingComplete).toBeNull()
   })
 })
