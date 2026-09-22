@@ -31,3 +31,5 @@ session.json
 .~session.json
 logs.txt
 coverage
+
+*tgrep
