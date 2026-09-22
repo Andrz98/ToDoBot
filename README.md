@@ -41,8 +41,6 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 │ └── completeAction/
 │ └── completeActionHandler.js
 ├── config/
-│ ├── MongoDB/
-│ │ └── db.js
 │ └── telegraf/
 │ └── telegraf.js
 ├── controllers/
