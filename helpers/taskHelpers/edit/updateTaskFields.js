@@ -1,5 +1,6 @@
 import { formatDateEs } from '../date/formatDateEs.js'
 import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
+import { frequencyLabels } from '../../frequency/frequencyLabels.js'
 
 /**
  * Actualiza los campos de una tarea con los nuevos valores proporcionados
@@ -9,12 +10,13 @@ import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
  * @param {string} param1.newName - Nuevo nombre de la tarea (opcional)
  * @param {string} param1.newDescription - Nueva descripción (opcional)
  * @param {Date} param1.date - Nueva fecha de recordatorio (opcional)
+ * @param {string} param1.frequency - Nueva periodicidad (opcional)
  * @param {string} timezone - Zona horaria del usuario
  * @returns {object} - Objeto con flag de actualización y array de cambios formateados en HTML
  */
 export const updateTaskFields = (
   task,
-  { newName, newDescription, date },
+  { newName, newDescription, date, frequency },
   timezone
 ) => {
   const changes = []
@@ -43,6 +45,13 @@ export const updateTaskFields = (
     updated = true
     const formatted = formatDateEs(date, timezone)
     changes.push(`🔹 <b>Nueva fecha:</b> ${escapeHtml(formatted)}`)
+  }
+
+  // Cambiar periodicidad
+  if (frequency && frequency !== task.frequency) {
+    task.frequency = frequency
+    updated = true
+    changes.push(`🔁 <b>Nueva periodicidad:</b> ${frequencyLabels[frequency]}`)
   }
 
   return { updated, changes }

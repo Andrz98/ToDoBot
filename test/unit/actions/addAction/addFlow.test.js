@@ -128,6 +128,16 @@ describe('/add: respuestas de texto', () => {
     expect(ctx.session.awaiting).toBe('add_date')
     expect(ctx.session.promptMessageId).toBe(6)
   })
+
+  it('rechaza una fecha ya pasada, igual que el calendario', async () => {
+    const ctx = addCtx('add_date', '01/01/2000 10:00')
+
+    await bot.say(ctx)
+
+    expect(ctx.reply.mock.calls[0][0]).toContain('debe ser futura')
+    expect(ctx.session.awaiting).toBe('add_date')
+    expect(ctx.session.pendingTask.reminderAt).toBeUndefined()
+  })
 })
 
 describe('/add: botones de campo', () => {

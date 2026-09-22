@@ -1,6 +1,7 @@
 import { Markup } from 'telegraf'
 import { formatDateEs } from '../date/formatDateEs.js'
 import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
+import { frequencyLabels } from '../../frequency/frequencyLabels.js'
 
 /**
  * Construye el texto y el teclado inline para el flujo interactivo de /edit.
@@ -18,16 +19,20 @@ export const buildEditMenu = (task, timeZone, hasEdits = false) => {
     ? formatDateEs(new Date(task.reminderAt), timeZone)
     : '(sin fecha)'
 
+  const frequency = frequencyLabels[task.frequency] ?? task.frequency
+
   const text =
     `🔺 Nombre: ${name}\n` +
     `🔸 Descripción: ${descriptionText}\n` +
-    `🔹 Fecha: ${reminderAt}`
+    `🔹 Fecha: ${reminderAt}\n` +
+    `🔁 Periodicidad: ${frequency}`
 
   // Preparo un array de botones sin iconos
   const buttons = [
     Markup.button.callback('Nombre', 'edit_name'),
     Markup.button.callback('Descripción', 'edit_desc'),
-    Markup.button.callback('Fecha', 'edit_cal')
+    Markup.button.callback('Fecha', 'edit_cal'),
+    Markup.button.callback('Periodicidad', 'edit_freq')
   ]
 
   // Solo añado “Guardar” si hay cambios pendientes

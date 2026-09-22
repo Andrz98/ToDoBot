@@ -5,6 +5,7 @@ const task = (extra = {}) => ({
   name: 'Pagar luz',
   description: 'urgente',
   reminderAt: new Date('2099-12-25T15:00:00Z'),
+  frequency: 'daily',
   ...extra
 })
 
@@ -15,6 +16,7 @@ describe('buildEditMenu', () => {
     expect(text).toContain('Nombre: Pagar luz')
     expect(text).toContain('Descripción: urgente')
     expect(text).toContain('10:00') // 15:00Z en Bogotá
+    expect(text).toContain('Periodicidad: Diario')
   })
 
   it('escapa el HTML de nombre y descripción (el menú se envía con parse_mode HTML)', () => {
@@ -47,6 +49,7 @@ describe('buildEditMenu', () => {
       'Nombre',
       'Descripción',
       'Fecha',
+      'Periodicidad',
       '✖️ Cancelar'
     ])
     expect(labels(true)).toContain('Guardar')

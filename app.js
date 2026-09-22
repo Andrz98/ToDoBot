@@ -2,12 +2,14 @@ import './config/env.js'
 import mongoose from 'mongoose'
 
 import {
+  bot,
   webhookCallback,
   WEBHOOK_PATH,
   registerWebhook
 } from './config/telegraf/telegraf.js'
 import { createApp } from './config/express/createApp.js'
 import { startReminderScheduler } from './services/schedulers/reminderScheduler.js'
+import { startPendingDeletionScheduler } from './services/schedulers/pendingDeletionScheduler.js'
 
 // ====================================
 // 🔰 Verifico .env
@@ -33,9 +35,14 @@ mongoose
     console.info('👾 Conectado a MongoDB correctamente')
 
     // ======================
-    // 🔰 Inicializo Scheduler
+    // 🔰 Inicializo Schedulers
     // ======================
     startReminderScheduler()
+    // Recupera y rearma los borrados de mensajes que quedaron pendientes
+    // antes de una caída, y vigila el resto por si alguno se escapa
+    startPendingDeletionScheduler(bot).catch((err) =>
+      console.error('😵‍💫 Error al recuperar borrados pendientes:', err.message)
+    )
 
     // ==========================================
     // 🔰 Inicializo Express (webhook + ruta raíz)

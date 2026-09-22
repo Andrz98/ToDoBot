@@ -36,7 +36,8 @@ describe('flow_reset', () => {
       pendingComplete: null,
       pendingTz: null,
       pendingClearToken: null,
-      timezone: null
+      timezone: null,
+      flowExpiresAt: null
     })
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 10)
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 11)

@@ -19,6 +19,18 @@ const EXPIRED_TEXT = 'Esta acción ya no está disponible.'
 
 const tappedMessageId = (ctx) => ctx.callbackQuery?.message?.message_id
 
+/**
+ * Extiende la vida del flujo tanto como la de su interfaz (TTL.INTERFACE).
+ * `flowGuard` usa esto para soltar un flujo abandonado sin que el usuario
+ * tenga que pulsar "Restablecer acción". Vive en la sesión en disco, así
+ * que sobrevive a un reinicio del proceso.
+ */
+function touchFlowExpiry(ctx) {
+  if (ctx.session?.flowType) {
+    ctx.session.flowExpiresAt = Date.now() + TTL.INTERFACE
+  }
+}
+
 /** Borra en el acto los mensajes de un flujo anterior (menú y prompt pendientes). */
 export async function discardFlowMessages(ctx) {
   const { menuMessageId, promptMessageId } = ctx.session ?? {}
@@ -33,6 +45,7 @@ export async function openInterface(ctx, text, extra = {}) {
   await discardFlowMessages(ctx)
   const msg = await replyInterface(ctx, text, extra)
   ctx.session.menuMessageId = msg?.message_id
+  touchFlowExpiry(ctx)
   return msg
 }
 
@@ -53,9 +66,11 @@ export async function renderInterface(ctx, text, extra = {}) {
       )
       scheduleDeletion(ctx, targetId, TTL.INTERFACE)
       ctx.session.menuMessageId = targetId
+      touchFlowExpiry(ctx)
       return targetId
     } catch (error) {
       if (NOT_MODIFIED.test(error?.description ?? error?.message ?? '')) {
+        touchFlowExpiry(ctx)
         return targetId
       }
       debugLog('🧹 [renderInterface] edición fallida, envío nuevo mensaje')
@@ -63,6 +78,7 @@ export async function renderInterface(ctx, text, extra = {}) {
   }
   const msg = await replyInterface(ctx, text, extra)
   ctx.session.menuMessageId = msg?.message_id
+  touchFlowExpiry(ctx)
   return msg?.message_id
 }
 
@@ -84,10 +100,16 @@ export async function closeInterface(ctx, text, extra = {}) {
       if (tapped) {
         await safeEditMessageText(ctx, text, extra)
       } else {
-        await ctx.telegram.editMessageText(ctx.chat.id, targetId, undefined, text, {
-          reply_markup: { inline_keyboard: [] },
-          ...extra
-        })
+        await ctx.telegram.editMessageText(
+          ctx.chat.id,
+          targetId,
+          undefined,
+          text,
+          {
+            reply_markup: { inline_keyboard: [] },
+            ...extra
+          }
+        )
       }
       scheduleDeletion(ctx, targetId, TTL.NOTICE)
       return
@@ -106,6 +128,7 @@ export async function askInput(ctx, text, extra = {}) {
     reply_markup: { force_reply: true }
   })
   ctx.session.promptMessageId = msg?.message_id
+  touchFlowExpiry(ctx)
   return msg
 }
 

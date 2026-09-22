@@ -31,6 +31,9 @@ export function registerMessageHandler(bot) {
       if (!date) {
         return askInput(ctx, 'Fecha inválida. Usa el formato DD/MM/YYYY HH:mm.')
       }
+      if (date < new Date()) {
+        return askInput(ctx, '⌚ La fecha debe ser futura. Escribe otra:')
+      }
       pendingTask.reminderAt = date
     } else if (FIELD_OF[awaiting]) {
       pendingTask[FIELD_OF[awaiting]] = text

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
 const h = vi.hoisted(() => ({
@@ -25,6 +25,7 @@ import { registerDeleteActions } from '@/actions/deleteAction/deleteActionHandle
 describe('flujo /delete', () => {
   let bot, ctx
   beforeEach(() => {
+    vi.useFakeTimers()
     Object.values(h).forEach((fn) => fn.mockReset())
     h.findTask.mockResolvedValue({ name: 'Pagar luz' })
     h.auth.mockResolvedValue(true)
@@ -33,6 +34,7 @@ describe('flujo /delete', () => {
     ctx = makeCtx()
     registerDeleteActions(bot)
   })
+  afterEach(() => vi.useRealTimers())
 
   it('al seleccionar, solo busca tareas del propio usuario', async () => {
     await bot.press('delete_select:abc123', ctx)
@@ -81,6 +83,10 @@ describe('flujo /delete', () => {
     )
     expect(ctx.session.flowType).toBeNull()
     expect(ctx.session.pendingDelete).toBeNull()
+
+    // El aviso de resultado no debe quedarse para siempre en el chat
+    await vi.advanceTimersByTimeAsync(10_000)
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 5)
   })
 
   it('cancelar resuelve el mensaje en sitio y limpia la sesión', async () => {

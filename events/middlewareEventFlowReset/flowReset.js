@@ -3,6 +3,7 @@ import {
   discardFlowMessages,
   closeInterface
 } from '../../utils/telegramUtils/flowMessages.js'
+import { resetFlowSession } from '../../helpers/session/resetFlowSession.js'
 
 const RESET_TEXT = 'Flujo restablecido. Ya puedes usar comandos normalmente.'
 
@@ -15,16 +16,7 @@ export function registerFlowResetHandler(bot) {
     // La interfaz y el prompt del flujo abandonado ya no sirven: fuera ahora
     await discardFlowMessages(ctx)
 
-    ctx.session.flowType = null
-    ctx.session.awaiting = null
-    ctx.session.editing = null
-    ctx.session.edits = null
-    ctx.session.pendingTask = null
-    ctx.session.pendingDelete = null
-    ctx.session.pendingComplete = null
-    ctx.session.pendingTz = null
-    ctx.session.pendingClearToken = null
-    ctx.session.timezone = null
+    resetFlowSession(ctx.session)
 
     return closeInterface(ctx, RESET_TEXT)
   })

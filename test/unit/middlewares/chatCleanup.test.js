@@ -50,6 +50,28 @@ describe('chatCleanup', () => {
     expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
   })
 
+  it('pulsar un botón de un flujo activo renueva su ventana de vida (flowExpiresAt)', async () => {
+    const ctx = baseCtx({
+      callbackQuery: { message: { message_id: 40 } },
+      session: { flowType: 'add', flowExpiresAt: Date.now() - 1 }
+    })
+
+    await chatCleanup(ctx, vi.fn())
+
+    expect(ctx.session.flowExpiresAt).toBeGreaterThan(Date.now())
+  })
+
+  it('pulsar un botón sin flujo activo (p. ej. /list) no toca flowExpiresAt', async () => {
+    const ctx = baseCtx({
+      callbackQuery: { message: { message_id: 40 } },
+      session: {}
+    })
+
+    await chatCleanup(ctx, vi.fn())
+
+    expect(ctx.session.flowExpiresAt).toBeUndefined()
+  })
+
   it('pulsar un botón renueva la interfaz que lo contiene', async () => {
     const ctx = baseCtx({ callbackQuery: { message: { message_id: 40 } } })
     scheduleDeletion(ctx, 40, TTL.INTERFACE)

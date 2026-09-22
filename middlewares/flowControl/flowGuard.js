@@ -1,6 +1,18 @@
 import { Markup } from 'telegraf'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 import { replyInterface } from '../../utils/telegramUtils/messageLifecycle.js'
+import { resetFlowSession } from '../../helpers/session/resetFlowSession.js'
+
+/**
+ * Un flujo abandonado (el usuario cerró Telegram, se fue a otra cosa…) no debe
+ * bloquear comandos ni texto libre para siempre: si su interfaz ya caducó
+ * (misma ventana que `TTL.INTERFACE`, ver messageLifecycle.js), se trata como
+ * si no hubiera flujo activo. `flowExpiresAt` vive en la sesión en disco
+ * (telegraf-session-local), así que esto también se cumple tras un reinicio.
+ */
+function isFlowExpired(session) {
+  return Boolean(session?.flowType && session.flowExpiresAt < Date.now())
+}
 
 /**
  * Evita usar comandos mientras haya un flujo pendiente (/add, /edit, /delete, /complete, /timezone…).
@@ -10,6 +22,14 @@ import { replyInterface } from '../../utils/telegramUtils/messageLifecycle.js'
  *   ctx.session.awaiting   = null | 'awaiting_*'
  */
 export async function flowGuard(ctx, next) {
+  if (isFlowExpired(ctx.session)) {
+    debugLog(
+      '⌛ [flowGuard] flujo expirado, libero la sesión:',
+      ctx.session.flowType
+    )
+    resetFlowSession(ctx.session)
+  }
+
   const { flowType, awaiting } = ctx.session || {}
   const cb = ctx.callbackQuery?.data
 

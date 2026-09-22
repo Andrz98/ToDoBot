@@ -16,6 +16,10 @@ export async function chatCleanup(ctx, next) {
   const tapped = ctx.callbackQuery?.message?.message_id
   if (tapped) {
     renewDeletion(ctx, tapped, TTL.INTERFACE)
+    // Un flujo con interacción reciente no debe caducar bajo el usuario
+    if (ctx.session?.flowType) {
+      ctx.session.flowExpiresAt = Date.now() + TTL.INTERFACE
+    }
   }
 
   const isCommand = ctx.message?.text?.startsWith('/')

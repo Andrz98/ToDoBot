@@ -73,4 +73,37 @@ describe('flowGuard', () => {
     )
     expect(next).toHaveBeenCalled()
   })
+
+  it('un flujo con interfaz caducada (10 min sin interacción) se libera solo', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'delete', flowExpiresAt: Date.now() - 1 },
+      { message: { text: 'hola' } }
+    )
+
+    expect(next).toHaveBeenCalled()
+    expect(ctx.reply).not.toHaveBeenCalled()
+    expect(ctx.session.flowType).toBeNull()
+    expect(ctx.session.awaiting).toBeNull()
+  })
+
+  it('un flujo todavía dentro de su ventana sigue bloqueando como siempre', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'delete', flowExpiresAt: Date.now() + 60_000 },
+      { message: { text: 'hola' } }
+    )
+
+    expect(next).not.toHaveBeenCalled()
+    expect(ctx.reply).toHaveBeenCalled()
+    expect(ctx.session.flowType).toBe('delete')
+  })
+
+  it('sin flowExpiresAt (sesión de antes de este cambio) no expira solo por eso', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'delete' },
+      { message: { text: 'hola' } }
+    )
+
+    expect(next).not.toHaveBeenCalled()
+    expect(ctx.session.flowType).toBe('delete')
+  })
 })
