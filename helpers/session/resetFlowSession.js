@@ -8,6 +8,7 @@ export function resetFlowSession(session) {
   session.editing = null
   session.edits = null
   session.pendingTask = null
+  session.pendingApt = null
   session.pendingDelete = null
   session.pendingComplete = null
   session.pendingTz = null

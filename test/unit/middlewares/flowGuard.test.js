@@ -57,6 +57,29 @@ describe('flowGuard', () => {
     expect(ctx.reply).not.toHaveBeenCalled()
   })
 
+  it('los botones de la agenda (agenda_*) nunca se bloquean', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'add' },
+      { callbackQuery: { data: 'agenda_d:abc:today:0' } }
+    )
+    expect(next).toHaveBeenCalled()
+    expect(ctx.reply).not.toHaveBeenCalled()
+  })
+
+  it('con flujo apt permite los botones apt_* y bloquea los de otros flujos', async () => {
+    const allowed = await run(
+      { flowType: 'apt' },
+      { callbackQuery: { data: 'apt_confirm' } }
+    )
+    expect(allowed.next).toHaveBeenCalled()
+
+    const blocked = await run(
+      { flowType: 'apt' },
+      { callbackQuery: { data: 'add_confirm' } }
+    )
+    expect(blocked.next).not.toHaveBeenCalled()
+  })
+
   it('bloquea callbacks ajenos al flujo activo', async () => {
     const { ctx, next } = await run(
       { flowType: 'delete' },

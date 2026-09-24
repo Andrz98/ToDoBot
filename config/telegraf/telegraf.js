@@ -25,6 +25,14 @@ import { registerAddAction } from '../../actions/addAction/index.js'
 import { registerReminderActions } from '../../actions/reminderAction/index.js'
 import { startReminderAction } from '../../actions/reminderAction/startReminderAction.js'
 import { startAdd } from '../../actions/addAction/startAddAction.js'
+import {
+  registerAppointmentFlow,
+  startAppointment
+} from '../../actions/appointmentAction/appointmentFlow.js'
+import {
+  registerAgendaActions,
+  showAgenda
+} from '../../actions/agendaAction/agendaActions.js'
 import { startEdit } from '../../actions/editAction/startEditAction.js'
 import { registerMainMenu } from '../../actions/menuAction/registerMainMenu.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
@@ -103,6 +111,8 @@ registerClearActions(bot)
 registerTimezoneActions(bot)
 registerListActions(bot)
 registerReminderActions(bot)
+registerAppointmentFlow(bot)
+registerAgendaActions(bot)
 // Botones del menú de /start: mismos handlers que los comandos escritos
 registerMainMenu(bot, {
   add: startAdd,
@@ -112,6 +122,8 @@ registerMainMenu(bot, {
   reminder: startReminderAction,
   delete: taskController.deleteTask,
   clear: taskController.clearTask,
+  cita: startAppointment,
+  agenda: showAgenda,
   settimezone: setTimezone
 })
 

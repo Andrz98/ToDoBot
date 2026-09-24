@@ -6,7 +6,8 @@ Este repositorio implementa un bot de Telegram desarrollado en Node.js para admi
 
 - Arquitectura MVC: el proyecto sigue una estructura modular basada en el patrón Modelo-Vista-Controlador, facilitando la mantenibilidad, escalabilidad y separación de responsabilidades.
 - Gestión de tareas: creación, edición, listado, marcado como completadas, eliminación individual y limpieza de tareas finalizadas.
-- Recordatorios automáticos: el bot revisa las tareas pendientes cada minuto y notifica a los usuarios autorizados 72h, 48h, 24h, 7h, 3h y 10 minutos antes del vencimiento.
+- Recordatorios automáticos: el bot revisa cada minuto las tareas y citas pendientes y avisa 24h, 1h y 10 minutos antes. Cada tarea o cita tiene un único aviso vivo en el chat (el nuevo sustituye al anterior) y caduca solo. Los avisos llevan botones: en una tarea, `✅ Hecho` y aplazar (+1 h, +1 día); en una cita sin confirmar, `✅ Confirmar`.
+- Agenda de citas: `/cita` crea una cita con cliente, inicio, duración, ubicación y notas (avisa de solapes sin bloquear). `/agenda` muestra hoy, mañana o la semana; desde el detalle se puede confirmar, editar (una cita movida vuelve a "sin confirmar") o cancelar. Las citas se purgan solas 90 días después de terminar y las tareas completadas a los 30 días.
 - Flujos guiados por menús: los comandos interactivos muestran botones y force replies para solicitar nombre, descripción, fecha, etc.
 - Control de zona horaria: cada usuario puede definir su zona horaria principal (`Europe/Madrid` o `America/Bogota`) para la correcta notificación de recordatorios.
 - Sistema de autorización: solo los usuarios registrados en la colección `AuthorizedUser` pueden ejecutar comandos o interactuar con el bot.

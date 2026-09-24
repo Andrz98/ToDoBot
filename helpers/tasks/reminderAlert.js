@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { deleteNow } from '../../utils/telegramUtils/messageLifecycle.js'
+import { STATUS } from '../appointments/status.js'
 
 const HOUR = 60 * 60 * 1000
 
@@ -19,8 +20,25 @@ export const reminderKeyboard = (taskId) =>
   ]).reply_markup
 
 /**
- * Retira del chat el aviso vivo de la tarea (si lo hay) y olvida su id.
- * En un chat privado el chatId es el userId de la tarea.
+ * Botón del aviso de una cita: solo se ofrece confirmar mientras esté sin
+ * confirmar. Cancelar o editar exigen pasar por /agenda, con su confirmación.
+ * @returns el teclado, o undefined si la cita ya está confirmada
+ */
+export const appointmentKeyboard = (appointment) =>
+  appointment.status === STATUS.PENDING
+    ? Markup.inlineKeyboard([
+        [
+          Markup.button.callback(
+            '✅ Confirmar',
+            `rem_aptok::${appointment._id}`
+          )
+        ]
+      ]).reply_markup
+    : undefined
+
+/**
+ * Retira del chat el aviso vivo de la tarea o cita (si lo hay) y olvida su id.
+ * En un chat privado el chatId es el userId del dueño.
  */
 export async function dismissReminder(ctx, task) {
   if (!task?.reminderMessageId) {

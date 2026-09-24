@@ -6,7 +6,8 @@ const h = vi.hoisted(() => ({
   send: vi.fn(),
   tz: vi.fn(),
   del: vi.fn(),
-  schedule: vi.fn()
+  schedule: vi.fn(),
+  findApt: vi.fn()
 }))
 
 vi.mock('node-cron', () => ({
@@ -17,6 +18,9 @@ vi.mock('node-cron', () => ({
   }
 }))
 vi.mock('@/models/task.js', () => ({ Task: { find: h.find } }))
+vi.mock('@/models/appointment.js', () => ({
+  Appointment: { find: h.findApt }
+}))
 vi.mock('@/config/telegraf/telegraf.js', () => ({ bot: {} }))
 vi.mock('@/utils/retryUtils/safeSendMessage.js', () => ({
   safeSendMessage: h.send
@@ -59,6 +63,7 @@ describe('reminderScheduler', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(NOW)
     h.find.mockReset()
+    h.findApt.mockReset().mockResolvedValue([])
     h.send.mockReset().mockResolvedValue(undefined)
     h.tz.mockReset().mockResolvedValue('Europe/Madrid')
     h.del.mockReset().mockResolvedValue(undefined)
@@ -190,6 +195,114 @@ describe('reminderScheduler', () => {
 
     expect(h.del).not.toHaveBeenCalled()
     expect(task.reminderMessageId).toBe(11)
+  })
+
+  describe('citas', () => {
+    const makeAppointment = (userId, client, extra = {}) => ({
+      _id: `apt-${userId}`,
+      userId,
+      client,
+      startAt: new Date(NOW + DAY),
+      status: 'pending',
+      alertsSent: [],
+      save: vi.fn().mockResolvedValue(undefined),
+      ...extra
+    })
+    const runAppointments = async (appointments, tasks = []) => {
+      h.find.mockResolvedValue(tasks)
+      h.findApt.mockResolvedValue(appointments)
+      startReminderScheduler()
+      await h.tick()
+    }
+
+    it('avisa de una cita sin confirmar con el botón Confirmar y su estado', async () => {
+      const appointment = makeAppointment(1, 'Ana', { location: 'Oficina' })
+      h.send.mockResolvedValue({ message_id: 55 })
+
+      await runAppointments([appointment])
+
+      const [, userId, text, opts] = h.send.mock.calls[0]
+      expect(userId).toBe(1)
+      expect(text).toContain('Cita (24h antes)')
+      expect(text).toContain('Ana')
+      expect(text).toContain('📍 Oficina')
+      expect(text).toContain('Sin confirmar')
+      expect(
+        opts.reply_markup.inline_keyboard.flat().map((b) => b.callback_data)
+      ).toEqual(['rem_aptok::apt-1'])
+      expect(appointment.alertsSent).toEqual(['24h'])
+      expect(appointment.reminderMessageId).toBe(55)
+      expect(h.schedule).toHaveBeenCalledWith(
+        expect.anything(),
+        55,
+        DAY + HOUR,
+        1
+      )
+    })
+
+    it('una cita confirmada se avisa sin botones ni marca de pendiente', async () => {
+      await runAppointments([
+        makeAppointment(1, 'Ana', { status: 'confirmed' })
+      ])
+
+      const [, , text, opts] = h.send.mock.calls[0]
+      expect(opts.reply_markup).toBeUndefined()
+      expect(text).not.toContain('Sin confirmar')
+    })
+
+    it('solo pide las no canceladas que caen en la ventana de la alerta más lejana', async () => {
+      await runAppointments([])
+
+      expect(h.findApt).toHaveBeenCalledWith({
+        status: { $ne: 'cancelled' },
+        startAt: {
+          $gte: new Date(NOW),
+          $lte: new Date(NOW + DAY + 60 * 1000)
+        }
+      })
+    })
+
+    it('escapa el HTML del cliente y de la ubicación', async () => {
+      await runAppointments([
+        makeAppointment(1, 'a <b> & c', { location: '<i>x</i>' })
+      ])
+
+      const text = h.send.mock.calls[0][2]
+      expect(text).toContain('<b>a &lt;b&gt; &amp; c</b>')
+      expect(text).toContain('&lt;i&gt;x&lt;/i&gt;')
+    })
+
+    it('un fallo al avisar de una cita no impide avisar de las demás', async () => {
+      const failing = makeAppointment(1, 'A')
+      const ok = makeAppointment(2, 'B')
+      h.send.mockRejectedValueOnce(new Error('boom'))
+
+      await runAppointments([failing, ok])
+
+      expect(h.send).toHaveBeenCalledTimes(2)
+      expect(failing.alertsSent).toEqual([]) // se reintenta en la siguiente pasada
+      expect(ok.alertsSent).toEqual(['24h'])
+    })
+
+    it('las tareas y las citas se avisan en la misma pasada', async () => {
+      const task = makeTask(1, 'Pagar luz')
+      const appointment = makeAppointment(2, 'Ana')
+
+      await runAppointments([appointment], [task])
+
+      expect(task.alertsSent).toEqual(['24h'])
+      expect(appointment.alertsSent).toEqual(['24h'])
+    })
+
+    it('si fallan las tareas (BD), las citas se avisan igualmente', async () => {
+      h.find.mockRejectedValue(new Error('db'))
+      h.findApt.mockResolvedValue([makeAppointment(1, 'A')])
+      startReminderScheduler()
+
+      await h.tick()
+
+      expect(h.send).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('escapa el HTML del nombre de la tarea en el recordatorio', async () => {

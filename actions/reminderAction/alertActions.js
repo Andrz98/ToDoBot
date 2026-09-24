@@ -1,6 +1,8 @@
 import { Task } from '../../models/task.js'
+import { Appointment } from '../../models/appointment.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { SNOOZE } from '../../helpers/tasks/reminderAlert.js'
+import { STATUS } from '../../helpers/appointments/status.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
@@ -40,6 +42,22 @@ export function registerAlertActions(bot) {
         { completed: true }
       )
       return task ? '✅ Tarea completada.' : NOT_FOUND_TEXT
+    })
+  )
+
+  bot.action(
+    /^rem_aptok::([a-f\d]{24})$/,
+    onAlert(async (ctx) => {
+      // Una cita cancelada no se puede "resucitar" con un botón viejo
+      const appointment = await Appointment.findOneAndUpdate(
+        {
+          _id: ctx.match[1],
+          userId: ctx.from.id,
+          status: { $ne: STATUS.CANCELLED }
+        },
+        { status: STATUS.CONFIRMED }
+      )
+      return appointment ? '✅ Cita confirmada.' : 'Cita no encontrada.'
     })
   )
 

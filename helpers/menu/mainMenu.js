@@ -10,6 +10,8 @@ export const MENU_ACTIONS = [
   { command: 'reminder', label: '🔔 Recordatorio', help: 'Configurar periodicidad del recordatorio' },
   { command: 'delete', label: '🗑️ Eliminar', help: 'Eliminar tarea' },
   { command: 'clear', label: '🧹 Limpiar completadas', help: 'Eliminar tareas completadas' },
+  { command: 'cita', label: '📆 Nueva cita', help: 'Crear una cita con un cliente' },
+  { command: 'agenda', label: '🗓️ Agenda', help: 'Ver tus citas de hoy, mañana o la semana' },
   { command: 'settimezone', label: '🌐 Zona horaria', help: 'Cambiar zona horaria' }
 ]
 

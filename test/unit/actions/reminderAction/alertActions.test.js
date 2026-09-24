@@ -3,12 +3,16 @@ import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
 const h = vi.hoisted(() => ({
   findOneAndUpdate: vi.fn(),
+  aptUpdate: vi.fn(),
   findTask: vi.fn(),
   auth: vi.fn(),
   tz: vi.fn()
 }))
 vi.mock('@/models/task.js', () => ({
   Task: { findOneAndUpdate: h.findOneAndUpdate }
+}))
+vi.mock('@/models/appointment.js', () => ({
+  Appointment: { findOneAndUpdate: h.aptUpdate }
 }))
 vi.mock('@/helpers/tasks/findTask.js', () => ({ findTask: h.findTask }))
 vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
@@ -60,6 +64,30 @@ describe('botones del aviso de recordatorio', () => {
       await bot.press(`rem_done::${ID}`, ctx)
 
       expect(ctx.answerCbQuery).toHaveBeenCalledWith('Tarea no encontrada.', {})
+      expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 5)
+    })
+  })
+
+  describe('✅ Confirmar cita', () => {
+    it('confirma solo una cita propia y no cancelada, y retira el aviso', async () => {
+      h.aptUpdate.mockResolvedValue({ _id: ID })
+
+      await bot.press(`rem_aptok::${ID}`, ctx)
+
+      expect(h.aptUpdate).toHaveBeenCalledWith(
+        { _id: ID, userId: 7, status: { $ne: 'cancelled' } },
+        { status: 'confirmed' }
+      )
+      expect(ctx.answerCbQuery).toHaveBeenCalledWith('✅ Cita confirmada.', {})
+      expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 5)
+    })
+
+    it('cita cancelada o borrada: avisa y retira igualmente el aviso', async () => {
+      h.aptUpdate.mockResolvedValue(null)
+
+      await bot.press(`rem_aptok::${ID}`, ctx)
+
+      expect(ctx.answerCbQuery).toHaveBeenCalledWith('Cita no encontrada.', {})
       expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 5)
     })
   })

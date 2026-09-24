@@ -58,9 +58,9 @@ export async function flowGuard(ctx, next) {
   if (ctx.callbackQuery) {
     // El listado de /list (show_task_*, list_*) es de solo lectura, los botones
     // del menú principal (menu_*) equivalen a comandos y los del aviso de
-    // recordatorio (rem_*) actúan sobre una tarea concreta, sin tocar el flujo
-    // activo: siempre se permiten
-    if (/^(show_task_|list_|menu_|rem_)/.test(cb)) {
+    // recordatorio (rem_*) y de la agenda (agenda_*) actúan sobre una tarea o
+    // cita concreta, sin tocar el flujo activo: siempre se permiten
+    if (/^(show_task_|list_|menu_|rem_|agenda_)/.test(cb)) {
       return next()
     }
 
@@ -70,6 +70,7 @@ export async function flowGuard(ctx, next) {
       case 'delete':
       case 'complete':
       case 'clear':
+      case 'apt':
         if (
           flowType === 'edit'
             ? /^(edit_|select_edit_)/.test(cb)
