@@ -58,9 +58,10 @@ export async function flowGuard(ctx, next) {
   if (ctx.callbackQuery) {
     // El listado de /list (show_task_*, list_*) es de solo lectura, los botones
     // del menú principal (menu_*) equivalen a comandos y los del aviso de
-    // recordatorio (rem_*) y de la agenda (agenda_*) actúan sobre una tarea o
-    // cita concreta, sin tocar el flujo activo: siempre se permiten
-    if (/^(show_task_|list_|menu_|rem_|agenda_)/.test(cb)) {
+    // recordatorio (rem_*), de la agenda (agenda_*) y de Google Calendar (cal_*)
+    // actúan sobre un elemento concreto y validan su propio estado, sin tocar el
+    // flujo activo: siempre se permiten
+    if (/^(show_task_|list_|menu_|rem_|agenda_|cal_)/.test(cb)) {
       return next()
     }
 

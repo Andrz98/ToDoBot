@@ -30,6 +30,10 @@ import {
   startAppointment
 } from '../../actions/appointmentAction/appointmentFlow.js'
 import {
+  registerCalendarActions,
+  showCalendar
+} from '../../actions/calendarAction/calendarActions.js'
+import {
   registerAgendaActions,
   showAgenda
 } from '../../actions/agendaAction/agendaActions.js'
@@ -113,6 +117,7 @@ registerListActions(bot)
 registerReminderActions(bot)
 registerAppointmentFlow(bot)
 registerAgendaActions(bot)
+registerCalendarActions(bot)
 // Botones del menú de /start: mismos handlers que los comandos escritos
 registerMainMenu(bot, {
   add: startAdd,
@@ -124,6 +129,7 @@ registerMainMenu(bot, {
   clear: taskController.clearTask,
   cita: startAppointment,
   agenda: showAgenda,
+  calendar: showCalendar,
   settimezone: setTimezone
 })
 

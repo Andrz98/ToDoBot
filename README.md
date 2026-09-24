@@ -8,6 +8,7 @@ Este repositorio implementa un bot de Telegram desarrollado en Node.js para admi
 - Gestión de tareas: creación, edición, listado, marcado como completadas, eliminación individual y limpieza de tareas finalizadas.
 - Recordatorios automáticos: el bot revisa cada minuto las tareas y citas pendientes y avisa 24h, 1h y 10 minutos antes. Cada tarea o cita tiene un único aviso vivo en el chat (el nuevo sustituye al anterior) y caduca solo. Los avisos llevan botones: en una tarea, `✅ Hecho` y aplazar (+1 h, +1 día); en una cita sin confirmar, `✅ Confirmar`.
 - Agenda de citas: `/cita` crea una cita con cliente, inicio, duración, ubicación y notas (avisa de solapes sin bloquear). `/agenda` muestra hoy, mañana o la semana; desde el detalle se puede confirmar, editar (una cita movida vuelve a "sin confirmar") o cancelar. Las citas se purgan solas 90 días después de terminar y las tareas completadas a los 30 días.
+- Google Calendar (opcional): `/calendar` crea para cada usuario autorizado un calendario "TuttoFatto" propiedad de la cuenta de servicio del negocio y lo comparte con su correo de Google como **solo lector** (Google le envía la invitación). El bot es la fuente de verdad; Google es una copia. `/calendar` también permite desconectar, y borra el calendario de Google.
 - Flujos guiados por menús: los comandos interactivos muestran botones y force replies para solicitar nombre, descripción, fecha, etc.
 - Control de zona horaria: cada usuario puede definir su zona horaria principal (`Europe/Madrid` o `America/Bogota`) para la correcta notificación de recordatorios.
 - Sistema de autorización: solo los usuarios registrados en la colección `AuthorizedUser` pueden ejecutar comandos o interactuar con el bot.
@@ -88,6 +89,7 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 - Variables de entorno (ver `.env.example`): `MONGO_URI`, `TELEGRAM_BOT_TOKEN`, `WEBHOOK_DOMAIN`, `TELEGRAM_WEBHOOK_SECRET`, `PORT` y, solo para depurar, `DEBUG`.
   - `TELEGRAM_WEBHOOK_SECRET` es obligatorio: Telegram lo envía en la cabecera `X-Telegram-Bot-Api-Secret-Token` y el bot rechaza cualquier petición al webhook que no lo lleve.
   - Con `DEBUG=true` se registran datos de usuario (sesión, mensajes): no lo actives en producción salvo para depurar.
+  - `GOOGLE_SERVICE_ACCOUNT_JSON_B64` (producción) o `GOOGLE_SERVICE_ACCOUNT_FILE` (local) son opcionales: habilitan `/calendar`. Es la clave JSON de una cuenta de servicio de Google Cloud con la Google Calendar API activada. Guárdala fuera del repositorio.
 - UptimeRobot debe monitorizar `GET /`; el webhook solo acepta peticiones `POST` firmadas por Telegram.
 
 ## Consideraciones

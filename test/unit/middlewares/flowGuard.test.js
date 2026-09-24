@@ -66,6 +66,15 @@ describe('flowGuard', () => {
     expect(ctx.reply).not.toHaveBeenCalled()
   })
 
+  it('los botones de Google Calendar (cal_*) nunca se bloquean', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'edit' },
+      { callbackQuery: { data: 'cal_disconnect' } }
+    )
+    expect(next).toHaveBeenCalled()
+    expect(ctx.reply).not.toHaveBeenCalled()
+  })
+
   it('con flujo apt permite los botones apt_* y bloquea los de otros flujos', async () => {
     const allowed = await run(
       { flowType: 'apt' },

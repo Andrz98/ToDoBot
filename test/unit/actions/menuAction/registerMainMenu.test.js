@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
 const h = vi.hoisted(() => ({ auth: vi.fn() }))
@@ -8,7 +8,7 @@ vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
 
 import { registerMainMenu } from '@/actions/menuAction/registerMainMenu.js'
 import {
-  MENU_ACTIONS,
+  menuActions,
   buildMainMenuKeyboard,
   buildCommandHelp
 } from '@/helpers/menu/mainMenu.js'
@@ -55,6 +55,32 @@ describe('menú principal', () => {
       .map((b) => b.callback_data)
 
     expect(buildCommandHelp()).toContain('/reminder')
-    expect(callbacks).toEqual(MENU_ACTIONS.map(({ command }) => `menu_${command}`))
+    expect(callbacks).toEqual(
+      menuActions().map(({ command }) => `menu_${command}`)
+    )
+  })
+
+  describe('/calendar (integración opcional)', () => {
+    const callbacks = () =>
+      buildMainMenuKeyboard()
+        .reply_markup.inline_keyboard.flat()
+        .map((b) => b.callback_data)
+
+    afterEach(() => vi.unstubAllEnvs())
+
+    it('sin credenciales de Google no se ofrece ni en la ayuda ni en la botonera', () => {
+      vi.stubEnv('GOOGLE_SERVICE_ACCOUNT_JSON_B64', '')
+      vi.stubEnv('GOOGLE_SERVICE_ACCOUNT_FILE', '')
+
+      expect(callbacks()).not.toContain('menu_calendar')
+      expect(buildCommandHelp()).not.toContain('/calendar')
+    })
+
+    it('con credenciales aparece', () => {
+      vi.stubEnv('GOOGLE_SERVICE_ACCOUNT_FILE', 'C:\\claves\\cuenta.json')
+
+      expect(callbacks()).toContain('menu_calendar')
+      expect(buildCommandHelp()).toContain('/calendar')
+    })
   })
 })
