@@ -1,6 +1,7 @@
 // actions/completeAction/completeActionHandlers.js
 import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
+import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -65,10 +66,11 @@ export function registerCompleteActions(bot) {
     }
 
     try {
-      await Task.findOneAndUpdate(
+      const task = await Task.findOneAndUpdate(
         { _id: taskId, userId: ctx.from.id },
         { completed: true }
       )
+      await dismissReminder(ctx, task)
       ctx.session.flowType = null
       ctx.session.pendingComplete = null
       await safeAnswerCbQuery(ctx, COMPLETE_DONE_TEXT)

@@ -89,6 +89,15 @@ describe('flujo /delete', () => {
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 5)
   })
 
+  it('al borrar retira el aviso de recordatorio vivo de la tarea', async () => {
+    ctx.session.pendingDelete = 'abc123'
+    h.findOneAndDelete.mockResolvedValue({ userId: 7, reminderMessageId: 77 })
+
+    await bot.press('delete_confirm:yes', ctx)
+
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 77)
+  })
+
   it('cancelar resuelve el mensaje en sitio y limpia la sesión', async () => {
     ctx.session.pendingDelete = 'abc123'
 

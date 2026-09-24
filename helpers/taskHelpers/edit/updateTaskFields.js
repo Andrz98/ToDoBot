@@ -42,6 +42,7 @@ export const updateTaskFields = (
       throw new Error('PAST_DATE')
     }
     task.reminderAt = date
+    task.alertsSent = [] // con otra fecha, las alertas vuelven a contar desde cero
     updated = true
     const formatted = formatDateEs(date, timezone)
     changes.push(`🔹 <b>Nueva fecha:</b> ${escapeHtml(formatted)}`)

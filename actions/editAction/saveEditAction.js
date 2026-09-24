@@ -11,6 +11,7 @@ import {
   GENERAL_ERROR_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
 import { isEditActive, loadEditedTask, resetEditSession } from './editMenu.js'
 
 const DUPLICATE_KEY = 11000
@@ -42,6 +43,10 @@ export function registerSaveEditAction(bot) {
       }
 
       if (updated) {
+        // El aviso vivo habla de la fecha anterior
+        if (ctx.session.edits?.date) {
+          await dismissReminder(ctx, task)
+        }
         await task.save()
       }
       const cbText = updated ? '👌🏽 Tarea editada' : 'ℹ️ No hubo cambios.'

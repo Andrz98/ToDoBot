@@ -68,6 +68,25 @@ describe('saveReminderAction', () => {
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 1)
   })
 
+  it('al cambiar la periodicidad retira el aviso vivo de la fecha anterior', async () => {
+    const task = {
+      _id: '100',
+      userId: 7,
+      name: 'My task',
+      frequency: 'daily',
+      reminderAt: new Date('2023-12-31T00:00:00Z'),
+      alertsSent: ['24h'],
+      reminderMessageId: 77,
+      save: vi.fn()
+    }
+    findTask.mockResolvedValue(task)
+
+    await saveReminderAction(ctx)
+
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 77)
+    expect(task.reminderMessageId).toBeUndefined()
+  })
+
   it('error externo simulado al guardar: limpia flowType en vez de dejarlo colgado', async () => {
     const task = {
       _id: '100',

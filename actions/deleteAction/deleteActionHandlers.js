@@ -1,6 +1,7 @@
 // actions/deleteAction/deleteActionHandlers.js
 import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
+import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
 import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
@@ -60,7 +61,11 @@ export function registerDeleteActions(bot) {
     }
 
     try {
-      await Task.findOneAndDelete({ _id: taskId, userId: ctx.from.id })
+      const task = await Task.findOneAndDelete({
+        _id: taskId,
+        userId: ctx.from.id
+      })
+      await dismissReminder(ctx, task)
       ctx.session.flowType = null
       ctx.session.pendingDelete = null
       await safeAnswerCbQuery(ctx, DELETE_DONE_TEXT)

@@ -56,9 +56,11 @@ export async function flowGuard(ctx, next) {
 
   // 2) Permitir callbacks inline según cada flujo
   if (ctx.callbackQuery) {
-    // El listado de /list (show_task_*, list_*) es de solo lectura, y los
-    // botones del menú principal (menu_*) equivalen a comandos: siempre se permiten
-    if (/^(show_task_|list_|menu_)/.test(cb)) {
+    // El listado de /list (show_task_*, list_*) es de solo lectura, los botones
+    // del menú principal (menu_*) equivalen a comandos y los del aviso de
+    // recordatorio (rem_*) actúan sobre una tarea concreta, sin tocar el flujo
+    // activo: siempre se permiten
+    if (/^(show_task_|list_|menu_|rem_)/.test(cb)) {
       return next()
     }
 

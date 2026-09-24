@@ -48,6 +48,15 @@ describe('flowGuard', () => {
     expect(ctx.reply).not.toHaveBeenCalled()
   })
 
+  it('los botones del aviso (rem_*) nunca se bloquean, sea cual sea el flujo activo', async () => {
+    const { ctx, next } = await run(
+      { flowType: 'edit' },
+      { callbackQuery: { data: 'rem_done::abc' } }
+    )
+    expect(next).toHaveBeenCalled()
+    expect(ctx.reply).not.toHaveBeenCalled()
+  })
+
   it('bloquea callbacks ajenos al flujo activo', async () => {
     const { ctx, next } = await run(
       { flowType: 'delete' },

@@ -8,7 +8,8 @@ import {
  * Limpieza transversal del chat:
  *  - Pulsar un botón renueva el TTL de la interfaz que lo contiene: nada
  *    desaparece mientras el usuario la está usando. Todo mensaje con botones
- *    es una interfaz (los recordatorios del scheduler no llevan botones).
+ *    es una interfaz. Los avisos del scheduler también llevan botones, pero sus
+ *    handlers (alertActions.js) los retiran al pulsarlos.
  *  - Un comando se limpia DESPUÉS de procesarse (aunque su handler falle),
  *    con la misma cadencia que cualquier paso intermedio.
  */

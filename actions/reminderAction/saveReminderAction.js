@@ -1,4 +1,5 @@
 import { findTask } from '../../helpers/tasks/findTask.js'
+import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
 import { closeInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { frequencyLabels } from '../../helpers/frequency/frequencyLabels.js'
@@ -42,6 +43,7 @@ export const saveReminderAction = async (ctx) => {
     task.frequency = frequency
     task.reminderAt = addIntervalToNow(frequency)
     task.alertsSent = [] // Resetea las alertas pasadas
+    await dismissReminder(ctx, task) // El aviso vivo habla de la fecha anterior
 
     await task.save()
     await ctx.answerCbQuery()

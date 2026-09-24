@@ -52,6 +52,31 @@ describe('/edit: guardar (edit_save)', () => {
     expect(ctx.session.editing).toBeUndefined()
   })
 
+  it('cambiar la fecha retira el aviso vivo y reinicia las alertas', async () => {
+    task.userId = 7
+    task.reminderMessageId = 77
+    task.alertsSent = ['24h']
+    const ctx = editCtx({ date: '2099-06-01T00:00:00.000Z' })
+
+    await bot.press('edit_save', ctx)
+
+    expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 77)
+    expect(task.reminderMessageId).toBeUndefined()
+    expect(task.alertsSent).toEqual([])
+    expect(task.save).toHaveBeenCalled()
+  })
+
+  it('cambiar solo el nombre conserva el aviso vivo', async () => {
+    task.userId = 7
+    task.reminderMessageId = 77
+    const ctx = editCtx({ newName: 'Pagar gas' })
+
+    await bot.press('edit_save', ctx)
+
+    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalledWith(7, 77)
+    expect(task.reminderMessageId).toBe(77)
+  })
+
   it('sin cambios reales: no guarda, avisa "No hubo cambios"', async () => {
     const ctx = editCtx({ newName: 'Pagar luz' })
 
