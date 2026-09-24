@@ -149,7 +149,7 @@ export function registerAgendaActions(bot) {
   withAppointment('ok', async (ctx, { appointment, range, page, timezone }) => {
     await Appointment.updateOne(
       { _id: appointment._id },
-      { status: STATUS.CONFIRMED }
+      { status: STATUS.CONFIRMED, gcalDirty: true }
     )
     await safeAnswerCbQuery(ctx, '✅ Cita confirmada.')
     return paint(
@@ -173,7 +173,7 @@ export function registerAgendaActions(bot) {
     async (ctx, { appointment, range, page, timezone }) => {
       await Appointment.updateOne(
         { _id: appointment._id },
-        { status: STATUS.CANCELLED }
+        { status: STATUS.CANCELLED, gcalDirty: true }
       )
       await dismissReminder(ctx, appointment)
       await safeAnswerCbQuery(ctx, '❌ Cita cancelada.')

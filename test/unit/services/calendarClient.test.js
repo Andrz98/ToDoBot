@@ -194,7 +194,7 @@ describe('calendarClient', () => {
     })
 
     it('solo declara content-type cuando hay cuerpo', async () => {
-      queue(reply(200, { id: 'cal-1' }), reply(204))
+      queue(reply(200, { id: 'cal-1' }), reply(204), reply(400))
 
       await client.createCalendar({ summary: 'x', timeZone: 'Europe/Madrid' })
       await client.deleteCalendar('cal-1')
@@ -213,18 +213,95 @@ describe('calendarClient', () => {
     })
   })
 
-  describe('deleteCalendar', () => {
-    it('borra con un único DELETE (sin re-consultar: Google tarda en reflejarlo)', async () => {
+  describe('eventos', () => {
+    const event = { id: 'a1b2c3', summary: 'Ana', status: 'tentative' }
+    const CAL = 'cal-1@group.calendar.google.com'
+    const EVENTS = `https://www.googleapis.com/calendar/v3/calendars/cal-1%40group.calendar.google.com/events`
+
+    it('upsertEvent inserta con el id fijado por quien llama', async () => {
+      queue(reply(200, event))
+
+      await client.upsertEvent(CAL, event)
+
+      expect(apiCalls()).toHaveLength(1)
+      const [url, init] = apiCalls()[0]
+      expect(url).toBe(EVENTS)
+      expect(init.method).toBe('POST')
+      expect(JSON.parse(init.body)).toEqual(event)
+    })
+
+    it('si el evento ya existe (409), lo actualiza en vez de duplicarlo', async () => {
+      queue(
+        reply(409, { error: { message: 'identifier already exists' } }),
+        reply(200, event)
+      )
+
+      await client.upsertEvent(CAL, event)
+
+      const [insert, update] = apiCalls()
+      expect(insert[1].method).toBe('POST')
+      expect(update[0]).toBe(`${EVENTS}/a1b2c3`)
+      expect(update[1].method).toBe('PUT')
+      expect(JSON.parse(update[1].body)).toEqual(event)
+    })
+
+    it('un error distinto de 409 se propaga sin intentar actualizar', async () => {
+      queue(reply(403, { error: { message: 'rate limit' } }))
+
+      await expect(client.upsertEvent(CAL, event)).rejects.toMatchObject({
+        status: 403
+      })
+      expect(apiCalls()).toHaveLength(1)
+    })
+
+    it('si falla la actualización tras el 409, también se propaga', async () => {
+      queue(reply(409), reply(500, { error: { message: 'caído' } }))
+
+      await expect(client.upsertEvent(CAL, event)).rejects.toMatchObject({
+        status: 500
+      })
+    })
+
+    it('deleteEvent borra el evento indicado', async () => {
       queue(reply(204))
+
+      await client.deleteEvent(CAL, 'a1b2c3')
+
+      const [url, init] = apiCalls()[0]
+      expect(url).toBe(`${EVENTS}/a1b2c3`)
+      expect(init.method).toBe('DELETE')
+    })
+
+    it.each([
+      [404, 'nunca existió'],
+      [410, 'ya estaba borrado']
+    ])('deleteEvent: %i (%s) no es un error', async (status) => {
+      queue(reply(status, { error: { message: 'gone' } }))
+
+      await expect(client.deleteEvent(CAL, 'a1b2c3')).resolves.toBeUndefined()
+    })
+
+    it('deleteEvent: otros errores se propagan', async () => {
+      queue(reply(500, { error: { message: 'caído' } }))
+
+      await expect(client.deleteEvent(CAL, 'a1b2c3')).rejects.toMatchObject({
+        status: 500
+      })
+    })
+  })
+
+  describe('deleteCalendar', () => {
+    it('borra dos veces (la 2ª retira del todo el calendario vacío) y sin re-consultar', async () => {
+      queue(reply(204), reply(400, { error: { message: 'Bad Request' } }))
 
       await client.deleteCalendar('cal-1@group.calendar.google.com')
 
-      const [url, init] = apiCalls()[0]
-      expect(apiCalls()).toHaveLength(1)
-      expect(init.method).toBe('DELETE')
-      expect(url).toBe(
+      const calls = apiCalls()
+      expect(calls.map(([, init]) => init.method)).toEqual(['DELETE', 'DELETE'])
+      expect(calls[0][0]).toBe(
         'https://www.googleapis.com/calendar/v3/calendars/cal-1%40group.calendar.google.com'
       )
+      expect(calls[1][0]).toBe(calls[0][0])
     })
 
     it.each([
@@ -234,19 +311,26 @@ describe('calendarClient', () => {
     ])(
       'un calendario que ya no existe (%i: %s) no es un error',
       async (status) => {
-        queue(reply(status, { error: { message: 'Bad Request' } }))
+        queue(
+          reply(status, { error: { message: 'gone' } }),
+          reply(status, { error: { message: 'gone' } })
+        )
 
         await expect(client.deleteCalendar('cal-1')).resolves.toBeUndefined()
       }
     )
 
-    it.each([403, 500, 503])('el error %i sí se propaga', async (status) => {
-      queue(reply(status, { error: { message: 'no' } }))
+    it.each([403, 500, 503])(
+      'el error %i sí se propaga (y no se reintenta)',
+      async (status) => {
+        queue(reply(status, { error: { message: 'no' } }))
 
-      await expect(client.deleteCalendar('cal-1')).rejects.toMatchObject({
-        name: 'GoogleApiError',
-        status
-      })
-    })
+        await expect(client.deleteCalendar('cal-1')).rejects.toMatchObject({
+          name: 'GoogleApiError',
+          status
+        })
+        expect(apiCalls()).toHaveLength(1)
+      }
+    )
   })
 })

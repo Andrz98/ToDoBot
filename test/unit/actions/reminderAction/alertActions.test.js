@@ -76,7 +76,7 @@ describe('botones del aviso de recordatorio', () => {
 
       expect(h.aptUpdate).toHaveBeenCalledWith(
         { _id: ID, userId: 7, status: { $ne: 'cancelled' } },
-        { status: 'confirmed' }
+        { status: 'confirmed', gcalDirty: true }
       )
       expect(ctx.answerCbQuery).toHaveBeenCalledWith('✅ Cita confirmada.', {})
       expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 5)

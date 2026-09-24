@@ -10,6 +10,8 @@ import {
 import { createApp } from './config/express/createApp.js'
 import { startReminderScheduler } from './services/schedulers/reminderScheduler.js'
 import { startPendingDeletionScheduler } from './services/schedulers/pendingDeletionScheduler.js'
+import { startCalendarSyncScheduler } from './services/schedulers/calendarSyncScheduler.js'
+import { isCalendarEnabled } from './services/google/calendarClient.js'
 
 // ====================================
 // 🔰 Verifico .env
@@ -38,6 +40,10 @@ mongoose
     // 🔰 Inicializo Schedulers
     // ======================
     startReminderScheduler()
+    // Google Calendar es opcional: sin credenciales no hay nada que sincronizar
+    if (isCalendarEnabled()) {
+      startCalendarSyncScheduler()
+    }
     // Recupera y rearma los borrados de mensajes que quedaron pendientes
     // antes de una caída, y vigila el resto por si alguno se escapa
     startPendingDeletionScheduler(bot).catch((err) =>

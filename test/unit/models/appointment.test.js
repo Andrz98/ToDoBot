@@ -47,6 +47,21 @@ describe('modelo Appointment', () => {
     ])
   })
 
+  it('nace pendiente de sincronizar con Google y sin intentos fallidos', () => {
+    const appointment = new Appointment(base)
+    expect(appointment.gcalDirty).toBe(true)
+    expect(appointment.gcalTriedAt).toBeUndefined()
+  })
+
+  it('el barrido de Google solo indexa las citas pendientes', () => {
+    const [keys, options] = Appointment.schema
+      .indexes()
+      .find(([, opts]) => opts.partialFilterExpression)
+
+    expect(keys).toEqual({ gcalDirty: 1, userId: 1 })
+    expect(options.partialFilterExpression).toEqual({ gcalDirty: true })
+  })
+
   it('se purga sola 90 días después de terminar; la agenda está indexada por usuario y hora', () => {
     const indexes = Appointment.schema.indexes()
     const ttl = indexes.find(([, options]) => options.expireAfterSeconds)

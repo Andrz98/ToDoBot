@@ -1,4 +1,6 @@
 import { CalendarLink } from '../../models/calendarLink.js'
+import { Appointment } from '../../models/appointment.js'
+import { STATUS } from '../../helpers/appointments/status.js'
 import {
   GoogleApiError,
   createCalendar,
@@ -159,6 +161,15 @@ async function connect(ctx) {
     const { text, markup } = buildCalConfirm(email, failureBanner(error))
     return renderInterface(ctx, text, markup)
   }
+
+  // Las citas que ya existen se envían al calendario nuevo (el barrido las
+  // espacia). Si esto falla no es grave: se sincronizarán al tocarlas.
+  await Appointment.updateMany(
+    { userId: ctx.from.id, status: { $ne: STATUS.CANCELLED } },
+    { gcalDirty: true }
+  ).catch((error) =>
+    console.error('❌ No se pudo encolar la sincronización inicial:', error)
+  )
 
   // El mensaje del flujo pasa a ser la pantalla de estado, ya sin flujo activo
   resetCalSession(ctx)

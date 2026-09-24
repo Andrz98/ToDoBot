@@ -250,6 +250,7 @@ describe('flujo /cita', () => {
       expect(created.startAt).toEqual(new Date(FUTURE))
       expect(created.endAt).toEqual(new Date('2099-06-01T11:30:00.000Z'))
       expect(created.save).toHaveBeenCalled()
+      expect(created.gcalDirty).toBe(true)
       expect(ctx.answerCbQuery).toHaveBeenCalledWith('✅ Cita creada.', {})
       expect(ctx.editMessageText).toHaveBeenCalledWith(
         expect.stringContaining('Ana'),
@@ -354,6 +355,7 @@ describe('flujo /cita', () => {
       expect(appointment.reminderMessageId).toBeUndefined()
       expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 77)
       expect(appointment.save).toHaveBeenCalled()
+      expect(appointment.gcalDirty).toBe(true)
       expect(ctx.answerCbQuery).toHaveBeenCalledWith('👌🏽 Cita actualizada.', {})
     })
 
@@ -376,6 +378,7 @@ describe('flujo /cita', () => {
       expect(appointment.reminderMessageId).toBe(77)
       expect(ctx.telegram.deleteMessage).not.toHaveBeenCalledWith(7, 77)
       expect(appointment.save).toHaveBeenCalled()
+      expect(appointment.gcalDirty).toBe(true) // se refleja en Google
     })
 
     it('una cita cancelada o ajena entre medias: avisa y no guarda', async () => {

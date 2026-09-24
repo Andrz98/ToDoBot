@@ -162,7 +162,7 @@ describe('/agenda', () => {
 
       expect(h.updateOne).toHaveBeenCalledWith(
         { _id: ID },
-        { status: 'confirmed' }
+        { status: 'confirmed', gcalDirty: true }
       )
       expect(ctx.answerCbQuery).toHaveBeenCalledWith('✅ Cita confirmada.', {})
       const [text, extra] = painted(ctx)
@@ -189,7 +189,7 @@ describe('/agenda', () => {
 
       expect(h.updateOne).toHaveBeenCalledWith(
         { _id: ID },
-        { status: 'cancelled' }
+        { status: 'cancelled', gcalDirty: true }
       )
       expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(7, 77)
       expect(ctx.answerCbQuery).toHaveBeenCalledWith('❌ Cita cancelada.', {})

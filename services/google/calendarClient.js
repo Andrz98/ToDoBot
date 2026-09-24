@@ -128,12 +128,44 @@ export async function shareCalendar(calendarId, email) {
 }
 
 /**
+ * Crea o actualiza el evento (su `id` lo fija quien llama, así que reintentar
+ * nunca duplica): intenta insertar y, si ya existe (409), lo actualiza.
+ * Ojo: un PUT sobre un evento borrado lo resucita; los borrados van por deleteEvent.
+ */
+export async function upsertEvent(calendarId, event) {
+  const calendar = encodeURIComponent(calendarId)
+  const insert = await call('POST', `/calendars/${calendar}/events`, {
+    body: event,
+    ok: [409]
+  })
+  if (insert.status === 409) {
+    await call(
+      'PUT',
+      `/calendars/${calendar}/events/${encodeURIComponent(event.id)}`,
+      { body: event }
+    )
+  }
+}
+
+/** Borra el evento. Idempotente: 404 (nunca existió) y 410 (ya borrado) no son errores. */
+export async function deleteEvent(calendarId, eventId) {
+  await call(
+    'DELETE',
+    `/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+    { ok: [404, 410] }
+  )
+}
+
+/**
  * Borra el calendario. Es idempotente: si ya no existe, no es un error.
- * Comprobado contra Google: un DELETE responde 204 y borra de verdad, aunque un
- * GET inmediato aún lo devuelva; y borrar uno ya borrado responde 400 (no 404).
+ *
+ * Comprobado contra Google: el primer DELETE responde 204 y sus eventos dejan
+ * de poder leerse al instante, pero el calendario vacío sigue apareciendo en
+ * las listas (GET intermitente) durante minutos. Repetir el DELETE responde 400
+ * ("ya borrado") y lo retira del todo, por eso se envía dos veces.
  */
 export async function deleteCalendar(calendarId) {
-  await call('DELETE', `/calendars/${encodeURIComponent(calendarId)}`, {
-    ok: [400, 404, 410]
-  })
+  const path = `/calendars/${encodeURIComponent(calendarId)}`
+  await call('DELETE', path, { ok: [400, 404, 410] })
+  await call('DELETE', path, { ok: [400, 404, 410] })
 }

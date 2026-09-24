@@ -17,10 +17,14 @@ const h = vi.hoisted(() => {
     findOne: vi.fn(),
     create: vi.fn(),
     deleteOne: vi.fn(),
+    updateMany: vi.fn(),
     auth: vi.fn(),
     tz: vi.fn()
   }
 })
+vi.mock('@/models/appointment.js', () => ({
+  Appointment: { updateMany: h.updateMany }
+}))
 vi.mock('@/services/google/calendarClient.js', () => ({
   GoogleApiError: h.GoogleApiError,
   isCalendarEnabled: h.enabled,
@@ -79,6 +83,7 @@ describe('/calendar', () => {
     h.deleteCalendar.mockResolvedValue(undefined)
     h.create.mockResolvedValue(undefined)
     h.deleteOne.mockResolvedValue(undefined)
+    h.updateMany.mockResolvedValue({})
     h.auth.mockResolvedValue(true)
     h.tz.mockResolvedValue('Europe/Madrid')
     vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -248,6 +253,41 @@ describe('/calendar', () => {
       expect(ctx.session.pendingCal).toBeUndefined()
       expect(ctx.session.menuMessageId).toBeUndefined()
       expect(ctx.session.calendarMessageId).toBe(5)
+    })
+
+    it('encola las citas que ya existen (no canceladas) para enviarlas al calendario nuevo', async () => {
+      const ctx = flowCtx({ email: 'ana@gmail.com' })
+
+      await bot.press('cal_confirm', ctx)
+
+      expect(h.updateMany).toHaveBeenCalledWith(
+        { userId: 7, status: { $ne: 'cancelled' } },
+        { gcalDirty: true }
+      )
+    })
+
+    it('la sincronización inicial no se encola si la conexión falla', async () => {
+      h.shareCalendar.mockRejectedValue(
+        new h.GoogleApiError(400, 'Invalid scope')
+      )
+      const ctx = flowCtx({ email: 'x@example.com' })
+
+      await bot.press('cal_confirm', ctx)
+
+      expect(h.updateMany).not.toHaveBeenCalled()
+    })
+
+    it('si encolar la sincronización inicial falla, la conexión sigue adelante', async () => {
+      h.updateMany.mockRejectedValue(new Error('db'))
+      const ctx = flowCtx({ email: 'ana@gmail.com' })
+
+      await bot.press('cal_confirm', ctx)
+
+      expect(painted(ctx)[0]).toContain('Google Calendar conectado')
+      expect(console.error).toHaveBeenCalledWith(
+        expect.stringContaining('sincronización inicial'),
+        expect.any(Error)
+      )
     })
 
     it('si Google rechaza el correo, borra el calendario creado y deja reintentar', async () => {

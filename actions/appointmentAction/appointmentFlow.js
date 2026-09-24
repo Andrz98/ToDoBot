@@ -224,6 +224,7 @@ async function saveAppointment(ctx, pending) {
   appointment.notes = pending.notes
   appointment.startAt = startAt
   appointment.endAt = endOf(pending, startAt)
+  appointment.gcalDirty = true
   if (editing && moved) {
     // Con otra hora, el cliente debe reconfirmar y las alertas empiezan de cero
     appointment.status = STATUS.PENDING

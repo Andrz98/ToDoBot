@@ -55,7 +55,7 @@ export function registerAlertActions(bot) {
           userId: ctx.from.id,
           status: { $ne: STATUS.CANCELLED }
         },
-        { status: STATUS.CONFIRMED }
+        { status: STATUS.CONFIRMED, gcalDirty: true }
       )
       return appointment ? '✅ Cita confirmada.' : 'Cita no encontrada.'
     })
