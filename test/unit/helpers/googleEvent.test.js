@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { Types } from 'mongoose'
 import { toGoogleEvent } from '@/helpers/calendar/googleEvent.js'
 
 const appointment = (extra = {}) => ({
@@ -21,8 +22,7 @@ describe('toGoogleEvent', () => {
     expect(id).toMatch(/^[a-v0-9]{5,1024}$/)
   })
 
-  it('un ObjectId real (no una cadena) también funciona', async () => {
-    const { Types } = await import('mongoose')
+  it('un ObjectId real (no una cadena) también funciona', () => {
     const _id = new Types.ObjectId()
 
     expect(toGoogleEvent(appointment({ _id }), 'Europe/Madrid').id).toBe(

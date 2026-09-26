@@ -124,7 +124,12 @@ function failureBanner(error) {
   if (error instanceof GoogleApiError && error.status === 400) {
     return '⚠️ Google no acepta ese correo. Compruébalo o cámbialo.'
   }
-  return '⚠️ No pude conectar con Google. Inténtalo de nuevo en un momento.'
+  if (error.name === 'TimeoutError') {
+    return '⚠️ Google tardó demasiado en responder. Inténtalo de nuevo en un momento.'
+  }
+  // El tipo de error (no su mensaje, que podría incluir rutas) ayuda a diagnosticar
+  const kind = error.status ?? error.code ?? error.name
+  return `⚠️ No pude conectar con Google (${kind}). Inténtalo de nuevo en un momento.`
 }
 
 /** Crea el calendario, lo comparte y guarda el vínculo. Si algo falla, no deja calendarios huérfanos. */

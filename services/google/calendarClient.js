@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs'
 const API = 'https://www.googleapis.com/calendar/v3'
 const TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const SCOPE = 'https://www.googleapis.com/auth/calendar'
-const TIMEOUT_MS = 10_000
+// Crear un calendario tarda 5–8 s (y más con la conexión en frío): 10 s era muy justo
+const TIMEOUT_MS = 30_000
 const TOKEN_MARGIN_MS = 60_000
 
 export class GoogleApiError extends Error {

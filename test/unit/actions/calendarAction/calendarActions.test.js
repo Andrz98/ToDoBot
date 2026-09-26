@@ -308,6 +308,39 @@ describe('/calendar', () => {
       expect(ctx.session.flowType).toBe('cal')
     })
 
+    it.each([
+      [
+        'un timeout',
+        () => Object.assign(new Error('t'), { name: 'TimeoutError' }),
+        'Google tardó demasiado'
+      ],
+      [
+        'un error HTTP de Google',
+        () => new h.GoogleApiError(503, 'caído'),
+        'No pude conectar con Google (503)'
+      ],
+      [
+        'un error de sistema (clave ilegible)',
+        () =>
+          Object.assign(new Error('ENOENT: /ruta/secreta.json'), {
+            code: 'ENOENT'
+          }),
+        'No pude conectar con Google (ENOENT)'
+      ]
+    ])(
+      '%s se distingue en el aviso, sin revelar el mensaje interno',
+      async (_name, makeError, expected) => {
+        h.createCalendar.mockRejectedValue(makeError())
+        const ctx = flowCtx({ email: 'ana@gmail.com' })
+
+        await bot.press('cal_confirm', ctx)
+
+        const text = ctx.telegram.editMessageText.mock.calls[0][3]
+        expect(text).toContain(expected)
+        expect(text).not.toContain('secreta')
+      }
+    )
+
     it('un fallo de Google al crear no deja nada que borrar', async () => {
       h.createCalendar.mockRejectedValue(new h.GoogleApiError(503, 'caído'))
       const ctx = flowCtx({ email: 'ana@gmail.com' })
