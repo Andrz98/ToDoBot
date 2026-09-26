@@ -1,5 +1,11 @@
 import { Markup } from 'telegraf'
-import { replyInterface } from '../../utils/telegramUtils/messageLifecycle.js'
+import {
+  deleteNow,
+  replyInterface
+} from '../../utils/telegramUtils/messageLifecycle.js'
+import { safeReply } from '../../utils/retryUtils/safeReply.js'
+import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import { getUserTimezone } from '../taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { isCalendarEnabled } from '../../services/google/calendarClient.js'
 
 /**
@@ -40,6 +46,50 @@ export const buildCommandHelp = () =>
   menuActions()
     .map(({ command, help }) => `/${command} - ${help}`)
     .join('\n')
+
+/** Órdenes del desplegable "/" de Telegram: las mismas que el menú, más /start para recuperarlo. */
+export const menuCommands = () => [
+  { command: 'start', description: 'Mostrar el menú principal' },
+  ...menuActions().map(({ command, help }) => ({
+    command,
+    description: help
+  }))
+]
+
+/**
+ * Envía el menú principal y retira el anterior: solo hay uno vivo y es el
+ * último del chat. No lleva plazo de borrado: cuando el chat se limpia, es lo
+ * que le queda al usuario. Lanza si el usuario no está autorizado.
+ */
+export async function sendMainMenu(ctx) {
+  const username =
+    ctx.from?.username ||
+    ctx.from?.first_name ||
+    ctx.from?.last_name ||
+    'El/la Sin nombre'
+  const userTimezone = await getUserTimezone(ctx.from.id)
+  const tzMessage =
+    userTimezone === 'Europe/Madrid'
+      ? '🌐 Estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.'
+      : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>.`
+
+  // Primero envío el nuevo: si falla, el usuario conserva el menú anterior
+  const previousId = ctx.session?.startMessageId
+  const msg = await safeReply(
+    ctx,
+    `🛡️ ¡Hola, ${escapeHtml(username)}!\n` +
+      'TuttoFatto está listo para ayudarte.\n\n' +
+      `${tzMessage}\n\n` +
+      '¿Qué quieres hacer? Pulsa un botón o usa un comando:\n' +
+      buildCommandHelp(),
+    { parse_mode: 'HTML', ...buildMainMenuKeyboard() }
+  )
+  if (ctx.session) {
+    ctx.session.startMessageId = msg?.message_id
+  }
+  await deleteNow(ctx, previousId)
+  return msg
+}
 
 /** Estado vacío con atajo a crear una tarea: nunca un callejón sin salida. */
 export function replyEmptyState(ctx, text) {

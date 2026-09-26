@@ -1,4 +1,4 @@
-import { createSign } from 'node:crypto'
+import { createPrivateKey, createSign } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
 const API = 'https://www.googleapis.com/calendar/v3'
@@ -16,30 +16,93 @@ export class GoogleApiError extends Error {
   }
 }
 
-/**
- * La integración es opcional: sin credenciales el bot funciona igual, sin
- * Calendar. Producción usa el JSON en base64 (variable secreta); en local, la
- * ruta del archivo.
- */
-export const isCalendarEnabled = () =>
-  Boolean(
-    process.env.GOOGLE_SERVICE_ACCOUNT_JSON_B64 ||
-    process.env.GOOGLE_SERVICE_ACCOUNT_FILE
-  )
+const misconfigured = (reason) => ({ state: 'misconfigured', reason })
 
-function credentials() {
+/**
+ * Única lectura y validación de las credenciales: la comparten el arranque, el
+ * menú y la firma del token. Producción usa el JSON en base64 (variable
+ * secreta, con prioridad); en local, la ruta del archivo.
+ * Los motivos son textos fijos. Nunca citan el contenido de la variable ni del
+ * archivo, ni el mensaje de JSON.parse o de Node (podrían filtrar la clave
+ * privada a los logs); lo único variable es la ruta, que no es secreta.
+ */
+function loadCredentials() {
   const {
     GOOGLE_SERVICE_ACCOUNT_JSON_B64: base64,
     GOOGLE_SERVICE_ACCOUNT_FILE: file
   } = process.env
-  const raw = base64
-    ? Buffer.from(base64, 'base64').toString('utf8')
-    : readFileSync(file, 'utf8')
-  const parsed = JSON.parse(raw)
-  if (!parsed.client_email || !parsed.private_key) {
-    throw new Error('Credenciales de Google inválidas')
+  if (!base64 && !file) {
+    return { state: 'disabled' }
   }
-  return { clientEmail: parsed.client_email, privateKey: parsed.private_key }
+
+  let raw
+  if (base64) {
+    raw = Buffer.from(base64, 'base64').toString('utf8')
+  } else {
+    try {
+      raw = readFileSync(file, 'utf8')
+    } catch {
+      return misconfigured(
+        `No se puede leer el archivo de credenciales de Google (${file}). ` +
+          'Render no tiene acceso a rutas locales: usa GOOGLE_SERVICE_ACCOUNT_JSON_B64.'
+      )
+    }
+  }
+
+  let parsed
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return misconfigured(
+      'Las credenciales de Google no son un JSON válido. Si usas ' +
+        'GOOGLE_SERVICE_ACCOUNT_JSON_B64, pega el base64 en una sola línea, ' +
+        'sin comillas ni saltos de línea.'
+    )
+  }
+  if (!parsed?.client_email || !parsed?.private_key) {
+    return misconfigured(
+      'Faltan client_email o private_key en las credenciales de Google.'
+    )
+  }
+  // Solo se parsea la clave: comprueba que no está truncada, sin firmar nada
+  try {
+    createPrivateKey(parsed.private_key)
+  } catch {
+    return misconfigured(
+      'La private_key de las credenciales de Google no es una clave privada válida (¿está truncada?).'
+    )
+  }
+  return {
+    state: 'ready',
+    serviceAccount: parsed.client_email,
+    privateKey: parsed.private_key
+  }
+}
+
+/**
+ * Estado de la integración, opcional: sin credenciales el bot funciona igual,
+ * sin Calendar ('disabled'). Nunca devuelve secretos: solo la cuenta de
+ * servicio o, si algo falla, el motivo.
+ * @returns {{ state: 'disabled' | 'misconfigured' | 'ready', reason?: string, serviceAccount?: string }}
+ */
+export function getCalendarStatus() {
+  const { state, reason, serviceAccount } = loadCredentials()
+  return {
+    state,
+    ...(reason && { reason }),
+    ...(serviceAccount && { serviceAccount })
+  }
+}
+
+/** Solo con credenciales legibles y válidas: así /calendar no se ofrece roto. */
+export const isCalendarEnabled = () => getCalendarStatus().state === 'ready'
+
+function credentials() {
+  const { state, reason, serviceAccount, privateKey } = loadCredentials()
+  if (state !== 'ready') {
+    throw new Error(reason ?? 'Google Calendar no está configurado')
+  }
+  return { clientEmail: serviceAccount, privateKey }
 }
 
 const b64url = (value) => Buffer.from(value).toString('base64url')

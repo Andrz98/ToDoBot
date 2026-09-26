@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
+const h = vi.hoisted(() => ({ menu: vi.fn() }))
+vi.mock('@/helpers/menu/mainMenu.js', () => ({ sendMainMenu: h.menu }))
+
 import { chatCleanup } from '@/middlewares/chatCleanup/chatCleanup.js'
 import {
   TTL,
@@ -12,7 +16,10 @@ const baseCtx = (extra) => ({
 })
 
 describe('chatCleanup', () => {
-  beforeEach(() => vi.useFakeTimers())
+  beforeEach(() => {
+    vi.useFakeTimers()
+    h.menu.mockReset().mockResolvedValue(undefined)
+  })
   afterEach(() => vi.useRealTimers())
 
   it('borra el comando solo después de procesarlo, con la cadencia de un paso', async () => {
@@ -83,5 +90,67 @@ describe('chatCleanup', () => {
     expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
     await vi.advanceTimersByTimeAsync(1_000)
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(9, 40)
+  })
+
+  it('pulsar el menú principal no le pone plazo de borrado: no caduca', async () => {
+    const ctx = baseCtx({
+      callbackQuery: { message: { message_id: 40 } },
+      session: { startMessageId: 40 }
+    })
+
+    await chatCleanup(ctx, vi.fn())
+
+    await vi.advanceTimersByTimeAsync(TTL.INTERFACE * 2)
+    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+  })
+
+  describe('menú principal al terminar un flujo', () => {
+    it('si el flujo termina, el usuario recupera el menú', async () => {
+      const ctx = baseCtx({ session: { flowType: 'clear' } })
+
+      await chatCleanup(ctx, async () => {
+        ctx.session.flowType = null
+      })
+
+      expect(h.menu).toHaveBeenCalledWith(ctx)
+    })
+
+    it('si el flujo sigue activo, no lo reenvía', async () => {
+      const ctx = baseCtx({ session: { flowType: 'add' } })
+
+      await chatCleanup(ctx, vi.fn())
+
+      expect(h.menu).not.toHaveBeenCalled()
+    })
+
+    it('sin flujo previo (p. ej. /list) no lo reenvía', async () => {
+      const ctx = baseCtx({ session: {} })
+
+      await chatCleanup(ctx, vi.fn())
+
+      expect(h.menu).not.toHaveBeenCalled()
+    })
+
+    it('si el propio handler ya envió el menú (/start), no lo duplica', async () => {
+      const ctx = baseCtx({ session: { flowType: 'add', startMessageId: 1 } })
+
+      await chatCleanup(ctx, async () => {
+        ctx.session.flowType = null
+        ctx.session.startMessageId = 2
+      })
+
+      expect(h.menu).not.toHaveBeenCalled()
+    })
+
+    it('si reenviar el menú falla, el bot sigue', async () => {
+      h.menu.mockRejectedValue(new Error('boom'))
+      const ctx = baseCtx({ session: { flowType: 'clear' } })
+
+      await expect(
+        chatCleanup(ctx, async () => {
+          ctx.session.flowType = null
+        })
+      ).resolves.toBeUndefined()
+    })
   })
 })

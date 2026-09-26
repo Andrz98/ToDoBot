@@ -89,7 +89,7 @@ En este momento, el bot está restringido para el registro de nuevos usuarios. E
 - Variables de entorno (ver `.env.example`): `MONGO_URI`, `TELEGRAM_BOT_TOKEN`, `WEBHOOK_DOMAIN`, `TELEGRAM_WEBHOOK_SECRET`, `PORT` y, solo para depurar, `DEBUG`.
   - `TELEGRAM_WEBHOOK_SECRET` es obligatorio: Telegram lo envía en la cabecera `X-Telegram-Bot-Api-Secret-Token` y el bot rechaza cualquier petición al webhook que no lo lleve.
   - Con `DEBUG=true` se registran datos de usuario (sesión, mensajes): no lo actives en producción salvo para depurar.
-  - `GOOGLE_SERVICE_ACCOUNT_JSON_B64` (producción) o `GOOGLE_SERVICE_ACCOUNT_FILE` (local) son opcionales: habilitan `/calendar`. Es la clave JSON de una cuenta de servicio de Google Cloud con la Google Calendar API activada. Guárdala fuera del repositorio.
+  - `GOOGLE_SERVICE_ACCOUNT_JSON_B64` (producción) o `GOOGLE_SERVICE_ACCOUNT_FILE` (local) son opcionales: habilitan `/calendar` solo si las credenciales se pueden leer y son válidas (al arrancar, el bot lo comprueba y, si no lo son, deja el motivo en el log y no ofrece `/calendar`). Es la clave JSON de una cuenta de servicio de Google Cloud con la Google Calendar API activada. Guárdala fuera del repositorio.
 - UptimeRobot debe monitorizar `GET /`; el webhook solo acepta peticiones `POST` firmadas por Telegram.
 
 ## Consideraciones

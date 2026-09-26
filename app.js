@@ -11,7 +11,8 @@ import { createApp } from './config/express/createApp.js'
 import { startReminderScheduler } from './services/schedulers/reminderScheduler.js'
 import { startPendingDeletionScheduler } from './services/schedulers/pendingDeletionScheduler.js'
 import { startCalendarSyncScheduler } from './services/schedulers/calendarSyncScheduler.js'
-import { isCalendarEnabled } from './services/google/calendarClient.js'
+import { getCalendarStatus } from './services/google/calendarClient.js'
+import { menuCommands } from './helpers/menu/mainMenu.js'
 
 // ====================================
 // 🔰 Verifico .env
@@ -40,15 +41,31 @@ mongoose
     // 🔰 Inicializo Schedulers
     // ======================
     startReminderScheduler()
-    // Google Calendar es opcional: sin credenciales no hay nada que sincronizar
-    if (isCalendarEnabled()) {
+    // Google Calendar es opcional: sin credenciales no hay nada que sincronizar.
+    // Si están mal, se avisa aquí (visible en los logs de Render) y no se arranca
+    const calendar = getCalendarStatus()
+    if (calendar.state === 'ready') {
+      console.info(
+        `🗓️ Google Calendar activo con la cuenta de servicio ${calendar.serviceAccount}`
+      )
       startCalendarSyncScheduler()
+    } else if (calendar.state === 'misconfigured') {
+      console.error(`🦽 Google Calendar mal configurado: ${calendar.reason}`)
+    } else {
+      console.info('🗓️ Google Calendar no configurado (es opcional)')
     }
     // Recupera y rearma los borrados de mensajes que quedaron pendientes
     // antes de una caída, y vigila el resto por si alguno se escapa
     startPendingDeletionScheduler(bot).catch((err) =>
       console.error('😵‍💫 Error al recuperar borrados pendientes:', err.message)
     )
+
+    // Desplegable "/" de Telegram: las mismas órdenes que el menú principal
+    bot.telegram
+      .setMyCommands(menuCommands())
+      .catch((err) =>
+        console.error('🦽 Error al publicar los comandos:', err.message)
+      )
 
     // ==========================================
     // 🔰 Inicializo Express (webhook + ruta raíz)

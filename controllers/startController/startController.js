@@ -1,16 +1,7 @@
 // src/controllers/startController/startController.js
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
-import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
-import {
-  deleteNow,
-  replyInterface
-} from '../../utils/telegramUtils/messageLifecycle.js'
-import {
-  buildMainMenuKeyboard,
-  buildCommandHelp
-} from '../../helpers/menu/mainMenu.js'
-import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import { sendMainMenu } from '../../helpers/menu/mainMenu.js'
 import { debugLog } from '../../utils/logUtils/debugLog.js'
 import { UNAUTHORIZED_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
 
@@ -22,12 +13,6 @@ import { UNAUTHORIZED_TEXT } from '../../helpers/replyMessages/genericReplyMessa
 export const startCommand = async (ctx) => {
   debugLog('🟢 [DEBUG] /start')
   try {
-    const username =
-      ctx.from?.username ||
-      ctx.from?.first_name ||
-      ctx.from?.last_name ||
-      'El/la Sin nombre'
-
     // Verifico si el usuario está autorizado ANTES de tocar cualquier dato
     // que exija que exista un AuthorizedUser (getUserTimezone lanza si no existe)
     const authorized = await isUserAuthorized(ctx)
@@ -42,28 +27,8 @@ export const startCommand = async (ctx) => {
       )
     }
 
-    const userTimezone = await getUserTimezone(ctx.from.id)
-
-    const tzMessage =
-      userTimezone === 'Europe/Madrid'
-        ? '🌐 Estás usando la zona horaria por defecto: <b>Europe/Madrid</b>.'
-        : `🌐 Tu zona horaria actual es: <b>${userTimezone}</b>.`
-
     // Un único menú vivo: repetir /start sustituye al anterior
-    await deleteNow(ctx, ctx.session?.startMessageId)
-    const msg = await replyInterface(
-      ctx,
-      `🛡️ ¡Hola, ${escapeHtml(username)}!\n` +
-        'TuttoFatto está listo para ayudarte.\n\n' +
-        `${tzMessage}\n\n` +
-        '¿Qué quieres hacer? Pulsa un botón o usa un comando:\n' +
-        buildCommandHelp(),
-      { parse_mode: 'HTML', ...buildMainMenuKeyboard() }
-    )
-    if (ctx.session) {
-      ctx.session.startMessageId = msg?.message_id
-    }
-    return msg
+    return await sendMainMenu(ctx)
   } catch (error) {
     console.error(`😵‍💫 Error en /start: ${error.message}`)
     return safeReply(
