@@ -3,17 +3,42 @@ import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
-import { buildConfirmCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
+import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
+import {
+  COMPLETE_PROMPT,
+  buildCompleteMenu,
+  buildConfirmCompleteMenu
+} from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import {
   UNAUTHORIZED_TEXT,
   GENERAL_ERROR_TEXT,
-  OPERATION_CANCELLED_TEXT
+  ACTION_FINISHED_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 const COMPLETE_DONE_TEXT = '✅ Tarea completada.'
+
+/**
+ * Vuelve a la lista para seguir completando: el usuario sale con "Finalizar
+ * acción", no porque el bot le cierre el menú tras cada tarea. Sin tareas
+ * pendientes no hay nada más que completar y el flujo se cierra.
+ */
+async function showCompleteList(ctx, notice = '') {
+  ctx.session.pendingComplete = null
+  const tasks = await findAllTasks(ctx.from.id)
+  if (tasks.length === 0) {
+    ctx.session.flowType = null
+    return closeInterface(ctx, `${notice}📭 No te quedan tareas pendientes.`)
+  }
+  ctx.session.flowType = 'complete'
+  return renderInterface(
+    ctx,
+    `${notice}${COMPLETE_PROMPT}`,
+    buildCompleteMenu(tasks)
+  )
+}
 
 /**
  * Registra los callbacks para el flujo de completar tareas.
@@ -46,8 +71,8 @@ export function registerCompleteActions(bot) {
   bot.action('complete_cancel', async (ctx) => {
     ctx.session.flowType = null
     ctx.session.pendingComplete = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 
   // 2) Confirma "Sí"
@@ -71,10 +96,8 @@ export function registerCompleteActions(bot) {
         { completed: true }
       )
       await dismissReminder(ctx, task)
-      ctx.session.flowType = null
-      ctx.session.pendingComplete = null
       await safeAnswerCbQuery(ctx, COMPLETE_DONE_TEXT)
-      return closeInterface(ctx, COMPLETE_DONE_TEXT)
+      return await showCompleteList(ctx, `${COMPLETE_DONE_TEXT}\n\n`)
     } catch (error) {
       console.error('❌ Error en complete_confirm:yes:', error)
       ctx.session.flowType = null
@@ -83,11 +106,9 @@ export function registerCompleteActions(bot) {
     }
   })
 
-  // 3) Confirma "No"
+  // 3) Confirma "No": no completa nada y vuelve a la lista
   bot.action('complete_confirm:no', async (ctx) => {
-    ctx.session.flowType = null
-    ctx.session.pendingComplete = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx)
+    return showCompleteList(ctx)
   })
 }

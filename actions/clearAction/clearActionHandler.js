@@ -5,7 +5,7 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 import {
   UNAUTHORIZED_TEXT,
   GENERAL_ERROR_TEXT,
-  OPERATION_CANCELLED_TEXT,
+  ACTION_FINISHED_TEXT,
   CLEAR_DONE_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 
@@ -51,7 +51,7 @@ export function registerClearActions(bot) {
   bot.action(/^clear_confirm_(.+):no$/, async (ctx) => {
     ctx.session.flowType = null
     ctx.session.pendingClearToken = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 }

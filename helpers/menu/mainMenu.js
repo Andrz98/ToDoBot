@@ -80,6 +80,7 @@ export async function sendMainMenu(ctx) {
     `🛡️ ¡Hola, ${escapeHtml(username)}!\n` +
       'TuttoFatto está listo para ayudarte.\n\n' +
       `${tzMessage}\n\n` +
+      '🧹 Este chat se limpia solo: los avisos y las listas desaparecen pasado un rato, y solo puedes escribir cuando un botón te lo pida.\n\n' +
       '¿Qué quieres hacer? Pulsa un botón o usa un comando:\n' +
       buildCommandHelp(),
     { parse_mode: 'HTML', ...buildMainMenuKeyboard() }

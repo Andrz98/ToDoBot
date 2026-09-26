@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
+import { FINISH_ACTION_LABEL } from '../replyMessages/genericReplyMessages.js'
 
 const EMAIL = /^[^\s@<>]{1,64}@[^\s@<>]+\.[^\s@<>]+$/
 const MAX_EMAIL_LENGTH = 254
@@ -23,7 +24,7 @@ export const buildCalIntro = () => ({
     'Crearé un calendario "TuttoFatto" con tus citas y lo compartiré contigo ' +
     'como lector: se ve en Google Calendar, pero las citas se gestionan desde el bot.\n\n' +
     'Escribe el correo de tu cuenta de Google.',
-  markup: keyboard([[button('✖️ Cancelar', 'cal_cancel')]])
+  markup: keyboard([[button(FINISH_ACTION_LABEL, 'cal_cancel')]])
 })
 
 /** Paso 2: el correo puede tener erratas y se comparte información de clientes, así que se confirma. */
@@ -36,7 +37,7 @@ export const buildCalConfirm = (email, banner) => ({
   markup: keyboard([
     [button('✅ Conectar', 'cal_confirm')],
     [button('✏️ Cambiar correo', 'cal_change')],
-    [button('✖️ Cancelar', 'cal_cancel')]
+    [button(FINISH_ACTION_LABEL, 'cal_cancel')]
   ])
 })
 

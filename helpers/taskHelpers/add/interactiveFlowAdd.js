@@ -1,6 +1,7 @@
 import { Markup } from 'telegraf'
 import { formatDateEs } from '../../../helpers/taskHelpers/date/formatDateEs.js'
 import { frequencyLabels } from '../../frequency/frequencyLabels.js'
+import { FINISH_ACTION_LABEL } from '../../replyMessages/genericReplyMessages.js'
 
 export const DEFAULT_FREQUENCY = 'daily'
 
@@ -53,7 +54,7 @@ export function buildAddMenu(pendingTask = {}, timezone = 'Europe/Madrid') {
       Markup.button.callback('✅ Confirmar creación', 'add_confirm')
     ])
   }
-  keyboard.push([Markup.button.callback('✖️ Cancelar', 'add_cancel')])
+  keyboard.push([Markup.button.callback(FINISH_ACTION_LABEL, 'add_cancel')])
 
   return {
     text: lines.join('\n'),

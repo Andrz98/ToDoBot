@@ -77,7 +77,7 @@ describe('/settimezone: botones', () => {
     expect(h.update).not.toHaveBeenCalled()
     expect(ctx.session.flowType).toBeNull()
     expect(ctx.editMessageText).toHaveBeenCalledWith(
-      'Operación cancelada.',
+      'Acción finalizada.',
       expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
     )
   })

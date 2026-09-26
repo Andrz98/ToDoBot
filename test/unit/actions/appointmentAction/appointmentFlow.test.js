@@ -425,7 +425,7 @@ describe('flujo /cita', () => {
 
     expect(h.state.created).toBeNull()
     expect(ctx.editMessageText).toHaveBeenCalledWith(
-      'Operación cancelada.',
+      'Acción finalizada.',
       expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
     )
     expect(ctx.session.flowType).toBeUndefined()

@@ -1,6 +1,9 @@
 // helpers/complete/interactiveFlowComplete.js
 import { Markup } from 'telegraf'
 import { buildInlineConfirm } from '../../replyConfirm/inlineConfirm.js'
+import { FINISH_ACTION_LABEL } from '../../replyMessages/genericReplyMessages.js'
+
+export const COMPLETE_PROMPT = 'Selecciona la tarea que deseas completar:'
 
 /**
  * Construye el teclado inline para seleccionar la tarea a completar.
@@ -15,7 +18,7 @@ export const buildCompleteMenu = (tasks) => {
   return {
     reply_markup: Markup.inlineKeyboard(
       // Cada fila con un botón
-      [...buttons.map((btn) => [btn]), [Markup.button.callback('✖️ Cancelar', 'complete_cancel')]],
+      [...buttons.map((btn) => [btn]), [Markup.button.callback(FINISH_ACTION_LABEL, 'complete_cancel')]],
       { columns: 1 }
     ).reply_markup
   }

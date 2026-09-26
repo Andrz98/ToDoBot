@@ -52,7 +52,7 @@ describe('/clear: confirmación', () => {
     expect(ctx.session.flowType).toBeNull()
     expect(ctx.session.pendingClearToken).toBeNull()
     expect(ctx.editMessageText).toHaveBeenCalledWith(
-      'Operación cancelada.',
+      'Acción finalizada.',
       expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
     )
   })

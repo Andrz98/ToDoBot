@@ -2,6 +2,7 @@ import { Markup } from 'telegraf'
 import { formatDateEs } from '../date/formatDateEs.js'
 import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
 import { frequencyLabels } from '../../frequency/frequencyLabels.js'
+import { FINISH_ACTION_LABEL } from '../../replyMessages/genericReplyMessages.js'
 
 /**
  * Construye el texto y el teclado inline para el flujo interactivo de /edit.
@@ -39,7 +40,7 @@ export const buildEditMenu = (task, timeZone, hasEdits = false) => {
   if (hasEdits) {
     buttons.push(Markup.button.callback('Guardar', 'edit_save'))
   }
-  buttons.push(Markup.button.callback('✖️ Cancelar', 'edit_cancel'))
+  buttons.push(Markup.button.callback(FINISH_ACTION_LABEL, 'edit_cancel'))
 
   const keyboard = Markup.inlineKeyboard(
     // Convierto cada botón en fila de un solo botón

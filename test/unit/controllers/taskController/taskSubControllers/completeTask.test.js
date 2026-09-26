@@ -60,7 +60,7 @@ describe('completeTask', () => {
     ).toEqual([
       { text: 'Comprar pan', callback_data: 'complete_select:a1' },
       { text: 'Pagar luz', callback_data: 'complete_select:b2' },
-      { text: '✖️ Cancelar', callback_data: 'complete_cancel' }
+      { text: '✔️ Finalizar acción', callback_data: 'complete_cancel' }
     ])
     expect(ctx.session.flowType).toBe('complete')
   })

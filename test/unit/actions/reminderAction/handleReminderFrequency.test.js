@@ -40,7 +40,7 @@ describe('handleReminderFrequency', () => {
       ['✅ Semanal', 'saveReminder::42::weekly'],
       ['Mensual', 'saveReminder::42::monthly'],
       ['Anual', 'saveReminder::42::yearly'],
-      ['✖️ Cancelar', 'reminder_cancel']
+      ['✔️ Finalizar acción', 'reminder_cancel']
     ])
     expect(ctx.reply).not.toHaveBeenCalled()
   })

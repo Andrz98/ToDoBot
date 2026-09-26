@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import { Markup } from 'telegraf'
+import { FINISH_ACTION_LABEL } from '../../replyMessages/genericReplyMessages.js'
 
 /**
  * Selector de fecha y hora con inline keyboard, sin estado: cada botón lleva en su
@@ -28,7 +29,7 @@ const monthTitle = (dt) => capitalize(dt.setLocale('es').toFormat('LLLL yyyy'))
 const dayTitle = (dt) =>
   capitalize(dt.setLocale('es').toFormat("cccc d 'de' LLLL 'de' yyyy"))
 
-const cancelButton = (prefix) => button('✖️ Cancelar', `${prefix}_cancel`)
+const cancelButton = (prefix) => button(FINISH_ACTION_LABEL, `${prefix}_cancel`)
 
 /** Primer día del mes pedido; si no es válido o ya pasó entero, el mes actual. */
 export function resolveMonth(yearMonth, timezone, now = DateTime.now()) {

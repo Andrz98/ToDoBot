@@ -1,5 +1,6 @@
 import { Markup } from 'telegraf'
 import { ALLOWED_TIMEZONES } from '../allowedTimezones.js'
+import { FINISH_ACTION_LABEL } from '../../../replyMessages/genericReplyMessages.js'
 
 /**
  * Construye el texto y el teclado inline para /settimezone
@@ -12,7 +13,7 @@ export const buildTimezoneMenu = (currentTz) => {
   const inline = Markup.inlineKeyboard(
     [
       ...options.map((zone) => [Markup.button.callback(zone, `set_tz_${zone}`)]),
-      [Markup.button.callback('✖️ Cancelar', 'confirm_tz_no')]
+      [Markup.button.callback(FINISH_ACTION_LABEL, 'confirm_tz_no')]
     ],
     { columns: 1 }
   )

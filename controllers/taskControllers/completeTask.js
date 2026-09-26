@@ -1,7 +1,10 @@
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
 import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
-import { buildCompleteMenu } from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
+import {
+  COMPLETE_PROMPT,
+  buildCompleteMenu
+} from '../../helpers/taskHelpers/Complete/interactiveFlowComplete.js'
 import { safeReply } from '../../utils/retryUtils/safeReply.js'
 import { replyEmptyState } from '../../helpers/menu/mainMenu.js'
 import { openInterface } from '../../utils/telegramUtils/flowMessages.js'
@@ -27,11 +30,7 @@ export const completeTask = async (ctx) => {
     ctx.session.flowType = 'complete'
 
     // Muestro el botón de selección
-    return openInterface(
-      ctx,
-      'Selecciona la tarea que deseas completar:',
-      buildCompleteMenu(tasks)
-    )
+    return openInterface(ctx, COMPLETE_PROMPT, buildCompleteMenu(tasks))
   } catch (error) {
     console.error('😵‍💫 Error en completeTask:', error)
     return safeReply(

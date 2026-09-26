@@ -3,6 +3,7 @@ import { Markup } from 'telegraf'
 import { formatDateEs } from '../taskHelpers/date/formatDateEs.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { STATUS, STATUS_ICON, STATUS_LABEL } from './status.js'
+import { FINISH_ACTION_LABEL } from '../replyMessages/genericReplyMessages.js'
 
 export const DEFAULT_DURATION = 60
 export const MIN_DURATION = 5
@@ -96,7 +97,7 @@ export function buildAptMenu(
       button(id ? '✅ Guardar cambios' : '✅ Confirmar cita', 'apt_confirm')
     ])
   }
-  keyboard.push([button('✖️ Cancelar', 'apt_cancel')])
+  keyboard.push([button(FINISH_ACTION_LABEL, 'apt_cancel')])
 
   return {
     text: lines.join('\n'),

@@ -60,7 +60,7 @@ describe('deleteTask', () => {
     ).toEqual([
       { text: 'Comprar pan', callback_data: 'delete_select:a1' },
       { text: 'Pagar luz', callback_data: 'delete_select:b2' },
-      { text: '✖️ Cancelar', callback_data: 'delete_cancel' }
+      { text: '✔️ Finalizar acción', callback_data: 'delete_cancel' }
     ])
     expect(ctx.session.flowType).toBe('delete')
   })

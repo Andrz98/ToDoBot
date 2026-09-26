@@ -50,7 +50,7 @@ describe('buildEditMenu', () => {
       'Descripción',
       'Fecha',
       'Periodicidad',
-      '✖️ Cancelar'
+      '✔️ Finalizar acción'
     ])
     expect(labels(true)).toContain('Guardar')
   })

@@ -5,7 +5,10 @@ import { Markup } from 'telegraf'
 import { replyEmptyState } from '../../helpers/menu/mainMenu.js'
 import { openInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { frequencyLabels } from '../../helpers/frequency/frequencyLabels.js'
-import { replyMessages } from '../../helpers/replyMessages/genericReplyMessages.js'
+import {
+  replyMessages,
+  FINISH_ACTION_LABEL
+} from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export const startReminderAction = async (ctx) => {
   ctx.session.flowType = 'reminder'
@@ -42,7 +45,7 @@ export const startReminderAction = async (ctx) => {
         reply_markup: {
           inline_keyboard: [
             ...buttons,
-            [Markup.button.callback('✖️ Cancelar', 'reminder_cancel')]
+            [Markup.button.callback(FINISH_ACTION_LABEL, 'reminder_cancel')]
           ]
         }
       }

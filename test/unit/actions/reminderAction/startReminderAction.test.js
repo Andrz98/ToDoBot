@@ -43,7 +43,7 @@ describe('startReminderAction', () => {
             ],
             [
               {
-                text: '✖️ Cancelar',
+                text: '✔️ Finalizar acción',
                 callback_data: 'reminder_cancel',
                 hide: false
               }

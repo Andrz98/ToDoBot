@@ -1,7 +1,7 @@
 import { Markup } from 'telegraf'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { buildFrequencyMenu } from '../../helpers/frequency/flowFrequency/interactiveFlowFrequency.js'
-import { GENERAL_ERROR_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
+import { GENERAL_ERROR_TEXT, FINISH_ACTION_LABEL } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { renderInterface } from '../../utils/telegramUtils/flowMessages.js'
@@ -20,7 +20,7 @@ export const handleReminderFrequency = async (ctx) => {
     const { text, markup } = buildFrequencyMenu(
       (value) => `saveReminder::${taskId}::${value}`,
       task.frequency,
-      [[Markup.button.callback('✖️ Cancelar', 'reminder_cancel')]]
+      [[Markup.button.callback(FINISH_ACTION_LABEL, 'reminder_cancel')]]
     )
 
     await safeAnswerCbQuery(ctx)

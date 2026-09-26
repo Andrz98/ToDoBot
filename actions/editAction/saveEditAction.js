@@ -8,14 +8,14 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js'
 import {
   UNAUTHORIZED_TEXT,
-  GENERAL_ERROR_TEXT
+  GENERAL_ERROR_TEXT,
+  ACTION_FINISHED_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { escapeHtml } from '../../utils/textUtils/escapeHtml.js'
 import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
 import { isEditActive, loadEditedTask, resetEditSession } from './editMenu.js'
 
 const DUPLICATE_KEY = 11000
-const EDIT_CANCELLED_TEXT = 'Edición cancelada.'
 
 export function registerSaveEditAction(bot) {
   bot.action('edit_save', async (ctx) => {
@@ -82,8 +82,8 @@ export function registerSaveEditAction(bot) {
     if (!isLiveInterface(ctx)) {
       return expireCallback(ctx)
     }
-    await safeAnswerCbQuery(ctx, EDIT_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
     resetEditSession(ctx)
-    return closeInterface(ctx, EDIT_CANCELLED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 }

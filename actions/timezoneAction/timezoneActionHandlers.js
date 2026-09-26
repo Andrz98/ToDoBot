@@ -9,7 +9,7 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 import {
   UNAUTHORIZED_TEXT,
   GENERAL_ERROR_TEXT,
-  OPERATION_CANCELLED_TEXT
+  ACTION_FINISHED_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export function registerTimezoneActions(bot) {
@@ -87,7 +87,7 @@ export function registerTimezoneActions(bot) {
   bot.action('confirm_tz_no', async (ctx) => {
     ctx.session.flowType = null
     ctx.session.pendingTz = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 }

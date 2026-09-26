@@ -4,7 +4,9 @@
 export const UNAUTHORIZED_TEXT = '🥸 Debes estar autorizado para usar este bot.'
 export const GENERAL_ERROR_TEXT =
   '😵‍💫 Ocurrió un error. Intenta de nuevo más tarde.'
-export const OPERATION_CANCELLED_TEXT = 'Operación cancelada.'
+export const ACTION_FINISHED_TEXT = 'Acción finalizada.'
+// Sin "Cancelar": el usuario no debe sentir que pierde algo importante al salir
+export const FINISH_ACTION_LABEL = '✔️ Finalizar acción'
 export const CLEAR_DONE_TEXT = '✅ Tareas eliminadas.'
 
 /**

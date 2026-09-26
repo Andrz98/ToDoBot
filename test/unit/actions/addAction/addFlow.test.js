@@ -227,7 +227,7 @@ describe('/add: botón "Cancelar" (add_cancel)', () => {
     await bot.press('add_cancel', ctx)
 
     expect(ctx.editMessageText).toHaveBeenCalledWith(
-      'Creación cancelada.',
+      'Acción finalizada.',
       expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
     )
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(99, 8)

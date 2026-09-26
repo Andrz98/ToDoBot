@@ -5,7 +5,7 @@ import { registerAlertActions } from './alertActions.js'
 import { handleReminderFrequency } from '../../events/reminderEvent/handleReminderFrequency.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { closeInterface } from '../../utils/telegramUtils/flowMessages.js'
-import { OPERATION_CANCELLED_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
+import { ACTION_FINISHED_TEXT } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export function registerReminderActions(bot) {
   bot.command('reminder', isAuthorizedUser, startReminderAction)
@@ -14,7 +14,7 @@ export function registerReminderActions(bot) {
   registerAlertActions(bot)
   bot.action('reminder_cancel', async (ctx) => {
     ctx.session.flowType = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 }

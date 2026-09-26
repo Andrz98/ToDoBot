@@ -2,17 +2,42 @@
 import { Task } from '../../models/task.js'
 import { findTask } from '../../helpers/tasks/findTask.js'
 import { dismissReminder } from '../../helpers/tasks/reminderAlert.js'
-import { buildConfirmDeleteMenu } from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
+import { findAllTasks } from '../../helpers/tasks/findAllTasks.js'
+import {
+  DELETE_PROMPT,
+  buildConfirmDeleteMenu,
+  buildDeleteMenu
+} from '../../helpers/taskHelpers/delete/interactiveFlowDelete.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import {
   UNAUTHORIZED_TEXT,
   GENERAL_ERROR_TEXT,
-  OPERATION_CANCELLED_TEXT
+  ACTION_FINISHED_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 const DELETE_DONE_TEXT = '✅ Tarea eliminada.'
+
+/**
+ * Vuelve a la lista para seguir eliminando: el usuario sale con "Finalizar
+ * acción", no porque el bot le cierre el menú tras cada tarea. Sin tareas
+ * pendientes no hay nada más que eliminar y el flujo se cierra.
+ */
+async function showDeleteList(ctx, notice = '') {
+  ctx.session.pendingDelete = null
+  const tasks = await findAllTasks(ctx.from.id)
+  if (tasks.length === 0) {
+    ctx.session.flowType = null
+    return closeInterface(ctx, `${notice}📭 No te quedan tareas pendientes.`)
+  }
+  ctx.session.flowType = 'delete'
+  return renderInterface(
+    ctx,
+    `${notice}${DELETE_PROMPT}`,
+    buildDeleteMenu(tasks)
+  )
+}
 
 /**
  * Registra los callbacks para el flujo de eliminación de tareas.
@@ -40,8 +65,8 @@ export function registerDeleteActions(bot) {
   bot.action('delete_cancel', async (ctx) => {
     ctx.session.flowType = null
     ctx.session.pendingDelete = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 
   // 2) Confirmación "Sí"
@@ -66,10 +91,8 @@ export function registerDeleteActions(bot) {
         userId: ctx.from.id
       })
       await dismissReminder(ctx, task)
-      ctx.session.flowType = null
-      ctx.session.pendingDelete = null
       await safeAnswerCbQuery(ctx, DELETE_DONE_TEXT)
-      return closeInterface(ctx, DELETE_DONE_TEXT)
+      return await showDeleteList(ctx, `${DELETE_DONE_TEXT}\n\n`)
     } catch (error) {
       console.error('❌ Error en delete_confirm:yes:', error)
       ctx.session.flowType = null
@@ -78,11 +101,9 @@ export function registerDeleteActions(bot) {
     }
   })
 
-  // 3) Confirmación "No"
+  // 3) Confirmación "No": no borra nada y vuelve a la lista
   bot.action('delete_confirm:no', async (ctx) => {
-    ctx.session.flowType = null
-    ctx.session.pendingDelete = null
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx)
+    return showDeleteList(ctx)
   })
 }

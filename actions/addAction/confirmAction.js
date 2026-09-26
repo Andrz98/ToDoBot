@@ -9,14 +9,14 @@ import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone
 import { formatDateEs } from '../../helpers/taskHelpers/date/formatDateEs.js'
 import {
   UNAUTHORIZED_TEXT,
-  GENERAL_ERROR_TEXT
+  GENERAL_ERROR_TEXT,
+  ACTION_FINISHED_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { Task } from '../../models/task.js'
 import { DEFAULT_FREQUENCY } from '../../helpers/taskHelpers/add/interactiveFlowAdd.js'
 
 const DUPLICATE_KEY = 11000
 const ADD_DONE_TEXT = '✅ Tarea creada.'
-const ADD_CANCELLED_TEXT = 'Creación cancelada.'
 
 function resetAddSession(ctx) {
   delete ctx.session.flowType
@@ -86,8 +86,8 @@ export function registerConfirmAction(bot) {
     if (!isLiveInterface(ctx)) {
       return expireCallback(ctx)
     }
-    await safeAnswerCbQuery(ctx, ADD_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
     resetAddSession(ctx)
-    await closeInterface(ctx, ADD_CANCELLED_TEXT)
+    await closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 }

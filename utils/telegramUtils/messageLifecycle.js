@@ -7,7 +7,7 @@ import { debugLog } from '../logUtils/debugLog.js'
 /**
  * Política de permanencia de mensajes en el chat.
  *  - STEP:      prompts y respuestas intermedias de un flujo, comandos ya procesados
- *  - NOTICE:    resultados y avisos breves ("✅ Tarea creada", "Operación cancelada")
+ *  - NOTICE:    resultados y avisos breves ("✅ Tarea creada", "Acción finalizada")
  *  - INTERFACE: menús, listados, selectores. Se renueva con cada interacción
  */
 export const TTL = Object.freeze({

@@ -12,6 +12,7 @@ import {
 import { replyTemporary } from '../../utils/telegramUtils/messageLifecycle.js'
 import { resetEditSession, renderEditMenu } from './editMenu.js'
 import { replyEmptyState } from '../../helpers/menu/mainMenu.js'
+import { FINISH_ACTION_LABEL } from '../../helpers/replyMessages/genericReplyMessages.js'
 
 export async function startEdit(ctx) {
   delete ctx.session.pendingTask
@@ -26,7 +27,7 @@ export async function startEdit(ctx) {
 
     ctx.session.flowType = 'edit'
     keyboard.reply_markup.inline_keyboard.push([
-      Markup.button.callback('✖️ Cancelar', 'edit_cancel')
+      Markup.button.callback(FINISH_ACTION_LABEL, 'edit_cancel')
     ])
     await openInterface(ctx, 'Selecciona la tarea que quieres editar:', keyboard)
   } catch (error) {

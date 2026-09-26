@@ -2,6 +2,9 @@
 import { Markup } from 'telegraf'
 import { buildInlineConfirm } from '../../replyConfirm/inlineConfirm.js'
 import { escapeHtml } from '../../../utils/textUtils/escapeHtml.js'
+import { FINISH_ACTION_LABEL } from '../../replyMessages/genericReplyMessages.js'
+
+export const DELETE_PROMPT = 'Selecciona la tarea que deseas eliminar:'
 
 /**
  * Construye el teclado inline para seleccionar la tarea a eliminar.
@@ -16,7 +19,7 @@ export const buildDeleteMenu = (tasks) => {
   return {
     reply_markup: Markup.inlineKeyboard(
       // Cada fila con un botón
-      [...buttons.map((btn) => [btn]), [Markup.button.callback('✖️ Cancelar', 'delete_cancel')]],
+      [...buttons.map((btn) => [btn]), [Markup.button.callback(FINISH_ACTION_LABEL, 'delete_cancel')]],
       { columns: 1 }
     ).reply_markup
   }

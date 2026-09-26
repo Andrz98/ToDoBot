@@ -436,7 +436,7 @@ describe('/calendar', () => {
 
       expect(h.createCalendar).not.toHaveBeenCalled()
       expect(ctx.editMessageText).toHaveBeenCalledWith(
-        'Operación cancelada.',
+        'Acción finalizada.',
         expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
       )
       expect(ctx.session.flowType).toBeUndefined()

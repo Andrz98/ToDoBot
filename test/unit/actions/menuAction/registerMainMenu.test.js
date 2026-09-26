@@ -179,6 +179,7 @@ describe('menú principal', () => {
 
       const [text, extra] = ctx.reply.mock.calls[0]
       expect(text).toContain('Hola')
+      expect(text).toContain('se limpia solo')
       expect(extra.reply_markup.inline_keyboard.flat().length).toBe(
         menuActions().length
       )

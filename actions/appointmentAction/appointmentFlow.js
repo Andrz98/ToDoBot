@@ -15,7 +15,7 @@ import { getUserTimezone } from '../../helpers/taskHelpers/timezone/userTimezone
 import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isUserAuthorized.js'
 import {
   UNAUTHORIZED_TEXT,
-  OPERATION_CANCELLED_TEXT,
+  ACTION_FINISHED_TEXT,
   GENERAL_ERROR_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
@@ -349,8 +349,8 @@ export function registerAppointmentFlow(bot) {
     if (!isLiveInterface(ctx)) {
       return expireCallback(ctx)
     }
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
     resetAptSession(ctx)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 }

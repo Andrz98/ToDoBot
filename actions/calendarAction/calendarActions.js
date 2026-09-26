@@ -20,7 +20,7 @@ import { isUserAuthorized } from '../../helpers/userAuthorizedTaskController/isU
 import {
   UNAUTHORIZED_TEXT,
   GENERAL_ERROR_TEXT,
-  OPERATION_CANCELLED_TEXT
+  ACTION_FINISHED_TEXT
 } from '../../helpers/replyMessages/genericReplyMessages.js'
 import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
@@ -261,9 +261,9 @@ export function registerCalendarActions(bot) {
     if (!isLiveInterface(ctx)) {
       return expireCallback(ctx)
     }
-    await safeAnswerCbQuery(ctx, OPERATION_CANCELLED_TEXT)
+    await safeAnswerCbQuery(ctx, ACTION_FINISHED_TEXT)
     resetCalSession(ctx)
-    return closeInterface(ctx, OPERATION_CANCELLED_TEXT)
+    return closeInterface(ctx, ACTION_FINISHED_TEXT)
   })
 
   bot.action(
