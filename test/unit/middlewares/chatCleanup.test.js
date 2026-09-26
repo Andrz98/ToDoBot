@@ -48,13 +48,80 @@ describe('chatCleanup', () => {
     expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(9, 31)
   })
 
-  it('no toca mensajes de texto normales (los gestiona cada flujo)', async () => {
-    const ctx = baseCtx({ message: { text: 'Comprar pan', message_id: 32 } })
+  describe('el usuario solo escribe cuando un botón se lo pide', () => {
+    it('un texto que nadie ha pedido se borra en el acto y no llega a ningún handler', async () => {
+      const ctx = baseCtx({
+        message: { text: 'Comprar pan', message_id: 32 },
+        session: {}
+      })
+      const next = vi.fn()
 
-    await chatCleanup(ctx, vi.fn())
+      await chatCleanup(ctx, next)
 
-    await vi.advanceTimersByTimeAsync(TTL.INTERFACE)
-    expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+      expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(9, 32)
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('también se borra si hay un flujo abierto que no espera texto', async () => {
+      const ctx = baseCtx({
+        message: { text: 'hola', message_id: 33 },
+        session: { flowType: 'clear', awaiting: null }
+      })
+      const next = vi.fn()
+
+      await chatCleanup(ctx, next)
+
+      expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(9, 33)
+      expect(next).not.toHaveBeenCalled()
+    })
+
+    it('cualquier otro mensaje (foto, sticker, voz…) se borra igual', async () => {
+      const ctx = baseCtx({
+        message: { photo: [{}], message_id: 34 },
+        session: {}
+      })
+
+      await chatCleanup(ctx, vi.fn())
+
+      expect(ctx.telegram.deleteMessage).toHaveBeenCalledWith(9, 34)
+    })
+
+    it('si un botón pidió texto (awaiting), pasa al flujo y no se borra de golpe', async () => {
+      const ctx = baseCtx({
+        message: { text: 'Comprar pan', message_id: 35 },
+        session: { flowType: 'add', awaiting: 'add_name' }
+      })
+      const next = vi.fn()
+
+      await chatCleanup(ctx, next)
+
+      expect(next).toHaveBeenCalled()
+      expect(ctx.telegram.deleteMessage).not.toHaveBeenCalled()
+    })
+
+    it('un comando sigue su camino aunque no se espere texto', async () => {
+      const ctx = baseCtx({
+        message: { text: '/list', message_id: 36 },
+        session: {}
+      })
+      const next = vi.fn()
+
+      await chatCleanup(ctx, next)
+
+      expect(next).toHaveBeenCalled()
+    })
+
+    it('las pulsaciones de botón (sin message) no se ven afectadas', async () => {
+      const ctx = baseCtx({
+        callbackQuery: { message: { message_id: 40 } },
+        session: {}
+      })
+      const next = vi.fn()
+
+      await chatCleanup(ctx, next)
+
+      expect(next).toHaveBeenCalled()
+    })
   })
 
   it('pulsar un botón de un flujo activo renueva su ventana de vida (flowExpiresAt)', async () => {
