@@ -7,6 +7,10 @@ import { AuthorizedUser } from '../../models/authorizedUser.js'
  * @returns {Promise<Boolean>} - true si está autorizado, false si no
  */
 export const isUserAuthorized = async (ctx) => {
+  // resolveAuthorization ya lo consultó en este mismo update
+  if (typeof ctx.state?.authorized === 'boolean') {
+    return ctx.state.authorized
+  }
   const userId = ctx.from?.id
   if (!userId) {
     return false

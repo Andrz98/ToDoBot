@@ -9,7 +9,10 @@ import { setTimezone } from '../../controllers/timeZoneController/setTimezone.js
 import { rateLimit } from '../../middlewares/secure/rateLimit.js'
 import { sanitizeInput } from '../../middlewares/secure/sanitizeInput.js'
 import { localSessionMiddleware } from '../../middlewares/session/localSession.js'
-import { isAuthorizedUser } from '../../middlewares/access/isAuthorizedUser.js'
+import {
+  isAuthorizedUser,
+  resolveAuthorization
+} from '../../middlewares/access/isAuthorizedUser.js'
 import { flowGuard } from '../../middlewares/flowControl/flowGuard.js'
 import { chatCleanup } from '../../middlewares/chatCleanup/chatCleanup.js'
 
@@ -64,7 +67,9 @@ debugLog('[telegraf] Instancia de Telegraf creada con keep-alive HTTP')
 // ====================================
 // 🔰 Middlewares
 // ====================================
-// La sesión va primero: rateLimit y flowGuard leen ctx.session
+// La autorización va primero: corta los botones de no autorizados y decide si
+// la sesión se guarda en disco. Después la sesión: rateLimit y flowGuard la leen
+bot.use(resolveAuthorization)
 bot.use(localSessionMiddleware)
 // Envuelve todo lo demás: renueva interfaces al pulsarlas y limpia comandos ya procesados
 bot.use(chatCleanup)
@@ -85,7 +90,7 @@ bot.use(flowGuard)
 // 🔰 Comando /ping /settimezone
 // ====================================
 bot.command('ping', pingCommand)
-bot.command('settimezone', setTimezone)
+bot.command('settimezone', isAuthorizedUser, setTimezone)
 
 // ====================================
 // 🔰 Comando /start

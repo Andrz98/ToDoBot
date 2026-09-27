@@ -13,6 +13,21 @@ import { startPendingDeletionScheduler } from './services/schedulers/pendingDele
 import { startCalendarSyncScheduler } from './services/schedulers/calendarSyncScheduler.js'
 import { getCalendarStatus } from './services/google/calendarClient.js'
 import { menuCommands } from './helpers/menu/mainMenu.js'
+import { pruneUnauthorizedSessions } from './middlewares/session/localSession.js'
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// session.json solo debe guardar sesiones de usuarios autorizados
+const pruneSessions = () =>
+  pruneUnauthorizedSessions()
+    .then((removed) => {
+      if (removed > 0) {
+        console.info(
+          `🧹 ${removed} sesiones de usuarios no autorizados eliminadas`
+        )
+      }
+    })
+    .catch((err) => console.error('😵‍💫 Error al purgar sesiones:', err.message))
 
 // ====================================
 // 🔰 Verifico .env
@@ -41,6 +56,8 @@ mongoose
     // 🔰 Inicializo Schedulers
     // ======================
     startReminderScheduler()
+    pruneSessions()
+    setInterval(pruneSessions, DAY_MS).unref()
     // Google Calendar es opcional: sin credenciales no hay nada que sincronizar.
     // Si están mal, se avisa aquí (visible en los logs de Render) y no se arranca
     const calendar = getCalendarStatus()
