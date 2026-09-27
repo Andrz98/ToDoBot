@@ -33,6 +33,9 @@ const appointmentSchema = new mongoose.Schema(
       enum: Object.values(STATUS),
       default: STATUS.PENDING
     },
+    // Id de un solo uso del borrador de /cita: dos confirmaciones del mismo
+    // borrador (doble pulsación, update reenviado) no crean dos citas
+    createRequestId: { type: String, unique: true, sparse: true },
     alertsSent: { type: [String], default: [] }, // alertas ya enviadas
     reminderMessageId: { type: Number }, // aviso vivo en el chat (uno por cita)
 
