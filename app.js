@@ -17,7 +17,7 @@ import { pruneUnauthorizedSessions } from './middlewares/session/localSession.js
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
-// session.json solo debe guardar sesiones de usuarios autorizados
+// La colección sessions solo debe guardar sesiones de usuarios autorizados
 const pruneSessions = () =>
   pruneUnauthorizedSessions()
     .then((removed) => {

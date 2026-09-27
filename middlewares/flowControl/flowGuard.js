@@ -7,8 +7,8 @@ import { resetFlowSession } from '../../helpers/session/resetFlowSession.js'
  * Un flujo abandonado (el usuario cerró Telegram, se fue a otra cosa…) no debe
  * bloquear comandos ni texto libre para siempre: si su interfaz ya caducó
  * (misma ventana que `TTL.INTERFACE`, ver messageLifecycle.js), se trata como
- * si no hubiera flujo activo. `flowExpiresAt` vive en la sesión en disco
- * (telegraf-session-local), así que esto también se cumple tras un reinicio.
+ * si no hubiera flujo activo. `flowExpiresAt` vive en la sesión en MongoDB
+ * (ver localSession.js), así que esto también se cumple tras un reinicio.
  */
 function isFlowExpired(session) {
   return Boolean(session?.flowType && session.flowExpiresAt < Date.now())
