@@ -222,7 +222,7 @@ describe('/agenda', () => {
 
   describe('seguridad', () => {
     it.each([
-      `agenda_r:today:0`,
+      'agenda_r:today:0',
       `agenda_d:${ID}:today:0`,
       `agenda_ok:${ID}:today:0`,
       `agenda_yes:${ID}:today:0`,

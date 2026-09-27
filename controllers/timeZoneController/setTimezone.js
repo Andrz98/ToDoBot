@@ -14,7 +14,9 @@ export const setTimezone = async (ctx) => {
   debugLog('🕒 [DEBUG:setTimezone] entrada')
   try {
     const userId = ctx.from.id
-    const input = (ctx.message?.text ?? '').replace(/^\/settimezone\s*/i, '').trim()
+    const input = (ctx.message?.text ?? '')
+      .replace(/^\/settimezone\s*/i, '')
+      .trim()
 
     // 1) Sin argumento: muestro solo la otra zona
     if (!input) {

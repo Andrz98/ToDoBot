@@ -29,11 +29,18 @@ export async function startEdit(ctx) {
     keyboard.reply_markup.inline_keyboard.push([
       Markup.button.callback(FINISH_ACTION_LABEL, 'edit_cancel')
     ])
-    await openInterface(ctx, 'Selecciona la tarea que quieres editar:', keyboard)
+    await openInterface(
+      ctx,
+      'Selecciona la tarea que quieres editar:',
+      keyboard
+    )
   } catch (error) {
     console.error('❌ Error en /edit:', error)
     delete ctx.session.flowType
-    return replyTemporary(ctx, 'Ocurrió un error al intentar mostrar tus tareas.')
+    return replyTemporary(
+      ctx,
+      'Ocurrió un error al intentar mostrar tus tareas.'
+    )
   }
 }
 

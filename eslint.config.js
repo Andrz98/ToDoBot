@@ -61,7 +61,7 @@ export default [
 
           bracketSpacing: true, // Espaciado dentro de llaves en objetos `{ foo: bar }`
 
-          endOfLine: 'crlf' // Forzar líneas finales con `CRLF` en vez de `LF`
+          endOfLine: 'lf' // Forzar líneas finales con `LF`, como el repositorio y Render
         }
       ],
 
@@ -93,7 +93,7 @@ export default [
 
       // ✅ Reglas de estilo alineadas con Prettier
 
-      quotes: ['error', 'single'], // ✅ Forzar comillas simples
+      quotes: ['error', 'single', { avoidEscape: true }], // ✅ Forzar comillas simples (dobles si evitan escapar, como Prettier)
 
       semi: ['error', 'never'], // ❌ No permitir punto y coma al final de líneas
 

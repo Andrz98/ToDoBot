@@ -1,8 +1,7 @@
 import { Markup } from 'telegraf'
 import { frequencyLabels } from '../frequencyLabels.js'
 
-export const isValidFrequency = (value) =>
-  Object.hasOwn(frequencyLabels, value)
+export const isValidFrequency = (value) => Object.hasOwn(frequencyLabels, value)
 
 /**
  * Botonera de periodicidad. Marca la opción actual.

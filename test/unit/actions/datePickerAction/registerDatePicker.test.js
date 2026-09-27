@@ -46,7 +46,9 @@ describe('selector de fecha/hora (handlers)', () => {
     await bot.press('add_min:2026-11-03T18:30', ctx)
 
     expect(ctx.reply).not.toHaveBeenCalled()
-    expect(ctx.telegram.editMessageText.mock.calls.every(([, id]) => id === 5)).toBe(true)
+    expect(
+      ctx.telegram.editMessageText.mock.calls.every(([, id]) => id === 5)
+    ).toBe(true)
     expect(editedId()).toBe(5)
     expect(flow.onPicked).toHaveBeenCalledWith(
       ctx,
@@ -57,7 +59,10 @@ describe('selector de fecha/hora (handlers)', () => {
   it('un día ya pasado (callback atrasado) vuelve al calendario con aviso', async () => {
     await bot.press('add_day:2026-10-01', ctx)
 
-    expect(ctx.answerCbQuery).toHaveBeenCalledWith('Esa fecha ya pasó. Elige otra.', {})
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      'Esa fecha ya pasó. Elige otra.',
+      {}
+    )
     expect(editedText()).toContain('Octubre 2026')
   })
 
@@ -74,7 +79,9 @@ describe('selector de fecha/hora (handlers)', () => {
     await bot.press('add_day:2026-11-03', ctx)
 
     expect(ctx.telegram.editMessageText).not.toHaveBeenCalled()
-    expect(ctx.answerCbQuery).toHaveBeenCalledWith('Esta acción ya no está disponible.')
+    expect(ctx.answerCbQuery).toHaveBeenCalledWith(
+      'Esta acción ya no está disponible.'
+    )
   })
 
   it('un calendario de otro mensaje (interfaz antigua) no actúa sobre el flujo vivo', async () => {

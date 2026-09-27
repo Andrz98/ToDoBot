@@ -15,15 +15,44 @@ import { isCalendarEnabled } from '../../services/google/calendarClient.js'
 export const MENU_ACTIONS = [
   { command: 'add', label: '➕ Nueva tarea', help: 'Añadir nueva tarea' },
   { command: 'list', label: '📋 Mis tareas', help: 'Ver tareas activas' },
-  { command: 'done', label: '✅ Completar', help: 'Marcar tarea como completada' },
+  {
+    command: 'done',
+    label: '✅ Completar',
+    help: 'Marcar tarea como completada'
+  },
   { command: 'edit', label: '✏️ Editar', help: 'Editar tarea existente' },
-  { command: 'reminder', label: '🔔 Recordatorio', help: 'Configurar periodicidad del recordatorio' },
+  {
+    command: 'reminder',
+    label: '🔔 Recordatorio',
+    help: 'Configurar periodicidad del recordatorio'
+  },
   { command: 'delete', label: '🗑️ Eliminar', help: 'Eliminar tarea' },
-  { command: 'clear', label: '🧹 Limpiar completadas', help: 'Eliminar tareas completadas' },
-  { command: 'cita', label: '📆 Nueva cita', help: 'Crear una cita con un cliente' },
-  { command: 'agenda', label: '🗓️ Agenda', help: 'Ver tus citas de hoy, mañana o la semana' },
-  { command: 'calendar', label: '🔗 Google Calendar', help: 'Conectar tus citas a Google Calendar', enabled: isCalendarEnabled },
-  { command: 'settimezone', label: '🌐 Zona horaria', help: 'Cambiar zona horaria' }
+  {
+    command: 'clear',
+    label: '🧹 Limpiar completadas',
+    help: 'Eliminar tareas completadas'
+  },
+  {
+    command: 'cita',
+    label: '📆 Nueva cita',
+    help: 'Crear una cita con un cliente'
+  },
+  {
+    command: 'agenda',
+    label: '🗓️ Agenda',
+    help: 'Ver tus citas de hoy, mañana o la semana'
+  },
+  {
+    command: 'calendar',
+    label: '🔗 Google Calendar',
+    help: 'Conectar tus citas a Google Calendar',
+    enabled: isCalendarEnabled
+  },
+  {
+    command: 'settimezone',
+    label: '🌐 Zona horaria',
+    help: 'Cambiar zona horaria'
+  }
 ]
 
 /** Acciones que se ofrecen ahora mismo. */
