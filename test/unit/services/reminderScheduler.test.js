@@ -305,6 +305,33 @@ describe('reminderScheduler', () => {
     })
   })
 
+  it('un barrido que llega mientras el anterior sigue en curso se salta: el aviso sale una sola vez', async () => {
+    let release
+    h.send.mockImplementation(
+      () =>
+        new Promise((resolve) => (release = () => resolve({ message_id: 1 })))
+    )
+    h.find.mockImplementation(async () => [makeTask(1, 'Pagar luz')])
+    startReminderScheduler()
+
+    const first = h.tick()
+    await vi.waitFor(() => expect(h.send).toHaveBeenCalledTimes(1))
+    await h.tick() // el cron vuelve a disparar mientras el primero espera a Telegram
+    release()
+    await first
+
+    expect(h.send).toHaveBeenCalledTimes(1)
+    expect(h.find).toHaveBeenCalledTimes(1)
+  })
+
+  it('tras un barrido que falla, el siguiente se ejecuta con normalidad', async () => {
+    h.find.mockRejectedValueOnce(new Error('db'))
+    await runTick([])
+    await runTick([makeTask(1, 'Pagar luz')])
+
+    expect(h.send).toHaveBeenCalledTimes(1)
+  })
+
   it('escapa el HTML del nombre de la tarea en el recordatorio', async () => {
     const task = makeTask(1, 'a <b> & c')
 

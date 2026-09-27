@@ -133,32 +133,44 @@ const notifyAll = async (find, notify, label, now) => {
   }
 }
 
+let running = false
+
 /**
  * Scheduler que revisa cada minuto si hay tareas o citas con alertas por enviar.
+ * Si un barrido aún no ha terminado, el siguiente se salta: dos barridos a la vez
+ * leerían el mismo alertsSent y enviarían el mismo aviso dos veces.
  */
 export const startReminderScheduler = () => {
   cron.schedule('* * * * *', async () => {
-    const now = new Date()
+    if (running) {
+      return
+    }
+    running = true
+    try {
+      const now = new Date()
 
-    await notifyAll(
-      () => Task.find({ completed: false }),
-      notifyTask,
-      'la tarea',
-      now
-    )
-    await notifyAll(
-      () =>
-        Appointment.find({
-          status: { $ne: STATUS.CANCELLED },
-          // Solo las que pueden tener una alerta este minuto (la más lejana es 24h)
-          startAt: {
-            $gte: now,
-            $lte: new Date(now.getTime() + alertMessage[0].ms + 60 * 1000)
-          }
-        }),
-      notifyAppointment,
-      'la cita',
-      now
-    )
+      await notifyAll(
+        () => Task.find({ completed: false }),
+        notifyTask,
+        'la tarea',
+        now
+      )
+      await notifyAll(
+        () =>
+          Appointment.find({
+            status: { $ne: STATUS.CANCELLED },
+            // Solo las que pueden tener una alerta este minuto (la más lejana es 24h)
+            startAt: {
+              $gte: now,
+              $lte: new Date(now.getTime() + alertMessage[0].ms + 60 * 1000)
+            }
+          }),
+        notifyAppointment,
+        'la cita',
+        now
+      )
+    } finally {
+      running = false
+    }
   })
 }
