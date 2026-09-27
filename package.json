@@ -6,6 +6,7 @@
   "author": "Andrz98",
   "type": "module",
   "main": "app.js",
+  "packageManager": "pnpm@11.3.0",
   "engines": {
     "node": ">=22.12.0"
   },
