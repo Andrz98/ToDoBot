@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ findById: vi.fn(), tz: vi.fn() }))
-vi.mock('@/models/task.js', () => ({ Task: { findById: h.findById } }))
+const h = vi.hoisted(() => ({ findOne: vi.fn(), tz: vi.fn() }))
+vi.mock('@/models/task.js', () => ({ Task: { findOne: h.findOne } }))
 vi.mock(
   '@/helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js',
   () => ({ getUserTimezone: h.tz })
@@ -19,7 +19,7 @@ describe('/edit: periodicidad con botones', () => {
       reminderAt: new Date('2099-01-01T00:00:00Z'),
       frequency: 'daily'
     }
-    h.findById.mockReset().mockResolvedValue(task)
+    h.findOne.mockReset().mockResolvedValue(task)
     h.tz.mockReset().mockResolvedValue('Europe/Madrid')
     bot = makeFakeBot()
     registerFieldEditActions(bot)
