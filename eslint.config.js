@@ -93,7 +93,7 @@ export default [
 
       // ✅ Reglas de estilo alineadas con Prettier
 
-      quotes: ['error', 'single'], // ✅ Forzar comillas simples
+      quotes: ['error', 'single', { avoidEscape: true }], // ✅ Forzar comillas simples (dobles si evitan escapar, como Prettier)
 
       semi: ['error', 'never'], // ❌ No permitir punto y coma al final de líneas
 

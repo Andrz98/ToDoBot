@@ -407,7 +407,8 @@ describe('calendarClient', () => {
   describe('eventos', () => {
     const event = { id: 'a1b2c3', summary: 'Ana', status: 'tentative' }
     const CAL = 'cal-1@group.calendar.google.com'
-    const EVENTS = `https://www.googleapis.com/calendar/v3/calendars/cal-1%40group.calendar.google.com/events`
+    const EVENTS =
+      'https://www.googleapis.com/calendar/v3/calendars/cal-1%40group.calendar.google.com/events'
 
     it('upsertEvent inserta con el id fijado por quien llama', async () => {
       queue(reply(200, event))
