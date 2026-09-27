@@ -61,7 +61,7 @@ export default [
 
           bracketSpacing: true, // Espaciado dentro de llaves en objetos `{ foo: bar }`
 
-          endOfLine: 'crlf' // Forzar líneas finales con `CRLF` en vez de `LF`
+          endOfLine: 'lf' // Forzar líneas finales con `LF`, como el repositorio y Render
         }
       ],
 

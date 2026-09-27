@@ -23,7 +23,10 @@ export const completeTask = async (ctx) => {
     const userId = ctx.from.id
     const tasks = await findAllTasks(userId)
     if (tasks.length === 0) {
-      return replyEmptyState(ctx, '📭 No tienes tareas pendientes para completar.')
+      return replyEmptyState(
+        ctx,
+        '📭 No tienes tareas pendientes para completar.'
+      )
     }
 
     // Autocuramos flowType obsoleto de otro flujo abandonado

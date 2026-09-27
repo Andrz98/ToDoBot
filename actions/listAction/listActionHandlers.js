@@ -25,7 +25,11 @@ async function showPage(ctx, page) {
       text: '📭 No tienes tareas activas.',
       reply_markup: { inline_keyboard: [] }
     })
-    return scheduleDeletion(ctx, ctx.callbackQuery?.message?.message_id, TTL.NOTICE)
+    return scheduleDeletion(
+      ctx,
+      ctx.callbackQuery?.message?.message_id,
+      TTL.NOTICE
+    )
   }
   return showInList(ctx, buildTaskListPage(tasks, page))
 }

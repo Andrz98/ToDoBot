@@ -51,7 +51,10 @@ export const clearTask = async (ctx) => {
 
     // 1. caso "sin tareas completadas"
     if (count === 0) {
-      return replyTemporary(ctx, '📭 No tienes tareas completadas para eliminar.')
+      return replyTemporary(
+        ctx,
+        '📭 No tienes tareas completadas para eliminar.'
+      )
     }
 
     // 2. Debo generar un token y guardar la sesión para proteger las tareas del usuario

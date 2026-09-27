@@ -19,7 +19,10 @@ export const buildDeleteMenu = (tasks) => {
   return {
     reply_markup: Markup.inlineKeyboard(
       // Cada fila con un botón
-      [...buttons.map((btn) => [btn]), [Markup.button.callback(FINISH_ACTION_LABEL, 'delete_cancel')]],
+      [
+        ...buttons.map((btn) => [btn]),
+        [Markup.button.callback(FINISH_ACTION_LABEL, 'delete_cancel')]
+      ],
       { columns: 1 }
     ).reply_markup
   }

@@ -12,7 +12,9 @@ export const buildTimezoneMenu = (currentTz) => {
   const options = ALLOWED_TIMEZONES.filter((zone) => zone !== currentTz)
   const inline = Markup.inlineKeyboard(
     [
-      ...options.map((zone) => [Markup.button.callback(zone, `set_tz_${zone}`)]),
+      ...options.map((zone) => [
+        Markup.button.callback(zone, `set_tz_${zone}`)
+      ]),
       [Markup.button.callback(FINISH_ACTION_LABEL, 'confirm_tz_no')]
     ],
     { columns: 1 }

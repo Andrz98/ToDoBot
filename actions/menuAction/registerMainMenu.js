@@ -12,7 +12,9 @@ export function registerMainMenu(bot, handlers) {
   bot.action(/^menu_(\w+)$/, async (ctx) => {
     const handler = handlers[ctx.match[1]]
     if (!handler) {
-      return safeAnswerCbQuery(ctx, 'Acción no disponible.', { show_alert: true })
+      return safeAnswerCbQuery(ctx, 'Acción no disponible.', {
+        show_alert: true
+      })
     }
     if (!(await isUserAuthorized(ctx))) {
       return safeAnswerCbQuery(ctx, UNAUTHORIZED_TEXT, { show_alert: true })

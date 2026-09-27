@@ -1,5 +1,8 @@
 import { Markup } from 'telegraf'
-import { closeInterface, renderInterface } from '../../utils/telegramUtils/flowMessages.js'
+import {
+  closeInterface,
+  renderInterface
+} from '../../utils/telegramUtils/flowMessages.js'
 import { safeAnswerCbQuery } from '../../utils/retryUtils/safeAnswerCbQuery.js'
 
 import { AuthorizedUser } from '../../models/authorizedUser.js'

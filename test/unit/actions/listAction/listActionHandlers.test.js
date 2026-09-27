@@ -27,7 +27,10 @@ const task = (extra = {}) => ({
 })
 
 const tasks = (n) =>
-  Array.from({ length: n }, (_, i) => ({ _id: `t${i}`, name: `Tarea ${i + 1}` }))
+  Array.from({ length: n }, (_, i) => ({
+    _id: `t${i}`,
+    name: `Tarea ${i + 1}`
+  }))
 
 describe('show_task_ (detalle de tarea)', () => {
   let bot, ctx
@@ -121,11 +124,11 @@ describe('list_page_ (paginación)', () => {
     expect(ctx.reply).not.toHaveBeenCalled()
     expect(ctx.editMessageText.mock.calls[0][0]).toContain('página 2/3')
     expect(buttons()[0][0].text).toBe('9. Tarea 9')
-    expect(buttons().at(-1).map((b) => b.callback_data)).toEqual([
-      'list_page_0',
-      'list_noop',
-      'list_page_2'
-    ])
+    expect(
+      buttons()
+        .at(-1)
+        .map((b) => b.callback_data)
+    ).toEqual(['list_page_0', 'list_noop', 'list_page_2'])
   })
 
   it('una página fuera de rango (tareas borradas mientras tanto) se ajusta a la última', async () => {
@@ -147,7 +150,9 @@ describe('list_page_ (paginación)', () => {
 
   it('un fallo al editar (mensaje ya borrado) no rompe el flujo', async () => {
     h.all.mockResolvedValue(tasks(3))
-    ctx.editMessageText.mockRejectedValue(new Error('message to edit not found'))
+    ctx.editMessageText.mockRejectedValue(
+      new Error('message to edit not found')
+    )
 
     await expect(bot.press('list_page_0', ctx)).resolves.not.toThrow()
   })

@@ -47,7 +47,11 @@ export function registerDatePicker(
   }
 
   const showCalendar = (ctx, timezone, yearMonth, toast) =>
-    show(ctx, buildCalendar(prefix, resolveMonth(yearMonth, timezone), timezone), toast)
+    show(
+      ctx,
+      buildCalendar(prefix, resolveMonth(yearMonth, timezone), timezone),
+      toast
+    )
 
   bot.action(`${prefix}_noop`, (ctx) => safeAnswerCbQuery(ctx))
 
@@ -83,7 +87,12 @@ export function registerDatePicker(
     new RegExp(`^${prefix}_min:(\\d{4}-\\d{2}-\\d{2})T(\\d{2}):(\\d{2})$`),
     guarded(async (ctx, timezone) => {
       const [, isoDate, hour, minute] = ctx.match
-      const date = resolveDateTime(isoDate, Number(hour), Number(minute), timezone)
+      const date = resolveDateTime(
+        isoDate,
+        Number(hour),
+        Number(minute),
+        timezone
+      )
       if (!date) {
         return showCalendar(ctx, timezone, undefined, PAST_TEXT)
       }

@@ -55,8 +55,7 @@ export const saveReminderAction = async (ctx) => {
     return closeInterface(
       ctx,
       `🔔 Recordatorio de <b>${escapeHtml(task.name)}</b>: ${frequencyLabels[frequency]}.
-` +
-        `Próximo aviso: ${formatDateEs(task.reminderAt, timezone)}`,
+` + `Próximo aviso: ${formatDateEs(task.reminderAt, timezone)}`,
       { parse_mode: 'HTML' }
     )
   } catch (error) {

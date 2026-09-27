@@ -49,7 +49,13 @@ export function resolveDay(isoDate, timezone, now = DateTime.now()) {
 }
 
 /** Fecha y hora finales como Date, o null si son inválidas o ya pasaron. */
-export function resolveDateTime(isoDate, hour, minute, timezone, now = DateTime.now()) {
+export function resolveDateTime(
+  isoDate,
+  hour,
+  minute,
+  timezone,
+  now = DateTime.now()
+) {
   const day = resolveDay(isoDate, timezone, now)
   if (!day || hour > 23 || minute > 59) {
     return null
