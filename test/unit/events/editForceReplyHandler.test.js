@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ findById: vi.fn(), tz: vi.fn() }))
-vi.mock('@/models/task.js', () => ({ Task: { findById: h.findById } }))
+const h = vi.hoisted(() => ({ findOne: vi.fn(), tz: vi.fn() }))
+vi.mock('@/models/task.js', () => ({ Task: { findOne: h.findOne } }))
 vi.mock(
   '@/helpers/taskHelpers/timezone/userTimezone/getUserTimezone.js',
   () => ({
@@ -40,7 +40,7 @@ describe('/edit: respuestas de texto', () => {
       description: 'urgente',
       reminderAt: new Date('2099-01-01T00:00:00Z')
     }
-    h.findById.mockReset().mockResolvedValue(task)
+    h.findOne.mockReset().mockResolvedValue(task)
     h.tz.mockReset().mockResolvedValue('Europe/Madrid')
     vi.spyOn(console, 'error').mockImplementation(() => {})
     bot = makeFakeBot()
@@ -104,7 +104,7 @@ describe('/edit: respuestas de texto', () => {
   })
 
   it('error externo simulado (BD caída): limpia toda la sesión sin lanzar', async () => {
-    h.findById.mockRejectedValue(new Error('Fallo de Mongo'))
+    h.findOne.mockRejectedValue(new Error('Fallo de Mongo'))
     const ctx = editCtx('new_name', 'Pagar gas')
 
     await expect(bot.say(ctx)).resolves.not.toThrow()

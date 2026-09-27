@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
-const h = vi.hoisted(() => ({ findById: vi.fn(), auth: vi.fn() }))
-vi.mock('@/models/task.js', () => ({ Task: { findById: h.findById } }))
+const h = vi.hoisted(() => ({ findOne: vi.fn(), auth: vi.fn() }))
+vi.mock('@/models/task.js', () => ({ Task: { findOne: h.findOne } }))
 vi.mock('@/helpers/userAuthorizedTaskController/isUserAuthorized.js', () => ({
   isUserAuthorized: h.auth
 }))
@@ -29,7 +29,7 @@ describe('/edit: guardar (edit_save)', () => {
       reminderAt: new Date('2099-01-01T00:00:00Z'),
       save: vi.fn().mockResolvedValue(undefined)
     }
-    h.findById.mockReset().mockResolvedValue(task)
+    h.findOne.mockReset().mockResolvedValue(task)
     h.auth.mockReset().mockResolvedValue(true)
     vi.spyOn(console, 'error').mockImplementation(() => {})
     bot = makeFakeBot()
@@ -87,7 +87,7 @@ describe('/edit: guardar (edit_save)', () => {
   })
 
   it('tarea borrada a mitad de edición: avisa y limpia la sesión sin lanzar', async () => {
-    h.findById.mockResolvedValue(null)
+    h.findOne.mockResolvedValue(null)
     const ctx = editCtx({ newName: 'Pagar gas' })
 
     await expect(bot.press('edit_save', ctx)).resolves.not.toThrow()
@@ -133,7 +133,7 @@ describe('/edit: guardar (edit_save)', () => {
 
     await bot.press('edit_save', ctx)
 
-    expect(h.findById).not.toHaveBeenCalled()
+    expect(h.findOne).not.toHaveBeenCalled()
     expect(task.save).not.toHaveBeenCalled()
     expect(ctx.answerCbQuery).toHaveBeenCalledWith(
       '🥸 Debes estar autorizado para usar este bot.',

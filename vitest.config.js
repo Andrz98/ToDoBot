@@ -11,7 +11,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     clearMocks: true,
-    // setupFiles: './tests/setup.js',
+    setupFiles: './test/setup.js',
     coverage: {
       reporter: ['text', 'json', 'html'], // Formatos de reporte
       include: [

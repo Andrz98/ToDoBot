@@ -59,16 +59,42 @@ describe('rateLimit', () => {
     expect(await act(rateLimit, ctxFor(2))).toHaveBeenCalled()
   })
 
-  it('no limita callbacks, flujos activos ni respuestas esperadas', async () => {
+  it('botones, flujos activos y respuestas esperadas tienen un cupo propio más holgado (30 en 10 s)', async () => {
     const rateLimit = await load()
-    for (let i = 0; i < 10; i++) {
-      const callback = ctxFor(1, { callbackQuery: { data: 'x' } })
-      const inFlow = ctxFor(1, { session: { flowType: 'add' } })
-      const awaited = ctxFor(1, { session: { awaiting: 'add_name' } })
-      expect(await act(rateLimit, callback)).toHaveBeenCalled()
-      expect(await act(rateLimit, inFlow)).toHaveBeenCalled()
-      expect(await act(rateLimit, awaited)).toHaveBeenCalled()
+    const kinds = [
+      () => ctxFor(1, { callbackQuery: { data: 'x' } }),
+      () => ctxFor(1, { session: { flowType: 'add' } }),
+      () => ctxFor(1, { session: { awaiting: 'add_name' } })
+    ]
+    for (let i = 0; i < 30; i++) {
+      expect(await act(rateLimit, kinds[i % 3]())).toHaveBeenCalled()
     }
+    // No gastan el cupo de comandos
+    expect(await act(rateLimit, ctxFor(1))).toHaveBeenCalled()
+  })
+
+  it('el botón número 31 en 10 s no llega al handler y se avisa con un toast', async () => {
+    const rateLimit = await load()
+    const tap = () =>
+      ctxFor(1, {
+        callbackQuery: { data: 'list_page_0' },
+        answerCbQuery: vi.fn().mockResolvedValue(true)
+      })
+    for (let i = 0; i < 30; i++) {
+      await act(rateLimit, tap())
+    }
+
+    const ctx = tap()
+    const next = await act(rateLimit, ctx)
+
+    expect(next).not.toHaveBeenCalled()
+    expect(ctx.answerCbQuery.mock.calls[0][0]).toContain(
+      'más de 30 acciones en 10 s'
+    )
+    expect(ctx.reply).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(10_001)
+    expect(await act(rateLimit, tap())).toHaveBeenCalled()
   })
 
   it('sin from.id deja pasar', async () => {

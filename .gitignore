@@ -33,3 +33,6 @@ logs.txt
 coverage
 
 *tgrep
+
+# Documentación local: el repositorio es público
+*.md

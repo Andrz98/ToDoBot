@@ -35,7 +35,11 @@ const pendingEdits = (ctx) => {
  * @returns {Promise<{ task: object|null, updated: boolean }>}
  */
 export async function loadEditedTask(ctx, timezone) {
-  const task = await Task.findById(ctx.session.editing.id)
+  // Filtra también por dueño, como el resto de consultas de tareas
+  const task = await Task.findOne({
+    _id: ctx.session.editing.id,
+    userId: ctx.from.id
+  })
   if (!task) {
     return { task: null, updated: false }
   }

@@ -2,11 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { makeFakeBot, makeCtx } from '../../../support/telegram.js'
 
 const h = vi.hoisted(() => {
-  const state = { findOne: vi.fn(), created: null }
+  const state = { findOne: vi.fn(), created: null, saveError: null }
   class Appointment {
     constructor(fields) {
       Object.assign(this, fields)
-      this.save = vi.fn().mockResolvedValue(this)
+      this.save = vi.fn(() =>
+        state.saveError
+          ? Promise.reject(state.saveError)
+          : Promise.resolve(this)
+      )
       state.created = this
     }
     static findOne(...args) {
@@ -55,6 +59,7 @@ describe('flujo /cita', () => {
   beforeEach(() => {
     h.state.findOne.mockReset().mockReturnValue(query(null))
     h.state.created = null
+    h.state.saveError = null
     h.auth.mockReset().mockResolvedValue(true)
     h.tz.mockReset().mockResolvedValue('Europe/Madrid')
     vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -69,7 +74,8 @@ describe('flujo /cita', () => {
       await bot.run('cita', ctx)
 
       expect(ctx.session.flowType).toBe('apt')
-      expect(ctx.session.pendingApt).toEqual({})
+      // Solo el id de un solo uso: ningún campo de la cita todavía
+      expect(ctx.session.pendingApt).toEqual({ requestId: expect.any(String) })
       const [text, extra] = ctx.reply.mock.calls[0]
       expect(text).toContain('Nueva cita')
       expect(callbacks(extra)).toEqual(
@@ -257,6 +263,37 @@ describe('flujo /cita', () => {
         expect.objectContaining({ reply_markup: { inline_keyboard: [] } })
       )
       expect(ctx.session.flowType).toBeUndefined()
+      expect(ctx.session.pendingApt).toBeUndefined()
+    })
+
+    it('la cita nueva guarda el requestId de un solo uso de su borrador', async () => {
+      const ctx = flowCtx({
+        requestId: 'req-1',
+        client: 'Ana',
+        startAt: FUTURE
+      })
+
+      await bot.press('apt_confirm', ctx)
+
+      expect(h.state.created.createRequestId).toBe('req-1')
+    })
+
+    it('segunda confirmación del mismo borrador (clave duplicada): no es un error y cierra el flujo', async () => {
+      h.state.saveError = Object.assign(new Error('E11000'), { code: 11000 })
+      const ctx = flowCtx({
+        requestId: 'req-1',
+        client: 'Ana',
+        startAt: FUTURE
+      })
+
+      await bot.press('apt_confirm', ctx)
+
+      expect(ctx.answerCbQuery).toHaveBeenCalledWith('✅ Cita creada.', {})
+      expect(ctx.answerCbQuery).not.toHaveBeenCalledWith(
+        expect.stringContaining('error'),
+        expect.anything()
+      )
+      expect(console.error).not.toHaveBeenCalled()
       expect(ctx.session.pendingApt).toBeUndefined()
     })
 

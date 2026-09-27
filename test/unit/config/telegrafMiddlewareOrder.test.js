@@ -3,12 +3,17 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 const h = vi.hoisted(() => {
   process.env.TELEGRAM_BOT_TOKEN = '123456:test-token'
   process.env.TELEGRAM_WEBHOOK_SECRET = 'test-secret_123'
-  return { use: vi.fn(), on: vi.fn(), session: (_ctx, next) => next() }
+  return {
+    use: vi.fn(),
+    on: vi.fn(),
+    command: vi.fn(),
+    session: (_ctx, next) => next()
+  }
 })
 vi.mock('@/config/telegraf/botFactory.js', () => ({
   createBot: () => ({
     use: h.use,
-    command: vi.fn(),
+    command: h.command,
     start: vi.fn(),
     on: h.on,
     action: vi.fn(),
@@ -24,12 +29,31 @@ vi.mock('@/middlewares/session/localSession.js', () => ({
 import '@/config/telegraf/telegraf.js'
 import { rateLimit } from '@/middlewares/secure/rateLimit.js'
 import { flowGuard } from '@/middlewares/flowControl/flowGuard.js'
+import {
+  isAuthorizedUser,
+  resolveAuthorization
+} from '@/middlewares/access/isAuthorizedUser.js'
 
 // clearMocks vacía mock.calls antes de cada test: se calcula una sola vez tras cargar telegraf.js
 const order = h.use.mock.calls.map(([mw]) => mw)
 const onCalls = [...h.on.mock.calls]
+const commandCalls = [...h.command.mock.calls]
+
+describe('comandos protegidos', () => {
+  it('/settimezone exige autorización como el resto de comandos con datos', () => {
+    const [, ...handlers] = commandCalls.find(
+      ([name]) => name === 'settimezone'
+    )
+    expect(handlers[0]).toBe(isAuthorizedUser)
+  })
+})
 
 describe('orden de middlewares globales', () => {
+  it('la autorización es el primer middleware: corta botones de no autorizados y decide la sesión', () => {
+    expect(order[0]).toBe(resolveAuthorization)
+    expect(order.indexOf(h.session)).toBe(1)
+  })
+
   it('la sesión se carga antes de rateLimit (sus exenciones por flujo la necesitan)', () => {
     expect(order.indexOf(h.session)).toBeGreaterThanOrEqual(0)
     expect(order.indexOf(h.session)).toBeLessThan(order.indexOf(rateLimit))

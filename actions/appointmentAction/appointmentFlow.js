@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { Appointment, FIELD_LIMITS } from '../../models/appointment.js'
 import { STATUS } from '../../helpers/appointments/status.js'
 import {
@@ -33,6 +34,7 @@ import {
 } from '../../utils/telegramUtils/flowMessages.js'
 
 const MINUTE = 60 * 1000
+const DUPLICATE_KEY = 11000
 const HAS_TIME = /\d{1,2}:\d{2}/
 
 const PROMPTS = {
@@ -121,7 +123,7 @@ export async function startAppointment(ctx) {
   delete ctx.session.editing
   delete ctx.session.edits
   ctx.session.flowType = 'apt'
-  ctx.session.pendingApt = {}
+  ctx.session.pendingApt = { requestId: randomUUID() }
   ctx.session.awaiting = null
 
   const { text, markup } = buildAptMenu()
@@ -209,7 +211,10 @@ async function saveAppointment(ctx, pending) {
         userId: ctx.from.id,
         status: { $ne: STATUS.CANCELLED }
       })
-    : new Appointment({ userId: ctx.from.id })
+    : new Appointment({
+        userId: ctx.from.id,
+        createRequestId: pending.requestId
+      })
   if (!appointment) {
     return { error: 'Cita no encontrada.' }
   }
@@ -338,6 +343,11 @@ export function registerAppointmentFlow(bot) {
         `${done}\n\n👤 ${appointment.client}\n🕘 ${formatRange(appointment.startAt, appointment.endAt, timezone)}`
       )
     } catch (error) {
+      if (error.code === DUPLICATE_KEY) {
+        // La otra confirmación del mismo borrador ya creó la cita y cierra la interfaz
+        resetAptSession(ctx)
+        return safeAnswerCbQuery(ctx, '✅ Cita creada.')
+      }
       console.error('❌ Error en apt_confirm:', error)
       resetAptSession(ctx)
       await closeInterface(ctx, GENERAL_ERROR_TEXT).catch(() => {})
